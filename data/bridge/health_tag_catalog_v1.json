@@ -1,0 +1,222 @@
+[
+  {
+    "id": "digestive_support",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Podrska varenju",
+    "label_en": "Digestive support",
+    "description": "Opsti tag za blaza jela koja su cesce laksa za varenje.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "low_irritation_foods",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Nisko iritantna hrana",
+    "label_en": "Low irritation foods",
+    "description": "Blaza hrana sa manje jakih nadrazaja za digestivni trakt.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "smaller_meals_preferred",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Manji obroci pozeljni",
+    "label_en": "Smaller meals preferred",
+    "description": "Prednost imaju manji i laksi obroci.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "gas_forming_foods_caution",
+    "uiGroup": "digestive",
+    "effect": "caution",
+    "label_sr": "Oprez sa namirnicama koje nadimaju",
+    "label_en": "Gas forming foods caution",
+    "description": "Odredjene namirnice mogu povecati nadutost i gasove.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "spicy_foods_caution",
+    "uiGroup": "digestive",
+    "effect": "caution",
+    "label_sr": "Oprez sa ljutim",
+    "label_en": "Spicy foods caution",
+    "description": "Jako ljuta jela mogu pogorsati osetljivost.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "fried_foods_caution",
+    "uiGroup": "digestive",
+    "effect": "caution",
+    "label_sr": "Oprez sa przenim",
+    "label_en": "Fried foods caution",
+    "description": "Przenje i pohovanje mogu povecati opterecenje varenja.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "acidic_foods_caution",
+    "uiGroup": "digestive",
+    "effect": "caution",
+    "label_sr": "Oprez sa kiselim",
+    "label_en": "Acidic foods caution",
+    "description": "Izrazito kisela jela mogu smetati kod osetljivog zeluca.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "lower_fat_preferred",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Manje masna jela pozeljna",
+    "label_en": "Lower fat preferred",
+    "description": "Prednost imaju jela sa manje masnoce.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "gentle_cooking_preferred",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Blage tehnike pripreme",
+    "label_en": "Gentle cooking preferred",
+    "description": "Kuvanje, dinstanje i lagano pecenje imaju prednost.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "warm_meals_preferred",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Topli obroci pozeljni",
+    "label_en": "Warm meals preferred",
+    "description": "Topla jela su cesto prijatnija od hladnih.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "soft_foods_helpful",
+    "uiGroup": "digestive",
+    "effect": "prefer",
+    "label_sr": "Meksa hrana korisna",
+    "label_en": "Soft foods helpful",
+    "description": "Meksa tekstura moze biti pogodnija kod osetljivosti.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "sugar_caution",
+    "uiGroup": "metabolic",
+    "effect": "caution",
+    "label_sr": "Oprez sa secerom",
+    "label_en": "Sugar caution",
+    "description": "Veci dodatak secera snizava pogodnost recepta.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "refined_carbs_caution",
+    "uiGroup": "metabolic",
+    "effect": "caution",
+    "label_sr": "Oprez sa rafinisanim ugljenim hidratima",
+    "label_en": "Refined carbs caution",
+    "description": "Rafinisani ugljeni hidrati dobijaju minus u skoru.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "balanced_meals_preferred",
+    "uiGroup": "metabolic",
+    "effect": "prefer",
+    "label_sr": "Uravnotezeni obroci pozeljni",
+    "label_en": "Balanced meals preferred",
+    "description": "Prednost imaju uravnotezene kombinacije makronutrijenata.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "hydration_support",
+    "uiGroup": "general",
+    "effect": "prefer",
+    "label_sr": "Podrska hidraciji",
+    "label_en": "Hydration support",
+    "description": "Prednost imaju jela koja doprinose hidraciji ili idu uz dovoljno tecnosti.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "salt_caution",
+    "uiGroup": "cardio",
+    "effect": "caution",
+    "label_sr": "Oprez sa solju",
+    "label_en": "Salt caution",
+    "description": "Preslana i visoko preradjena jela dobijaju minus.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "lighter_meals_preferred",
+    "uiGroup": "general",
+    "effect": "prefer",
+    "label_sr": "Laksi obroci pozeljni",
+    "label_en": "Lighter meals preferred",
+    "description": "Prednost imaju jela manjeg opterecenja.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "senior",
+    "uiGroup": "profile",
+    "effect": "context",
+    "label_sr": "Senior profil",
+    "label_en": "Senior",
+    "description": "Aktivni profil pripada starijoj osobi.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "quick_prep_preferred",
+    "uiGroup": "ux",
+    "effect": "prefer",
+    "label_sr": "Brza priprema pozeljna",
+    "label_en": "Quick prep preferred",
+    "description": "Prednost imaju jela koja se lakse i brze pripremaju.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "simple_ingredients_preferred",
+    "uiGroup": "ux",
+    "effect": "prefer",
+    "label_sr": "Jednostavni sastojci pozeljni",
+    "label_en": "Simple ingredients preferred",
+    "description": "Prednost imaju recepti sa manje komplikovanih sastojaka.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "budget_sensitive",
+    "uiGroup": "ux",
+    "effect": "context",
+    "label_sr": "Budzet osetljiv",
+    "label_en": "Budget sensitive",
+    "description": "Prednost imaju pristupacniji sastojci.",
+    "enabled": true,
+    "version": "v1"
+  },
+  {
+    "id": "protein_support",
+    "uiGroup": "general",
+    "effect": "prefer",
+    "label_sr": "Podrska unosu proteina",
+    "label_en": "Protein support",
+    "description": "Blagi proteinski izvori dobijaju prednost kada je to relevantno.",
+    "enabled": true,
+    "version": "v1"
+  }
+]

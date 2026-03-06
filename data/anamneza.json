@@ -1,0 +1,26 @@
+[
+  {
+    "id": "p1",
+    "osobni": {
+      "ime": "Marko",
+      "prezime": "Perić",
+      "godina": "1955",
+      "mjesto": "Split"
+    },
+    "razlog": "Hitni prijem – bol u prsima i otežano disanje",
+    "dx": {
+      "mkb10": [
+        {
+          "code": "I10",
+          "label": "hipertenzija"
+        }
+      ],
+      "sinet_refs": [
+        "kardiovaskularni-sistem-visok-krvni-pritisak"
+      ],
+      "napomena": "Primer: dijagnoza mapirana na SINET simptom/protokol."
+    },
+    "createdAt": 1771585360611,
+    "updatedAt": 1771585360611
+  }
+]

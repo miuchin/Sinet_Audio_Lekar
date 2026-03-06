@@ -1,0 +1,403 @@
+{
+  "meta": {
+    "schema": "SINET-Integrative-Library-Manifest",
+    "version": "v1.1",
+    "generatedAt": "2026-03-01",
+    "title": "SINET Integrativna biblioteka",
+    "purpose": "Centralni pregled integrativnih metoda: objavljene, odložene i isključene iz evidence core sloja."
+  },
+  "publishedMethods": [
+    {
+      "id": "acupuncture",
+      "slug": "akupunktura",
+      "title": "Akupunktura",
+      "emoji": "🪡",
+      "status": "published",
+      "category": "Profesionalni modul",
+      "page": "pages/akupunktura.html",
+      "doc": "docs/protokoli/18_AKUPUNKTURA_v1.0_SR.html",
+      "seed": "data/integrative_methods/acupuncture/akupunktura_catalog_v1.json",
+      "evidenceTier": "A/B",
+      "summary": "Odvojen, stručno-vođen integrativni modul. Nije samopomoć i ne zamenjuje standardnu ili hitnu medicinsku obradu.",
+      "forSymptoms": [
+        "hronični primarni bol",
+        "neradikularni low back pain",
+        "mučnina/povraćanje tokom onkološkog lečenja",
+        "odabrana bolna stanja uz oprez"
+      ],
+      "sources": [
+        "NICE_NG193",
+        "ACP_LBP_2017",
+        "NCI_ACU_PDQ",
+        "NCCIH_ACUPUNCTURE",
+        "NICE_NG226"
+      ]
+    },
+    {
+      "id": "breathing",
+      "slug": "disanje",
+      "title": "Terapijsko disanje",
+      "emoji": "🌬️",
+      "status": "published",
+      "category": "Samopomoć / self-regulation",
+      "page": "pages/disanje.html",
+      "doc": "docs/protokoli/19_DISANJE_v1.0_SR.html",
+      "seed": "data/integrative_methods/breathing/disanje_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Sporo, kontrolisano disanje za spuštanje napetosti, usporavanje 'alarm' reakcije i bolju samoregulaciju simptoma.",
+      "forSymptoms": [
+        "stres i preopterećenje",
+        "napetost i ubrzano disanje",
+        "pred spavanje / smirivanje",
+        "bol sa mišićnom napetošću bez red flags"
+      ],
+      "sources": [
+        "NCCIH_RELAX"
+      ]
+    },
+    {
+      "id": "mindfulness",
+      "slug": "mindfulness",
+      "title": "Mindfulness / meditacija",
+      "emoji": "🧠",
+      "status": "published",
+      "category": "Mind-body praksa",
+      "page": "pages/mindfulness.html",
+      "doc": "docs/protokoli/20_MINDFULNESS_v1.0_SR.html",
+      "seed": "data/integrative_methods/mindfulness/mindfulness_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Mindfulness ulazi kao dopunska praksa za stres, opterećenost i kvalitet življenja uz hronične simptome, bez obećanja da 'leči bolest'.",
+      "forSymptoms": [
+        "stres i mentalno preopterećenje",
+        "hronični bol - coping sloj",
+        "anksiozna napetost",
+        "ruminacija / teško gašenje misli"
+      ],
+      "sources": [
+        "NCCIH_MINDFULNESS",
+        "NCCIH_CHRONIC_PAIN"
+      ]
+    },
+    {
+      "id": "thermotherapy",
+      "slug": "termoterapija",
+      "title": "Blaga termoterapija",
+      "emoji": "♨️",
+      "status": "published",
+      "category": "Fizička podrška",
+      "page": "pages/termoterapija.html",
+      "doc": "docs/protokoli/21_TERMOTERAPIJA_v1.0_SR.html",
+      "seed": "data/integrative_methods/thermotherapy/termoterapija_catalog_v1.json",
+      "evidenceTier": "A/B",
+      "summary": "Toplota za spazme i ukočenost, hladnoća za svežu oteklinu i iritaciju - uz jasan sigurnosni okvir i bez direktne primene na oštećenu kožu.",
+      "forSymptoms": [
+        "akutni/subakutni neradikularni low back pain",
+        "mišićni spazam",
+        "ukočenost",
+        "manja sveža oteklina / uganuće"
+      ],
+      "sources": [
+        "ACP_LBP_2017",
+        "NHS_HEAT_ICE"
+      ]
+    },
+    {
+      "id": "sleep_hygiene",
+      "slug": "san",
+      "title": "San i higijena spavanja",
+      "emoji": "😴",
+      "status": "published",
+      "category": "Lifestyle osnova",
+      "page": "pages/san.html",
+      "doc": "docs/protokoli/22_SAN_v1.0_SR.html",
+      "seed": "data/integrative_methods/sleep/san_catalog_v1.json",
+      "evidenceTier": "A",
+      "summary": "Bazni lifestyle modul za ritam dana, tamu, mir, manje ekrana i stabilnije navike pre spavanja.",
+      "forSymptoms": [
+        "blage smetnje uspavljivanja",
+        "nepravilan ritam spavanja",
+        "večernja preopterećenost ekranima",
+        "dnevni umor uz loše navike"
+      ],
+      "sources": [
+        "NHLBI_SLEEP_HOURS",
+        "NHLBI_SLEEP_HABITS"
+      ]
+    },
+    {
+      "id": "movement",
+      "slug": "kretanje",
+      "title": "Šetnja i blago kretanje",
+      "emoji": "🚶",
+      "status": "published",
+      "category": "Lifestyle osnova",
+      "page": "pages/kretanje.html",
+      "doc": "docs/protokoli/23_KRETANJE_v1.0_SR.html",
+      "seed": "data/integrative_methods/movement/kretanje_catalog_v1.json",
+      "evidenceTier": "A",
+      "summary": "Lagano, redovno kretanje je temeljni modul zdravlja, kondicije, raspoloženja i oporavka, sa prilagođavanjem opterećenja profilu korisnika.",
+      "forSymptoms": [
+        "sedentarni obrazac",
+        "ukočenost od nekretanja",
+        "blaga decondition",
+        "oporavak posle pregleda / faze mirovanja"
+      ],
+      "sources": [
+        "WHO_ACTIVITY"
+      ]
+    },
+    {
+      "id": "yoga_tai_chi_qigong",
+      "slug": "pokret",
+      "title": "Joga / Tai chi / Qigong",
+      "emoji": "🧘",
+      "status": "published",
+      "category": "Mind-body pokret",
+      "page": "pages/pokret.html",
+      "doc": "docs/protokoli/24_POKRET_JOGA_TAICHI_QIGONG_v1.0_SR.html",
+      "seed": "data/integrative_methods/mind_body_movement/pokret_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Vođeni, blagi oblici pokreta ulaze kao dopunske prakse - joga sa oprezom, tai chi kao nežan balans/pokret, qigong kao lagana mind-body opcija.",
+      "forSymptoms": [
+        "hronični low back pain",
+        "stres uz ukočenost",
+        "balans i strah od pada",
+        "potreba za nežnim grupnim kretanjem"
+      ],
+      "sources": [
+        "NCCIH_YOGA",
+        "NCCIH_TAICHI",
+        "NCCIH_LBP_COMP"
+      ]
+    },
+    {
+      "id": "massage_manual",
+      "slug": "masaza",
+      "title": "Masaža i manualne tehnike",
+      "emoji": "💆",
+      "status": "published",
+      "category": "Selektivna dopunska podrška",
+      "page": "pages/masaza.html",
+      "doc": "docs/protokoli/25_MASAZA_v1.0_SR.html",
+      "seed": "data/integrative_methods/massage/masaza_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Masaža ulazi selektivno: za pojedine obrasce mišićne napetosti i bola može biti kratkoročna podrška, ali nije univerzalno rešenje.",
+      "forSymptoms": [
+        "mišićna napetost",
+        "vrat / ramena",
+        "odabrani obrasci hroničnog low back pain",
+        "stres uz telesnu ukočenost"
+      ],
+      "sources": [
+        "NCCIH_MASSAGE",
+        "ACP_LBP_2017",
+        "NCCIH_LBP_COMP"
+      ]
+    },
+    {
+      "id": "relaxation_guided",
+      "slug": "relaksacija",
+      "title": "Relaksacija / PMR / vođena mašta",
+      "emoji": "🎧",
+      "status": "published",
+      "category": "Mind-body self-care",
+      "page": "pages/relaksacija.html",
+      "doc": "docs/protokoli/26_RELAKSACIJA_v1.0_SR.html",
+      "seed": "data/integrative_methods/relaxation/relaksacija_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Progresivna mišićna relaksacija i vođena mašta ulaze kao sigurniji, nežni alati za napetost, smirivanje i deo plana za bol/stres.",
+      "forSymptoms": [
+        "telesna napetost",
+        "preplavljenost i stres",
+        "bol uz grčenje mišića",
+        "večernje smirivanje"
+      ],
+      "sources": [
+        "NCCIH_RELAX",
+        "NCCIH_LBP_COMP"
+      ]
+    },
+    {
+      "id": "tai_chi_seniors",
+      "slug": "tai_chi",
+      "title": "Tai Chi (za seniore)",
+      "emoji": "🧘‍♂️",
+      "status": "published",
+      "category": "Mind-body pokret (gentle)",
+      "page": "pages/tai_chi.html",
+      "doc": "docs/protokoli/24B_TAI_CHI_SENIORI_v1.0_SR.html",
+      "seed": "data/integrative_methods/mind_body_movement/pokret_catalog_v1.json",
+      "evidenceTier": "B",
+      "summary": "Posebna, senior-friendly strana za Tai Chi: ravnoteža, sigurnije kretanje, nežna progresija.",
+      "forSymptoms": [
+        "balans i strah od pada",
+        "nestabilnost (blaga)",
+        "ukočenost",
+        "stres uz telesnu napetost"
+      ],
+      "sources": [
+        "NCCIH_TAICHI",
+        "NCCIH_OLDER_ADULTS",
+        "CDC_ACTIVITY_65PLUS"
+      ]
+    }
+  ],
+  "deferredMethods": [
+    {
+      "id": "moxibustion",
+      "title": "Moksibustija",
+      "emoji": "🔥",
+      "status": "deferred",
+      "category": "Oprezno i kasnije",
+      "summary": "Ostaviti za kasniju fazu. Ne uvoditi bez zasebne kuracije izvora, bezbednosnog okvira i jasne razlike u odnosu na akupunkturu / toplotu."
+    },
+    {
+      "id": "cupping",
+      "title": "Ventuze / cupping",
+      "emoji": "🫧",
+      "status": "deferred",
+      "category": "Oprezno i kasnije",
+      "summary": "Mogu ostati u planu za informativni sloj, ali ne za evidence core dok ne dobiju posebnu reviziju koristi, rizika i indikacija."
+    },
+    {
+      "id": "phytotherapy_info",
+      "title": "Fitoterapija (informativni sloj)",
+      "emoji": "🌿",
+      "status": "deferred",
+      "category": "Oprezno i kasnije",
+      "summary": "Može postojati samo kao informativni sloj sa interakcijama i upozorenjima; ne kao automatska preporuka bez farmakološke i kliničke revizije."
+    }
+  ],
+  "notCoreMethods": [
+    {
+      "id": "homeopathy_core",
+      "title": "Homeopatija kao klinički core",
+      "emoji": "🚫",
+      "status": "not_core",
+      "category": "Ne uvoditi u evidence core",
+      "summary": "Ne uvoditi kao klinički oslonac u evidence core sloj aplikacije."
+    },
+    {
+      "id": "detox_protocols",
+      "title": "Agresivni detox protokoli",
+      "emoji": "⛔",
+      "status": "not_core",
+      "category": "Ne uvoditi u evidence core",
+      "summary": "Ne uvoditi agresivne 'detox' i reset narative bez proverljivog bezbednosnog i kliničkog oslonca."
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "NICE_NG193",
+      "label": "Chronic pain (primary and secondary) in over 16s - assessment and management",
+      "institution": "NICE",
+      "year": "2021",
+      "url": "https://www.nice.org.uk/guidance/ng193/chapter/recommendations"
+    },
+    {
+      "id": "ACP_LBP_2017",
+      "label": "American College of Physicians guideline for nonradicular low back pain",
+      "institution": "ACP",
+      "year": "2017",
+      "url": "https://www.acponline.org/acp-newsroom/american-college-of-physicians-issues-guideline-for-treating-nonradicular-low-back-pain"
+    },
+    {
+      "id": "NCI_ACU_PDQ",
+      "label": "Acupuncture (PDQ) - Health Professional Version",
+      "institution": "National Cancer Institute",
+      "year": "2026",
+      "url": "https://www.cancer.gov/about-cancer/treatment/cam/hp/acupuncture-pdq"
+    },
+    {
+      "id": "NCCIH_ACUPUNCTURE",
+      "label": "Acupuncture: Effectiveness and Safety",
+      "institution": "NCCIH / NIH",
+      "year": "2026",
+      "url": "https://www.nccih.nih.gov/health/acupuncture-effectiveness-and-safety"
+    },
+    {
+      "id": "NICE_NG226",
+      "label": "Osteoarthritis in over 16s: diagnosis and management",
+      "institution": "NICE",
+      "year": "2022",
+      "url": "https://www.nice.org.uk/guidance/ng226/chapter/Recommendations"
+    },
+    {
+      "id": "NCCIH_RELAX",
+      "label": "Relaxation Techniques: What You Need To Know",
+      "institution": "NCCIH / NIH",
+      "year": "2025",
+      "url": "https://www.nccih.nih.gov/health/relaxation-techniques-what-you-need-to-know"
+    },
+    {
+      "id": "NCCIH_MINDFULNESS",
+      "label": "Meditation and Mindfulness: Effectiveness and Safety",
+      "institution": "NCCIH / NIH",
+      "year": "2025",
+      "url": "https://www.nccih.nih.gov/health/meditation/overview.htm"
+    },
+    {
+      "id": "NCCIH_CHRONIC_PAIN",
+      "label": "Chronic Pain and Complementary Health Approaches: Usefulness and Safety",
+      "institution": "NCCIH / NIH",
+      "year": "2026",
+      "url": "https://www.nccih.nih.gov/health/chronic-pain-and-complementary-health-approaches-usefulness-and-safety"
+    },
+    {
+      "id": "NHS_HEAT_ICE",
+      "label": "Heat and ice",
+      "institution": "Sherwood Forest Hospitals NHS Foundation Trust",
+      "year": "2026",
+      "url": "https://www.sfh-tr.nhs.uk/services/fracture-clinic-physiotherapy/general-advice/heat-and-ice/"
+    },
+    {
+      "id": "NHLBI_SLEEP_HOURS",
+      "label": "How Sleep Works - How Much Sleep Is Enough?",
+      "institution": "NHLBI / NIH",
+      "year": "2022",
+      "url": "https://www.nhlbi.nih.gov/health/sleep/how-much-sleep"
+    },
+    {
+      "id": "NHLBI_SLEEP_HABITS",
+      "label": "Sleep Deprivation and Deficiency - Healthy Sleep Habits",
+      "institution": "NHLBI / NIH",
+      "year": "2026",
+      "url": "https://www.nhlbi.nih.gov/health/sleep-deprivation/healthy-sleep-habits"
+    },
+    {
+      "id": "WHO_ACTIVITY",
+      "label": "Physical activity",
+      "institution": "World Health Organization",
+      "year": "2026",
+      "url": "https://www.who.int/initiatives/behealthy/physical-activity"
+    },
+    {
+      "id": "NCCIH_YOGA",
+      "label": "Yoga: Effectiveness and Safety",
+      "institution": "NCCIH / NIH",
+      "year": "2026",
+      "url": "https://www.nccih.nih.gov/health/yoga-effectiveness-and-safety"
+    },
+    {
+      "id": "NCCIH_TAICHI",
+      "label": "Tai Chi: What You Need To Know",
+      "institution": "NCCIH / NIH",
+      "year": "2026",
+      "url": "https://www.nccih.nih.gov/health/tai-chi-what-you-need-to-know"
+    },
+    {
+      "id": "NCCIH_LBP_COMP",
+      "label": "Low-Back Pain and Complementary Health Approaches: What You Need To Know",
+      "institution": "NCCIH / NIH",
+      "year": "2025",
+      "url": "https://www.nccih.nih.gov/health/low-back-pain-and-complementary-health-approaches-what-you-need-to-know"
+    },
+    {
+      "id": "NCCIH_MASSAGE",
+      "label": "Massage Therapy: What You Need To Know",
+      "institution": "NCCIH / NIH",
+      "year": "2026",
+      "url": "https://www.nccih.nih.gov/health/massage-therapy-what-you-need-to-know"
+    }
+  ]
+}

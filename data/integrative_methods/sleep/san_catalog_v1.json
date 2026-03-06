@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "schema": "SINET-Integrative-Method-Catalog",
+    "version": "1.0",
+    "generatedAt": "2026-03-01",
+    "title": "San i higijena spavanja u SINET-u",
+    "purpose": "Osnovni lifestyle sloj za bolji ritam dana, lakše uspavljivanje i kvalitetniji odmor.",
+    "disclaimer": "Higijena sna nije zamena za obradu apneje, teške nesanice, noćnog gušenja ili izražene dnevne pospanosti.",
+    "designRule": "Integrativna metoda je dopunska podrška. Ne zamenjuje hitnu ili standardnu medicinsku obradu.",
+    "evidenceModel": {
+      "A": "smernice ili jasniji signal koristi u definisanom kontekstu",
+      "B": "umeren ili mešovit dokaz - oprezna formulacija",
+      "C": "tradicionalna ili slabije potkrepljena podrška - ne uvoditi u core bez dodatne revizije"
+    }
+  },
+  "starterModules": [
+    {
+      "id": "sleep_schedule_environment",
+      "naziv": "Ritam + okruženje za spavanje",
+      "evidenceTier": "A",
+      "status": "core_foundation",
+      "summary": "Stabilno vreme spavanja i buđenja, tamna, tiha i hladnija soba i manjak ekrana pre sna čine bazu modula.",
+      "forSymptoms": [
+        "blage smetnje uspavljivanja",
+        "nepravilan ritam",
+        "jutarnja tromost",
+        "veče puno ekrana"
+      ],
+      "delivery": "Kućna primena, svakodnevno, kao osnova a ne 'po potrebi samo ponekad'.",
+      "typicalUse": "Dosledno 1-2 nedelje pre procene efekta.",
+      "combineWith": [
+        "večernje smirivanje",
+        "disanje",
+        "relaksacija"
+      ],
+      "avoidIf": [
+        "sumnja na apneju u snu",
+        "teška nesanica sa dnevnom disfunkcijom bez procene"
+      ],
+      "sources": [
+        "NHLBI_SLEEP_HABITS",
+        "NHLBI_SLEEP_HOURS"
+      ]
+    },
+    {
+      "id": "bedtime_winddown",
+      "naziv": "Sat pred spavanje - wind-down rutina",
+      "evidenceTier": "A",
+      "status": "core_foundation",
+      "summary": "Mirniji sat pred spavanje, manje jake svetlosti, manje kofeina i alkohola i manje stimulacije pomažu ritmu sna.",
+      "forSymptoms": [
+        "kasno razbuđivanje",
+        "teško gašenje misli",
+        "površan san"
+      ],
+      "delivery": "Jednostavna kućna rutina - tiho, tamnije, manje stimulansa.",
+      "typicalUse": "Svake večeri, sa istim redosledom radnji.",
+      "combineWith": [
+        "topla kupka",
+        "tiha muzika",
+        "mindfulness ili disanje"
+      ],
+      "avoidIf": [
+        "simptomi koji liče na ozbiljan poremećaj spavanja bez obrade"
+      ],
+      "sources": [
+        "NHLBI_SLEEP_HABITS"
+      ]
+    }
+  ],
+  "starterConditions": [
+    {
+      "id": "c1",
+      "naziv": "Blage smetnje uspavljivanja",
+      "moduleId": "sleep_schedule_environment",
+      "priority": "A"
+    },
+    {
+      "id": "c2",
+      "naziv": "Nepravilan ritam spavanja",
+      "moduleId": "sleep_schedule_environment",
+      "priority": "A"
+    },
+    {
+      "id": "c3",
+      "naziv": "Večernja preopterećenost ekranima",
+      "moduleId": "bedtime_winddown",
+      "priority": "A"
+    }
+  ],
+  "notRecommendedCore": [
+    {
+      "naziv": "Noćno gušenje, snažno hrkanje, jaka dnevna pospanost",
+      "summary": "Ne ostajati samo na higijeni sna kada simptomi ukazuju na moguć poremećaj spavanja koji traži procenu.",
+      "sources": [
+        "NHLBI_SLEEP_HABITS"
+      ]
+    }
+  ],
+  "globalRules": {
+    "alwaysExplain": [
+      "Odrasli najčešće treba da ciljaju približno 7-9 sati sna.",
+      "Ritam je važniji od povremenih 'nadoknada' sna vikendom.",
+      "Okruženje za spavanje treba da bude tamno, tiho i prijatno hladno."
+    ],
+    "redFlagsFirst": [
+      "noćno gušenje",
+      "glasno hrkanje sa zastajkivanjem disanja",
+      "izražena dnevna pospanost",
+      "dugotrajna teška nesanica",
+      "paradoksna ponašanja tokom spavanja"
+    ]
+  },
+  "sourceRefs": [
+    {
+      "id": "NHLBI_SLEEP_HABITS",
+      "label": "Sleep Deprivation and Deficiency - Healthy Sleep Habits",
+      "institution": "NHLBI / NIH",
+      "year": "2026",
+      "url": "https://www.nhlbi.nih.gov/health/sleep-deprivation/healthy-sleep-habits"
+    },
+    {
+      "id": "NHLBI_SLEEP_HOURS",
+      "label": "How Sleep Works - How Much Sleep Is Enough?",
+      "institution": "NHLBI / NIH",
+      "year": "2022",
+      "url": "https://www.nhlbi.nih.gov/health/sleep/how-much-sleep"
+    }
+  ]
+}

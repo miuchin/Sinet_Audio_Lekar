@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINET · Akupunktura</title>
+  <style>
+    :root{--teal:#0f766e;--teal2:#115e59;--bg:#f7fafc;--card:#ffffff;--muted:#475569;--warn:#9a3412;--warnbg:#fff7ed;--okbg:#ecfeff;--ok:#155e75;--danger:#991b1b;--dangerbg:#fef2f2;--border:#e5e7eb}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#1f2937}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    .hero,.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+    .hero{padding:24px;margin-bottom:18px}
+    .card{padding:18px;margin-bottom:16px}
+    h1,h2,h3{margin:0 0 12px;color:var(--teal)}
+    p{margin:0 0 10px;line-height:1.65}
+    .lead{font-size:1.05rem;color:var(--muted)}
+    .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .badge{padding:7px 12px;border-radius:999px;background:var(--okbg);color:var(--ok);font-weight:700;font-size:.92rem}
+    .warn{background:var(--warnbg);border-left:5px solid #ea580c;padding:14px 16px;border-radius:12px;color:var(--warn)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .mini{font-size:.94rem;color:var(--muted)}
+    .module{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
+    .tier{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:.82rem;margin-right:6px;background:#ecfeff;color:#155e75}
+    .status{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:.82rem;background:#f1f5f9;color:#334155}
+    ul{margin:8px 0 0;padding-left:20px}
+    li{margin:5px 0;line-height:1.5}
+    .danger{background:var(--dangerbg);border-left:5px solid #ef4444;color:var(--danger);padding:14px 16px;border-radius:12px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .btn{display:inline-block;text-decoration:none;padding:11px 14px;border-radius:12px;background:var(--teal);color:#fff;font-weight:700}
+    .btn.alt{background:#334155}
+    .muted{color:var(--muted)}
+    footer{padding:8px 0 30px;color:#64748b;font-size:.9rem}
+    @media (max-width:640px){.wrap{padding:14px}.hero,.card{padding:16px}}
+  </style>
+  <script defer src="../js/sinet-page-nav.js?v=16.0.0.18"></script>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>🪡 Akupunktura u SINET-u</h1>
+      <p class="lead">Profesionalni integrativni modul - <strong>odvojen od akupresure</strong>, bez DIY pristupa i bez preteranih obećanja.</p>
+      <div class="warn"><strong>Važno:</strong> Akupunktura u ovom projektu služi kao <strong>dopunski, stručno-vođeni modul</strong>. Nije zamena za hitnu ili standardnu medicinsku obradu.</div>
+      <div class="badges">
+        <span class="badge">Stručno-vođeno</span>
+        <span class="badge">Nije samopomoć</span>
+        <span class="badge">Evidence-aware</span>
+        <span class="badge">SINET starter v1</span>
+      </div>
+      <div class="toolbar">
+        <a class="btn" href="../docs/protokoli/18_AKUPUNKTURA_v1.0_SR.html" target="_blank" rel="noopener">📘 Detaljna dokumentacija</a>
+        <a class="btn alt" href="../data/integrative_methods/acupuncture/akupunktura_catalog_v1.json" target="_blank" rel="noopener">🧬 Otvori JSON seed</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Šta je urađeno u ovom talasu</h2>
+      <div class="grid">
+        <div class="module"><h3 id="count-modules">-</h3><p class="mini">starter modula za prikaz</p></div>
+        <div class="module"><h3 id="count-conditions">-</h3><p class="mini">početnih stanja / simptoma</p></div>
+        <div class="module"><h3 id="count-exclusions">-</h3><p class="mini">jasno obeleženih "ne uvoditi kao core" stavki</p></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Princip ugradnje u SINET</h2>
+      <ul>
+        <li><strong>Akupresura</strong> ostaje kućna podrška i može ostati vezana za pojedinačne simptome.</li>
+        <li><strong>Akupunktura</strong> ide kao poseban profesionalni modul sa jasnim opisom kada ima smisla, kada nema, i ko je sprovodi.</li>
+        <li>Prikaz mora uvek da sadrži <strong>sigurnosni okvir</strong>, nivo dokaza i kratko objašnjenje "zašto".</li>
+        <li>Prioritet imaju <strong>definisani bolni i simptomatski konteksti</strong>, ne široke tvrdnje tipa "leči sve".</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Starter moduli</h2>
+      <div id="modules" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Prva stanja / simptomi za katalog</h2>
+      <div id="conditions" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Šta ne uvodimo kao core preporuku</h2>
+      <div id="exclusions"></div>
+    </section>
+
+    <section class="card">
+      <h2>Obavezni sigurnosni okvir</h2>
+      <div id="rules" class="danger"></div>
+    </section>
+
+    <section class="card">
+      <h2>Izvori</h2>
+      <ul id="sources"></ul>
+    </section>
+
+    <footer>miuchins / SINET AI · Akupunktura starter modul v1</footer>
+  </div>
+
+  <script>
+    async function loadCatalog(){
+      const res = await fetch('../data/integrative_methods/acupuncture/akupunktura_catalog_v1.json');
+      if(!res.ok) throw new Error('Ne mogu da učitam akupunktura_catalog_v1.json');
+      return res.json();
+    }
+    function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function list(items){ return '<ul>' + (items||[]).map(x => `<li>${esc(x)}</li>`).join('') + '</ul>'; }
+    loadCatalog().then(data => {
+      document.getElementById('count-modules').textContent = (data.starterModules||[]).length;
+      document.getElementById('count-conditions').textContent = (data.starterConditions||[]).length;
+      document.getElementById('count-exclusions').textContent = (data.notRecommendedCore||[]).length;
+
+      document.getElementById('modules').innerHTML = (data.starterModules||[]).map(m => `
+        <article class="module">
+          <div><span class="tier">Tier ${esc(m.evidenceTier)}</span><span class="status">${esc(m.status)}</span></div>
+          <h3 style="margin-top:10px">${esc(m.naziv)}</h3>
+          <p>${esc(m.summary)}</p>
+          <p class="mini"><strong>Način primene:</strong> ${esc(m.delivery || '')}</p>
+          <p class="mini"><strong>Tipična upotreba:</strong> ${esc(m.typicalUse || '')}</p>
+          <div class="mini"><strong>Za simptome / stanja:</strong>${list(m.forSymptoms)}</div>
+          <div class="mini"><strong>Kombinuje se sa:</strong>${list(m.combineWith)}</div>
+          <div class="mini"><strong>Prvo procena ako postoji:</strong>${list(m.avoidIf)}</div>
+          <p class="mini"><strong>Izvori:</strong> ${(m.sources||[]).map(esc).join(', ')}</p>
+        </article>`).join('');
+
+      document.getElementById('conditions').innerHTML = (data.starterConditions||[]).map(c => `
+        <article class="module">
+          <div><span class="tier">Prioritet ${esc(c.priority)}</span></div>
+          <h3 style="margin-top:10px">${esc(c.naziv)}</h3>
+          <p class="mini">Mapira se na modul: <strong>${esc(c.moduleId)}</strong></p>
+        </article>`).join('');
+
+      document.getElementById('exclusions').innerHTML = (data.notRecommendedCore||[]).map(x => `
+        <div class="danger" style="margin-bottom:12px">
+          <strong>${esc(x.naziv)}</strong><br>${esc(x.summary)}<br><span class="mini">Izvori: ${(x.sources||[]).map(esc).join(', ')}</span>
+        </div>`).join('');
+
+      document.getElementById('rules').innerHTML = '<ul>' +
+        (data.globalRules.alwaysExplain||[]).map(x => `<li>${esc(x)}</li>`).join('') +
+        '</ul><p><strong>Crvene zastavice prvo:</strong></p><ul>' +
+        (data.globalRules.redFlagsFirst||[]).map(x => `<li>${esc(x)}</li>`).join('') + '</ul>';
+
+      document.getElementById('sources').innerHTML = (data.sourceRefs||[]).map(s => `<li><strong>${esc(s.id)}</strong> - ${esc(s.label)} (${esc(s.institution)}, ${esc(s.year)}). <a href="${esc(s.url)}" target="_blank" rel="noopener">otvori izvor</a></li>`).join('');
+    }).catch(err => {
+      document.getElementById('modules').innerHTML = `<div class="danger">Greška pri učitavanju kataloga: ${esc(err.message)}</div>`;
+    });
+  </script>
+</body>
+</html>

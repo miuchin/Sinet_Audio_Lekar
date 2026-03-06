@@ -1,0 +1,108 @@
+{
+  "I10": {
+    "title": "Esencijalna (primarna) hipertenzija",
+    "keywords": [
+      "hipertenzija",
+      "visok krvni pritisak",
+      "pritisak",
+      "kardiovaskularno",
+      "stres"
+    ],
+    "sinet_refs": [
+      "kardiovaskularni-sistem-visok-krvni-pritisak",
+      "bubrezi-hipertenzija-bubrezna",
+      "spoljni-faktor-stresa-ekonomski-pritisak"
+    ]
+  },
+  "M05.9": {
+    "title": "Reumatoidni artritis (seropozitivan), nespecificiran",
+    "keywords": [
+      "reumatoidni artritis",
+      "artritis",
+      "zglobovi",
+      "otok",
+      "ukočenost",
+      "bol"
+    ],
+    "sinet_refs": [
+      "autoimune-bolesti-reumatoidni-artritis",
+      "bolovi-misici-zglobovi-artritis",
+      "reumatoidni-artritis-otoci-zglobova",
+      "reumatoidni-artritis-ukocenost-jutarnja",
+      "reumatoidni-artritis-reumatoidni-artritis-izrazeni-bolovi-zglobova",
+      "senior-osteoarthritis-hands"
+    ]
+  },
+  "K29": {
+    "title": "Gastritis i duodenitis",
+    "keywords": [
+      "gastritis",
+      "upala želuca",
+      "želudac",
+      "gorušica",
+      "refluks",
+      "nadutost",
+      "Helicobacter"
+    ],
+    "sinet_refs": [
+      "varenje-gastritis",
+      "varenje-refluks",
+      "varenje-zgaravica",
+      "sys-var-nadutost",
+      "psycho-stomach-nervous",
+      "organ-stomach-ulcer"
+    ]
+  },
+  "R52": {
+    "title": "Bol, nespecificiran",
+    "keywords": [
+      "bol",
+      "bolovi",
+      "upalni bol",
+      "zglobni bol",
+      "mišićni bol",
+      "neuralgija",
+      "migrena"
+    ],
+    "sinet_refs": [
+      "sys-auto-reuma",
+      "bolovi-misici-zglobovi-bol-u-le-ima",
+      "bolovi-misici-zglobovi-bol-u-ramenu",
+      "bolovi-misici-zglobovi-bol-u-kukovima",
+      "bolovi-misici-zglobovi-migrena",
+      "pain-shingles-post-neuralgia",
+      "pain-toothache-sos"
+    ]
+  },
+  "B82": {
+    "title": "Nespecificirana crevna parazitoza",
+    "keywords": [
+      "paraziti",
+      "crevni paraziti",
+      "antiparazitski",
+      "nadutost",
+      "cleanse"
+    ],
+    "sinet_refs": [
+      "rife-parasite-cleanse",
+      "parasite-general-zapper"
+    ]
+  },
+  "L40.0": {
+    "title": "Psoriasis vulgaris",
+    "keywords": [
+      "psorijaza",
+      "psorijaza kože",
+      "vlasište",
+      "šake",
+      "stopala"
+    ],
+    "sinet_refs": [
+      "koza-infekcije-psorijaza",
+      "kosa-koza-glave-psorijaza-vlasista",
+      "koza-psorijaza-sake-podlaktice",
+      "koza-psorijaza-stopala",
+      "koza-psorijaza-telo-opsta"
+    ]
+  }
+}
