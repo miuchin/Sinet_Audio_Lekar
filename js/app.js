@@ -268,8 +268,10 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.69 Init');
+    console.log('SINET v16.0.0.73 Init');
     this.cacheUI();
+    try { this._ensureSpaPageTools(); } catch(_) {}
+    try { this._ensureMenuPriorityOrder(); } catch(_) {}
 
     // v15.7.1.5 — restore Loop/Repeat settings (dock + playlist + modal)
     try { this._restoreRepeatFromStorage(); } catch(_) {}
@@ -1011,7 +1013,8 @@ _showIosDiag(detail) {
         system: document.getElementById('page-system'),
         sessions: document.getElementById('page-sessions'),
         settings: document.getElementById('page-settings'),
-        admin: document.getElementById('page-admin')
+        admin: document.getElementById('page-admin'),
+        studio: document.getElementById('page-studio')
       },
       catalogOblastGrid: document.getElementById('catalog-oblast-grid'),
       catalogList: document.getElementById('catalog-list'),
@@ -1366,6 +1369,79 @@ _restoreNavContext(ctx) {
   }
 }
 
+  _ensureSpaPageTools() {
+    const pages = ['catalog','settings','system','studio','favorites','playlist','protocols','mysymptoms','ai','admin','workbench','sessions','help'];
+    const mkBtn = (label, cls, handler) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = cls;
+      b.textContent = label;
+      b.addEventListener('click', handler);
+      return b;
+    };
+    pages.forEach((pageId) => {
+      const page = document.getElementById('page-' + pageId);
+      if (!page || page.querySelector('[data-sinet-spa-nav="1"]')) return;
+      const bar = document.createElement('div');
+      bar.setAttribute('data-sinet-spa-nav', '1');
+      bar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px 0;padding:10px;border:1px solid rgba(15,118,110,.14);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(15,23,42,.04);';
+      const back = mkBtn('⬅ Nazad','btn-mini', () => this.goBack());
+      const home = mkBtn('🏠 Početak','btn-mini', () => this.nav('home'));
+      back.style.fontWeight = '900';
+      home.style.fontWeight = '900';
+      bar.appendChild(back);
+      bar.appendChild(home);
+      if (page.firstChild) page.insertBefore(bar, page.firstChild); else page.appendChild(bar);
+    });
+  }
+
+  _ensureMenuPriorityOrder() {
+    const root = document.getElementById('nav-overlay');
+    if (!root) return;
+    if (!document.getElementById('menu-priority-shortcuts')) {
+      const anchor = document.getElementById('menu-my-shortcuts') || document.getElementById('nav-menu');
+      if (anchor && anchor.parentElement) {
+        const box = document.createElement('div');
+        box.id = 'menu-priority-shortcuts';
+        box.style.cssText = 'display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 12px 0;';
+        box.innerHTML = [
+          '<button class="btn-full" style="margin:0;padding:13px;background:#2563eb;" onclick="nav(\'catalog\'); closeMenu();">📚 OTVORI KATALOG</button>',
+          '<button class="btn-full" style="margin:0;padding:13px;background:#2ecc71;" onclick="nav(\'mysymptoms\'); closeMenu();">🧬 MOJI SIMPTOMI</button>',
+          '<button class="btn-full" style="margin:0;padding:13px;background:#f1c40f;color:#2c3e50;" onclick="nav(\'favorites\'); closeMenu();">⭐ MOJI FAVORITI</button>',
+          '<button class="btn-full" style="margin:0;padding:13px;background:#1abc9c;" onclick="nav(\'protocols\'); closeMenu();">📑 MOJI PROTOKOLI</button>',
+          '<button class="btn-full" style="margin:0;padding:13px;background:#0f766e;" onclick="nav(\'playlist\'); closeMenu();">📋 LISTA</button>'
+        ].join('');
+        anchor.parentElement.insertBefore(box, anchor);
+      }
+    }
+
+    const navMenu = document.getElementById('nav-menu');
+    if (!navMenu || navMenu.getAttribute('data-sinet-ordered') === '1') return;
+    const findLi = (patterns) => {
+      const items = Array.from(navMenu.children).filter(el => el.tagName === 'LI');
+      for (const li of items) {
+        const txt = (li.textContent || '').toLowerCase();
+        if (patterns.every(p => txt.includes(p))) return li;
+      }
+      return null;
+    };
+    const order = [
+      ['početna'],
+      ['katalog'],
+      ['moji protokoli'],
+      ['queue'],
+      ['sesije']
+    ];
+    let insertBefore = navMenu.firstElementChild;
+    order.forEach(parts => {
+      const li = findLi(parts);
+      if (li) navMenu.insertBefore(li, insertBefore);
+      if (!insertBefore) insertBefore = li;
+    });
+    navMenu.setAttribute('data-sinet-ordered','1');
+  }
+
+
   /* ===================== NAV ===================== */
   nav(pageId, opts = {}) {
     try {
@@ -1400,6 +1476,8 @@ _restoreNavContext(ctx) {
     }
 
     this.log("UI", "Nav", pageId);
+    try { this._ensureSpaPageTools(); } catch(_) {}
+    try { this._ensureMenuPriorityOrder(); } catch(_) {}
 
     // Page-specific refresh
     // HOTFIX v15.7.9.6: touch keyboard blur after nav (Huawei/Android + iPhone)
@@ -12707,6 +12785,508 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
       try { this._ensureControlCenterHomeEntryPoints39(); } catch(_) {}
       try { this._ensureHealthRecordEnhancements37(); } catch(_) {}
     }
+    return r;
+  };
+})();
+
+/* ===================== v16.0.0.73 — Global nav/menu/order hardening ===================== */
+(function(){
+  function removeIfExists(id){
+    try{ const el = document.getElementById(id); if (el) el.remove(); }catch(_){ }
+  }
+
+  App.prototype._removeHomeMenuClutter71 = function(){
+    try {
+      removeIfExists('sinet-health-home-card');
+      removeIfExists('sinet-control-center-home-card');
+      removeIfExists('ai-open-lab-btn');
+      const frequent = document.getElementById('frequent-actions');
+      if (frequent) {
+        Array.from(frequent.querySelectorAll('button')).forEach((btn) => {
+          const txt = String(btn.textContent || '').toLowerCase();
+          if (txt.includes('lab bridge') || txt.includes('zdravstveni karton') || txt.includes('control center')) btn.remove();
+        });
+      }
+    } catch(_) {}
+  };
+
+  App.prototype._ensureHealthHomeEntryPoints37 = function(){
+    this._removeHomeMenuClutter71();
+    return null;
+  };
+  App.prototype._ensureControlCenterHomeEntryPoints39 = function(){
+    this._removeHomeMenuClutter71();
+    return null;
+  };
+
+  const origCacheUI71 = App.prototype.cacheUI;
+  App.prototype.cacheUI = function(){
+    const r = origCacheUI71.apply(this, arguments);
+    try {
+      if (this.ui && this.ui.screens) {
+        this.ui.screens['labs'] = document.getElementById('page-labs');
+        this.ui.screens['health-record'] = document.getElementById('page-health-record');
+      }
+    } catch(_) {}
+    return r;
+  };
+
+  App.prototype._ensureSpaPageTools = function(){
+    try {
+      if (!document.getElementById('sinet-spa-nav-style-71')) {
+        const st = document.createElement('style');
+        st.id = 'sinet-spa-nav-style-71';
+        st.textContent = [
+          '.sinet-spa-nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 14px;padding:10px 12px;border:1px solid rgba(15,118,110,.18);border-radius:14px;background:linear-gradient(180deg,#ffffff 0%,#f8fffd 100%);box-shadow:0 6px 18px rgba(15,23,42,.05);}',
+          '.sinet-spa-nav .btn-mini{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 14px;border-radius:12px;font-weight:900;border:1px solid #cbd5e1;background:#fff;color:#0f172a;cursor:pointer;}',
+          '.sinet-spa-nav .btn-mini.primary{background:#0f766e;border-color:#0f766e;color:#fff;}',
+          '.sinet-spa-nav .sinet-spa-note{margin-left:auto;font-size:.9rem;color:#475569;}',
+          '@media (max-width:640px){.sinet-spa-nav .btn-mini{flex:1 1 calc(50% - 8px)} .sinet-spa-nav .sinet-spa-note{width:100%;margin-left:0;}}'
+        ].join('');
+        document.head.appendChild(st);
+      }
+      const pages = ['catalog','settings','system','studio','favorites','playlist','protocols','mysymptoms','ai','admin','workbench','sessions','help','labs','health-record'];
+      const mkBtn = (label, cls, handler) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = cls;
+        b.textContent = label;
+        b.addEventListener('click', handler);
+        return b;
+      };
+      pages.forEach((pageId) => {
+        const page = document.getElementById('page-' + pageId);
+        if (!page) return;
+        let bar = page.querySelector('[data-sinet-spa-nav="1"]');
+        if (!bar) {
+          bar = document.createElement('div');
+          bar.className = 'sinet-spa-nav';
+          bar.setAttribute('data-sinet-spa-nav','1');
+          const back = mkBtn('⬅ Nazad','btn-mini', () => this.goBack());
+          const home = mkBtn('🏠 Početak','btn-mini primary', () => this.nav('home'));
+          const note = document.createElement('div');
+          note.className = 'sinet-spa-note';
+          note.textContent = 'Brz povratak na prethodni ekran ili na početnu.';
+          bar.appendChild(back);
+          bar.appendChild(home);
+          bar.appendChild(note);
+        }
+        const heading = page.querySelector('h1, h2, h3');
+        if (heading) heading.insertAdjacentElement('afterend', bar);
+        else if (page.firstElementChild !== bar) page.prepend(bar);
+      });
+    } catch(_) {}
+  };
+
+  App.prototype._ensureMenuPriorityOrder = function(){
+    try {
+      const root = document.getElementById('nav-overlay');
+      if (!root) return;
+      const shortcuts = document.getElementById('menu-my-shortcuts');
+      if (shortcuts) {
+        shortcuts.style.gridTemplateColumns = 'repeat(2, minmax(0,1fr))';
+        shortcuts.innerHTML = [
+          '<button class="btn-full" style="margin:0; padding:12px; background:#2ecc71;" onclick="nav(\'mysymptoms\'); closeMenu();">🧬 MOJI SIMPTOMI</button>',
+          '<button class="btn-full" style="margin:0; padding:12px; background:#f1c40f; color:#2c3e50;" onclick="nav(\'favorites\'); closeMenu();">⭐ MOJI FAVORITI</button>',
+          '<button class="btn-full" style="margin:0; padding:12px; background:#1abc9c;" onclick="nav(\'protocols\'); closeMenu();">📑 MOJI PROTOKOLI</button>',
+          '<button class="btn-full" style="margin:0; padding:12px; background:#2563eb;" onclick="nav(\'playlist\'); closeMenu();">📋 LISTA</button>'
+        ].join('');
+      }
+
+      let catalogBox = document.getElementById('menu-katalog-priority-71');
+      if (!catalogBox) {
+        catalogBox = document.createElement('div');
+        catalogBox.id = 'menu-katalog-priority-71';
+        catalogBox.style.cssText = 'display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 12px 0;';
+        catalogBox.innerHTML = '<button class="btn-full" style="margin:0; padding:13px; background:#0f62fe;" onclick="nav(\'catalog\'); closeMenu();">📚 OTVORI KATALOG</button>';
+        const anchor = shortcuts || document.getElementById('nav-menu');
+        if (anchor && anchor.parentElement) anchor.insertAdjacentElement('afterend', catalogBox);
+      }
+
+      const navMenu = document.getElementById('nav-menu');
+      if (!navMenu) return;
+      const sec = (txt) => `<li class="menu-section-label" style="list-style:none; margin:12px 0 6px; padding:8px 12px; border-radius:10px; background:#f8fafc; color:#0f172a; font-weight:900; font-size:.92rem;">${txt}</li>`;
+      const hr = '<li style="list-style:none; margin:10px 0;"><hr style="border:0; border-top:1px solid #e5e7eb; margin:0;"></li>';
+      const link = (label, text, onclick) => `<li><a class="menu-link" data-label="${label}" href="#" onclick="${onclick}">${text}</a></li>`;
+      navMenu.innerHTML = [
+        sec('GLAVNI MENI'),
+        link('moji simptomi','🧬 MOJI SIMPTOMI', "nav('mysymptoms'); closeMenu(); return false;"),
+        link('moji favoriti','⭐ MOJI FAVORITI', "nav('favorites'); closeMenu(); return false;"),
+        link('moji protokoli','📑 MOJI PROTOKOLI', "nav('protocols'); closeMenu(); return false;"),
+        link('lista queue','📋 LISTA', "nav('playlist'); closeMenu(); return false;"),
+        link('otvori katalog','📚 OTVORI KATALOG', "nav('catalog'); closeMenu(); return false;"),
+        hr,
+        link('anamneza dijagnostika','🩺 ANAMNEZA', "openQuickPage('anamneza.html',null,'🩺 Anamneza (Dijagnostika)'); closeMenu(); return false;"),
+        link('zdravstveni karton','🗂 ZDRAVSTVENI KARTON', "nav('health-record'); closeMenu(); return false;"),
+        link('lab bridge','🧪 LAB BRIDGE', "nav('labs'); closeMenu(); return false;"),
+        hr,
+        sec('BRZI LINKOVI (PRVA POMOĆ) / NAJVAŽNIJI ALATI'),
+        link('antiparazitski program prva pomoc','🦠 ANTIPARAZITSKI PROGRAM', "openQuickPage('pages/antiparazitski.html','https://vera-srecko-analiza.netlify.app/','🦠 Antiparazitski (Prva pomoć)'); closeMenu(); return false;"),
+        link('integrativna biblioteka','🧭 INTEGRATIVNA BIBLIOTEKA', "openQuickPage('pages/integrativna_biblioteka.html',null,'🧭 Integrativna biblioteka'); closeMenu(); return false;"),
+        link('integrativni vodic ra sake','🧩 INTEGRATIVNI VODIČ - RA ŠAKE', "openQuickPage('pages/integrativni_vodic_RA_sake.html',null,'🧩 Integrativni vodič – RA šake'); closeMenu(); return false;"),
+        link('integrativni vodic generator','🧾 INTEGRATIVNI VODIČ - GENERATOR', "openQuickPage('pages/integrativni_vodic.html',null,'🧾 Integrativni vodič (generator)'); closeMenu(); return false;"),
+        link('akupunktura','🪡 AKUPUNKTURA', "openQuickPage('pages/akupunktura.html',null,'🪡 Akupunktura (stručni modul)'); closeMenu(); return false;"),
+        link('tai chi seniori','🧘 TAI CHI ZA SENIORE', "openQuickPage('pages/tai_chi.html',null,'🧘 Tai Chi (za seniore)'); closeMenu(); return false;"),
+        hr,
+        sec('SISTEM / PODEŠAVANJA / ADMIN'),
+        link('podesavanja','⚙️ PODEŠAVANJA', "nav('settings'); closeMenu(); return false;"),
+        link('admin dijagnostika','🛡️ ADMIN DIJAGNOSTIKA', "nav('admin'); closeMenu(); return false;"),
+        link('content studio','🧪 CONTENT STUDIO', "nav('studio'); closeMenu(); return false;"),
+        link('instaliranje aplikacije za rad bez interneta instaliraj sada','📲 INSTALIRAJ SADA', "document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').click(); closeMenu(); return false;"),
+        hr,
+        sec('INSTALACIJA ZA KORISNIKA (1 KLIK)'),
+        link('otvori vodic za instalaciju','⬇️ OTVORI VODIČ ZA INSTALACIJU', "window.app && window.app.openDoc && window.app.openDoc('./docs/control-center/SINET_One_Click_Install_v2.html','⬇️ Instalacija za korisnika (1 klik)'); closeMenu(); return false;"),
+        link('control centar install','🎛 CONTROL CENTAR + INSTALL', "window.app && window.app.openDoc && window.app.openDoc('./docs/protokoli/37_SINET_CONTROL_CENTER_INSTALL_v1.0_SR.html','🎛 SINET Control Center + Install'); closeMenu(); return false;"),
+        hr,
+        sec('SINET CONTROL CENTER (van Audio Lekar)'),
+        link('vodic instalacija control center','📘 VODIČ + INSTALACIJA', "window.app && window.app.openDoc && window.app.openDoc('./docs/protokoli/37_SINET_CONTROL_CENTER_INSTALL_v1.0_SR.html','🎛 SINET Control Center + Install'); closeMenu(); return false;"),
+        link('control centar dokumentacija','🧰 CONTROL CENTAR DOKUMENTACIJA', "window.app && window.app.openDoc && window.app.openDoc('./docs/control-center/SINET_Control_Center_v1.html','🎛 SINET Control Center'); closeMenu(); return false;"),
+        link('readme putanja','📄 README / PUTANJA', "window.app && window.app.openDoc && window.app.openDoc('./tools/control-center/README_SINET_CONTROL_CENTER_v1.md','README — SINET Control Center'); closeMenu(); return false;")
+      ].join('');
+    } catch(_) {}
+  };
+
+  const origPrepareHealth71 = App.prototype.prepareHealthRecordUI;
+  App.prototype.prepareHealthRecordUI = function(){
+    const r = origPrepareHealth71.apply(this, arguments);
+    try { this._removeHomeMenuClutter71(); } catch(_) {}
+    try { this._ensureSpaPageTools(); } catch(_) {}
+    return r;
+  };
+
+  const origInit71 = App.prototype.init;
+  App.prototype.init = async function(){
+    const r = await origInit71.apply(this, arguments);
+    try { this._removeHomeMenuClutter71(); } catch(_) {}
+    try { this._ensureSpaPageTools(); } catch(_) {}
+    try { this._ensureMenuPriorityOrder(); } catch(_) {}
+    return r;
+  };
+
+  const origNav71 = App.prototype.nav;
+  App.prototype.nav = function(pageId, opts={}){
+    const r = origNav71.apply(this, arguments);
+    try { this._removeHomeMenuClutter71(); } catch(_) {}
+    try { this._ensureSpaPageTools(); } catch(_) {}
+    try { this._ensureMenuPriorityOrder(); } catch(_) {}
+    try {
+      if (this.ui && this.ui.screens) {
+        this.ui.screens['labs'] = document.getElementById('page-labs');
+        this.ui.screens['health-record'] = document.getElementById('page-health-record');
+      }
+    } catch(_) {}
+    return r;
+  };
+})();
+
+
+/* ===================== v16.0.0.73b — Docs/support sibling remap ===================== */
+(function(){
+  function remapDocHref71(href){
+    const raw = String(href || '').trim();
+    if (!raw) return raw;
+    if (/^https?:/i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+    const clean = raw.replace(/^\.\//,'');
+    if (clean.startsWith('docs/')) return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (clean.startsWith('tools/')) return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (/\.(md|txt|html)$/i.test(clean) && !clean.startsWith('pages/') && !clean.startsWith('data/') && !clean.startsWith('js/') && !clean.startsWith('css/')) {
+      return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    }
+    return raw;
+  }
+  const origOpenDoc71 = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title = 'Dokument'){
+    return origOpenDoc71.call(this, remapDocHref71(href), title);
+  };
+})();
+
+/* ===================== v16.0.0.73 — Clean home + unified menu model ===================== */
+(function(){
+  const V = '16.0.0.73';
+
+  function removeIfExists(id){
+    try{ const el=document.getElementById(id); if(el) el.remove(); }catch(_){ }
+  }
+
+  function safeCloseMenu(){
+    try{ if(window.closeMenu) window.closeMenu(); }catch(_){ }
+  }
+
+  App.prototype._cleanupHomeToEntryOnly72 = function(){
+    try {
+      ['system-entry-card','home-resume-panel','frequent-actions','quick-links','install-center-promo','pwa-install-promo','pwa-install-promo-ios'].forEach(removeIfExists);
+      const mainBox = document.getElementById('home-main-content');
+      if (mainBox) {
+        mainBox.style.display = 'none';
+        mainBox.setAttribute('data-sinet-hidden-main','1');
+      }
+      const dedicationInsideMain = mainBox && mainBox.querySelector('.welcome-card');
+      if (dedicationInsideMain) dedicationInsideMain.remove();
+    } catch(_) {}
+  };
+
+  App.prototype._ensureHomeDedication72 = function(){
+    try {
+      const home = document.getElementById('page-home');
+      const selector = document.getElementById('home-entry-selector');
+      if (!home || !selector) return;
+      let box = document.getElementById('home-dedication-always');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'home-dedication-always';
+        box.className = 'welcome-card';
+        box.style.cssText = 'background:white;padding:14px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 5px rgba(0,0,0,0.05);text-align:center;';
+        box.innerHTML = '<div class="dedication-box"><p class="dedication-main">❤️ Posvećeno mojoj Veri, mome Srećku!</p><p class="dedication-sub">Uz svo poštovanje i svu ljubav.</p></div>';
+        selector.insertAdjacentElement('afterend', box);
+      }
+    } catch(_) {}
+  };
+
+  App.prototype._ensureUnifiedMenu72 = function(){
+    try {
+      removeIfExists('menu-priority-shortcuts');
+      removeIfExists('menu-katalog-priority-71');
+      const navMenu = document.getElementById('nav-menu');
+      if (!navMenu) return;
+      const sec = (txt) => `<li class="menu-section-label" style="list-style:none; margin:12px 0 6px; padding:8px 12px; border-radius:10px; background:#f8fafc; color:#0f172a; font-weight:900; font-size:.92rem;">${txt}</li>`;
+      const hr = '<li style="list-style:none; margin:10px 0;"><hr style="border:0; border-top:1px solid #e5e7eb; margin:0;"></li>';
+      const link = (label, text, onclick) => `<li><a class="menu-link" data-label="${label}" href="#" onclick="${onclick}">${text}</a></li>`;
+      navMenu.setAttribute('data-sinet-unified-menu', V);
+      navMenu.innerHTML = [
+        sec('GLAVNI MENI'),
+        link('moji simptomi','🧬 MOJI SIMPTOMI', "nav('mysymptoms'); closeMenu(); return false;"),
+        link('moji favoriti','⭐ MOJI FAVORITI', "nav('favorites'); closeMenu(); return false;"),
+        link('moji protokoli','📑 MOJI PROTOKOLI', "nav('protocols'); closeMenu(); return false;"),
+        link('lista','📋 LISTA', "nav('playlist'); closeMenu(); return false;"),
+        link('otvori katalog','📚 OTVORI KATALOG', "nav('catalog'); closeMenu(); return false;"),
+        hr,
+        link('anamneza','🩺 ANAMNEZA', "openQuickPage('anamneza.html',null,'🩺 Anamneza (Dijagnostika)'); closeMenu(); return false;"),
+        link('zdravstveni karton','🗂 ZDRAVSTVENI KARTON', "nav('health-record'); closeMenu(); return false;"),
+        link('lab bridge','🧪 LAB BRIDGE', "nav('labs'); closeMenu(); return false;"),
+        hr,
+        sec('BRZI LINKOVI (PRVA POMOĆ) / NAJVAŽNIJI ALATI'),
+        link('brzi linkovi prva pomoc','⚡ BRZI LINKOVI (PRVA POMOĆ)', "window.openQuickLinks && window.openQuickLinks(); closeMenu(); return false;"),
+        link('antiparazitski program','🦠 ANTIPARAZITSKI PROGRAM', "openQuickPage('pages/antiparazitski.html','https://vera-srecko-analiza.netlify.app/','🦠 Antiparazitski (Prva pomoć)'); closeMenu(); return false;"),
+        hr,
+        link('integrativna biblioteka','🧭 INTEGRATIVNA BIBLIOTEKA', "openQuickPage('pages/integrativna_biblioteka.html',null,'🧭 Integrativna biblioteka'); closeMenu(); return false;"),
+        link('integrativni vodic ra sake','🧩 INTEGRATIVNI VODIČ - RA ŠAKE', "openQuickPage('pages/integrativni_vodic_RA_sake.html',null,'🧩 Integrativni vodič – RA šake'); closeMenu(); return false;"),
+        link('integrativni vodic generator','🧾 INTEGRATIVNI VODIČ - GENERATOR', "openQuickPage('pages/integrativni_vodic.html',null,'🧾 Integrativni vodič (generator)'); closeMenu(); return false;"),
+        hr,
+        link('akupunktura','🪡 AKUPUNKTURA', "openQuickPage('pages/akupunktura.html',null,'🪡 Akupunktura (stručni modul)'); closeMenu(); return false;"),
+        link('tai chi seniori','🧘 TAI CHI ZA SENIORE', "openQuickPage('pages/tai_chi.html',null,'🧘 Tai Chi (za seniore)'); closeMenu(); return false;"),
+        hr,
+        sec('SISTEM / PODEŠAVANJA / ADMIN'),
+        link('podesavanja','⚙️ PODEŠAVANJA', "nav('settings'); closeMenu(); return false;"),
+        link('admin dijagnostika','🛡️ ADMIN DIJAGNOSTIKA', "nav('admin'); closeMenu(); return false;"),
+        link('content studio','🧪 CONTENT STUDIO', "nav('studio'); closeMenu(); return false;"),
+        link('instaliraj sada','📲 INSTALIRAJ SADA', "document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').click(); closeMenu(); return false;"),
+        hr,
+        sec('INSTALACIJA ZA KORISNIKA (1 KLIK)'),
+        link('otvori vodic za instalaciju','⬇️ OTVORI VODIČ ZA INSTALACIJU', "window.app && window.app.openDoc && window.app.openDoc('./docs/control-center/SINET_One_Click_Install_v2.html','⬇️ Instalacija za korisnika (1 klik)'); closeMenu(); return false;"),
+        link('control centar install','🎛 CONTROL CENTAR + INSTALL', "window.app && window.app.openDoc && window.app.openDoc('./docs/protokoli/37_SINET_CONTROL_CENTER_INSTALL_v1.0_SR.html','🎛 SINET Control Center + Install'); closeMenu(); return false;"),
+        hr,
+        sec('SINET CONTROL CENTER (van Audio Lekar)'),
+        link('vodic instalacija','📘 VODIČ + INSTALACIJA', "window.app && window.app.openDoc && window.app.openDoc('./docs/protokoli/37_SINET_CONTROL_CENTER_INSTALL_v1.0_SR.html','🎛 SINET Control Center + Install'); closeMenu(); return false;"),
+        link('control centar dokumentacija','🧰 CONTROL CENTAR DOKUMENTACIJA', "window.app && window.app.openDoc && window.app.openDoc('./docs/control-center/SINET_Control_Center_v1.html','🎛 SINET Control Center'); closeMenu(); return false;"),
+        link('readme putanja','📄 README / PUTANJA', "window.app && window.app.openDoc && window.app.openDoc('./tools/control-center/README_SINET_CONTROL_CENTER_v1.md','README — SINET Control Center'); closeMenu(); return false;")
+      ].join('');
+    } catch(_) {}
+  };
+
+  const origSetHomeEntryMode72 = App.prototype.setHomeEntryMode;
+  App.prototype.setHomeEntryMode = function(mode){
+    if (mode === 'main') {
+      try { this.homeEntryMode = null; } catch(_) {}
+      try { origSetHomeEntryMode72.call(this, null); } catch(_) {}
+      try { this._cleanupHomeToEntryOnly72(); } catch(_) {}
+      try { this._ensureHomeDedication72(); } catch(_) {}
+      try { if (window.toggleMenu) window.toggleMenu(); } catch(_) {}
+      return;
+    }
+    const r = origSetHomeEntryMode72.apply(this, arguments);
+    try { this._cleanupHomeToEntryOnly72(); } catch(_) {}
+    try { this._ensureHomeDedication72(); } catch(_) {}
+    return r;
+  };
+
+  const origApplyHomeEntryMode72 = App.prototype.applyHomeEntryMode;
+  App.prototype.applyHomeEntryMode = function(){
+    const r = origApplyHomeEntryMode72.apply(this, arguments);
+    try { this._cleanupHomeToEntryOnly72(); } catch(_) {}
+    try { this._ensureHomeDedication72(); } catch(_) {}
+    return r;
+  };
+
+  const origInit72 = App.prototype.init;
+  App.prototype.init = async function(){
+    const r = await origInit72.apply(this, arguments);
+    try { this._cleanupHomeToEntryOnly72(); } catch(_) {}
+    try { this._ensureHomeDedication72(); } catch(_) {}
+    try { this._ensureUnifiedMenu72(); } catch(_) {}
+    try {
+      const mainBtn = document.getElementById('home-entry-main');
+      if (mainBtn) mainBtn.onclick = function(ev){ if(ev) ev.preventDefault(); try{ if(window.toggleMenu) window.toggleMenu(); }catch(_){} return false; };
+    } catch(_) {}
+    return r;
+  };
+
+  const origNav72 = App.prototype.nav;
+  App.prototype.nav = function(pageId, opts={}){
+    const r = origNav72.apply(this, arguments);
+    try { this._cleanupHomeToEntryOnly72(); } catch(_) {}
+    try { this._ensureHomeDedication72(); } catch(_) {}
+    try { this._ensureUnifiedMenu72(); } catch(_) {}
+    return r;
+  };
+
+  window.openQuickLinks = function(){
+    try { nav('home'); } catch(_) {}
+    setTimeout(() => {
+      try { if (window.app && window.app.setHomeEntryMode) window.app.setHomeEntryMode('firstaid'); } catch(_) {}
+      try { if (typeof window.scrollTo === 'function') window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(_) {}
+    }, 80);
+  };
+})();
+
+/* ===================== v16.0.0.73 — GLAVNI MENI cards + HAMBURGER list ===================== */
+(function(){
+  const V = '16.0.0.73';
+
+  function actionNav(page){ return `nav('${page}')`; }
+  function actionQuick(page, fallback, title){ return `openQuickPage('${page}',${fallback ? "'"+fallback+"'" : 'null'},'${title.replace(/'/g,"\\'")}')`; }
+  function actionDoc(href, title){ return `window.app && window.app.openDoc && window.app.openDoc('${href}','${title.replace(/'/g,"\\'")}')`; }
+
+  App.prototype._getSinetMenuModel73 = function(){
+    return [
+      {
+        title: 'RAD SA APLIKACIJOM',
+        items: [
+          { key:'mysymptoms', list:'🧬 MOJI SIMPTOMI', card:'🧬 Moji simptomi', desc:'Lični simptomi koje pratiš i dopunjuješ.', color:'#22c55e', action: actionNav('mysymptoms') },
+          { key:'favorites', list:'⭐ MOJI FAVORITI', card:'⭐ Moji favoriti', desc:'Brz pristup najčešće korišćenim stavkama.', color:'#f59e0b', action: actionNav('favorites') },
+          { key:'protocols', list:'📑 MOJI PROTOKOLI', card:'📑 Moji protokoli', desc:'Pregled i organizacija protokola.', color:'#14b8a6', action: actionNav('protocols') },
+          { key:'playlist', list:'📋 LISTA', card:'📋 Lista', desc:'Tvoja radna queue lista.', color:'#2563eb', action: actionNav('playlist') },
+          { key:'catalog', list:'📚 OTVORI KATALOG', card:'📚 Otvori katalog', desc:'Pretraga i izbor simptoma iz kataloga.', color:'#0f62fe', action: actionNav('catalog') },
+        ]
+      },
+      {
+        title: 'ZDRAVLJE / NALAZI / LAB',
+        items: [
+          { key:'anamneza', list:'🩺 ANAMNEZA', card:'🩺 Anamneza', desc:'Dijagnostika i unos anamneze.', color:'#ef4444', action: "openQuickPage('anamneza.html',null,'🩺 Anamneza (Dijagnostika)')" },
+          { key:'health-record', list:'🗂 ZDRAVSTVENI KARTON', card:'🗂 Zdravstveni karton', desc:'Tvoj pregled zdravstvenih podataka.', color:'#8b5cf6', action: actionNav('health-record') },
+          { key:'labs', list:'🧪 LAB BRIDGE', card:'🧪 Lab Bridge', desc:'Laboratorija i tumačenje nalaza.', color:'#06b6d4', action: actionNav('labs') },
+        ]
+      },
+      {
+        title: 'PRVA POMOĆ / INTEGRATIVNI ALATI',
+        items: [
+          { key:'quicklinks', list:'⚡ BRZI LINKOVI (PRVA POMOĆ)', card:'⚡ Brzi linkovi (Prva pomoć)', desc:'Najbrži ulaz u hitne korisne sadržaje.', color:'#dc2626', action: 'window.openQuickLinks && window.openQuickLinks()' },
+          { key:'antiparazitski', list:'🦠 ANTIPARAZITSKI PROGRAM', card:'🦠 Antiparazitski program', desc:'Poseban vodič i pomoćni modul.', color:'#059669', action: "openQuickPage('pages/antiparazitski.html','https://vera-srecko-analiza.netlify.app/','🦠 Antiparazitski (Prva pomoć)')" },
+          { key:'biblioteka', list:'🧭 INTEGRATIVNA BIBLIOTEKA', card:'🧭 Integrativna biblioteka', desc:'Biblioteka integrativnih sadržaja.', color:'#7c3aed', action: "openQuickPage('pages/integrativna_biblioteka.html',null,'🧭 Integrativna biblioteka')" },
+          { key:'ra-sake', list:'🧩 INTEGRATIVNI VODIČ - RA ŠAKE', card:'🧩 Integrativni vodič – RA šake', desc:'Ciljani vodič za RA šake.', color:'#9333ea', action: "openQuickPage('pages/integrativni_vodic_RA_sake.html',null,'🧩 Integrativni vodič – RA šake')" },
+          { key:'generator', list:'🧾 INTEGRATIVNI VODIČ - GENERATOR', card:'🧾 Integrativni vodič – generator', desc:'Generator integrativnog vodiča.', color:'#6366f1', action: "openQuickPage('pages/integrativni_vodic.html',null,'🧾 Integrativni vodič (generator)')" },
+          { key:'akupunktura', list:'🪡 AKUPUNKTURA', card:'🪡 Akupunktura', desc:'Stručni modul i vodič.', color:'#0f766e', action: "openQuickPage('pages/akupunktura.html',null,'🪡 Akupunktura (stručni modul)')" },
+          { key:'tai-chi', list:'🧘 TAI CHI ZA SENIORE', card:'🧘 Tai Chi za seniore', desc:'Vežbe i smernice za seniore.', color:'#475569', action: "openQuickPage('pages/tai_chi.html',null,'🧘 Tai Chi (za seniore)')" },
+        ]
+      },
+      {
+        title: 'SISTEM / PODEŠAVANJA / ADMIN',
+        items: [
+          { key:'settings', list:'⚙️ PODEŠAVANJA', card:'⚙️ Podešavanja', desc:'Audio, jezik, prikaz i ostale opcije.', color:'#64748b', action: actionNav('settings') },
+          { key:'admin', list:'🛡️ ADMIN DIJAGNOSTIKA', card:'🛡️ Admin dijagnostika', desc:'Sistemski alati i dijagnostika.', color:'#0f766e', action: actionNav('admin') },
+          { key:'studio', list:'🧪 CONTENT STUDIO', card:'🧪 Content Studio', desc:'Symptom Studio i uvoz/izvoz patch-eva.', color:'#6d28d9', action: actionNav('studio') },
+          { key:'install-now', list:'📲 INSTALIRAJ SADA', card:'📲 Instaliraj sada', desc:'PWA instalacija za rad bez interneta.', color:'#ea580c', action: "document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').click()" },
+        ]
+      },
+      {
+        title: 'INSTALACIJA / CONTROL CENTER',
+        items: [
+          { key:'install-guide', list:'⬇️ OTVORI VODIČ ZA INSTALACIJU', card:'⬇️ Vodič za instalaciju', desc:'Koraci za korisničku instalaciju.', color:'#2563eb', action: actionDoc('./docs/control-center/SINET_One_Click_Install_v2.html','⬇️ Instalacija za korisnika (1 klik)') },
+          { key:'cc-install', list:'🎛 CONTROL CENTAR + INSTALL', card:'🎛 Control Centar + Install', desc:'Jedinstven ulaz za install tok i control center.', color:'#1d4ed8', action: actionDoc('./docs/protokoli/37_SINET_CONTROL_CENTER_INSTALL_v1.0_SR.html','🎛 SINET Control Center + Install') },
+          { key:'cc-docs', list:'🧰 CONTROL CENTAR DOKUMENTACIJA', card:'🧰 Control Centar dokumentacija', desc:'Povezana dokumentacija control centra.', color:'#334155', action: actionDoc('./docs/control-center/SINET_Control_Center_v1.html','🎛 SINET Control Center') },
+          { key:'readme-path', list:'📄 README / PUTANJA', card:'📄 README / putanja', desc:'README i putanja do dodatnih alata.', color:'#475569', action: actionDoc('./tools/control-center/README_SINET_CONTROL_CENTER_v1.md','README — SINET Control Center') },
+        ]
+      }
+    ];
+  };
+
+  App.prototype._ensureDualMenuModel73 = function(){
+    try {
+      const model = this._getSinetMenuModel73();
+      const navMenu = document.getElementById('nav-menu');
+      if (navMenu) {
+        const sec = (txt) => `<li class="menu-section-label" style="list-style:none; margin:12px 0 6px; padding:8px 12px; border-radius:10px; background:#f8fafc; color:#0f172a; font-weight:900; font-size:.92rem;">${txt}</li>`;
+        const hr = '<li style="list-style:none; margin:10px 0;"><hr style="border:0; border-top:1px solid #e5e7eb; margin:0;"></li>';
+        const link = (label, text, onclick) => `<li><a class="menu-link" data-label="${label}" href="#" onclick="${onclick}; closeMenu(); return false;">${text}</a></li>`;
+        const parts = [sec('HAMBURGER MENI')];
+        model.forEach((section, idx) => {
+          if (idx > 0) parts.push(hr);
+          parts.push(sec(section.title));
+          section.items.forEach(item => parts.push(link(item.key, item.list, item.action)));
+        });
+        navMenu.innerHTML = parts.join('');
+        navMenu.setAttribute('data-sinet-dual-menu', V);
+      }
+
+      const page = document.getElementById('page-system');
+      if (page) {
+        if (!document.getElementById('sinet-menu-cards-style-73')) {
+          const st = document.createElement('style');
+          st.id = 'sinet-menu-cards-style-73';
+          st.textContent = [
+            '.sinet-menu-intro{margin:0 0 12px;color:#475569;font-size:.98rem;}',
+            '.sinet-card-menu-section{margin:14px 0 18px;}',
+            '.sinet-card-menu-section h3{margin:0 0 10px;font-size:1rem;color:#0f172a;}',
+            '.sinet-card-menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}',
+            '.sinet-menu-card{display:flex;flex-direction:column;gap:8px;border:none;border-radius:18px;padding:16px;min-height:124px;text-align:left;color:#fff;box-shadow:0 10px 24px rgba(15,23,42,.12);cursor:pointer;}',
+            '.sinet-menu-card .title{font-size:1rem;font-weight:900;line-height:1.2;}',
+            '.sinet-menu-card .desc{font-size:.88rem;line-height:1.35;opacity:.96;}',
+            '.sinet-menu-card:hover{transform:translateY(-1px);}',
+            '.sinet-system-footer{margin-top:8px;display:flex;justify-content:flex-end;}',
+            '@media (max-width:640px){.sinet-menu-card{min-height:114px;padding:14px;}}'
+          ].join('');
+          document.head.appendChild(st);
+        }
+        const h2 = page.querySelector('h2');
+        let shell = page.querySelector('[data-sinet-card-menu="1"]');
+        if (!shell) {
+          shell = document.createElement('div');
+          shell.setAttribute('data-sinet-card-menu','1');
+          if (h2) h2.insertAdjacentElement('afterend', shell);
+          else page.prepend(shell);
+        }
+        shell.innerHTML = '<p class="sinet-menu-intro">GLAVNI MENI otvara kartice istog redosleda kao hamburger meni, ali preglednije za rad i mobilnu upotrebu.</p>' +
+          model.map(section => '<section class="sinet-card-menu-section"><h3>'+section.title+'</h3><div class="sinet-card-menu-grid">' +
+            section.items.map(item => `<button type="button" class="sinet-menu-card" style="background:${item.color};" onclick="${item.action}; return false;"><span class="title">${item.card}</span><span class="desc">${item.desc}</span></button>`).join('') +
+          '</div></section>').join('') +
+          '<div class="sinet-system-footer"></div>';
+
+        Array.from(page.children).forEach((child) => {
+          if (child === h2 || child === shell || (child.getAttribute && child.getAttribute('data-sinet-spa-nav') === '1')) return;
+          if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE') return;
+          child.style.display = 'none';
+          child.setAttribute('data-sinet-hidden-old-system','1');
+        });
+      }
+
+      const mainBtn = document.getElementById('home-entry-main');
+      if (mainBtn) {
+        mainBtn.textContent = '🗂 GLAVNI MENI';
+        mainBtn.onclick = function(ev){ if (ev) ev.preventDefault(); try{ nav('system'); }catch(_){ } return false; };
+      }
+    } catch(_) {}
+  };
+
+  const origInit73 = App.prototype.init;
+  App.prototype.init = async function(){
+    const r = await origInit73.apply(this, arguments);
+    try { this._ensureDualMenuModel73(); } catch(_) {}
+    return r;
+  };
+
+  const origNav73 = App.prototype.nav;
+  App.prototype.nav = function(pageId, opts={}){
+    const r = origNav73.apply(this, arguments);
+    try { this._ensureDualMenuModel73(); } catch(_) {}
     return r;
   };
 })();

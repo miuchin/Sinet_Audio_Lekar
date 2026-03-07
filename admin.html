@@ -19,9 +19,14 @@
     input[type=file]{width:100%;}
   </style>
   <link rel="stylesheet" href="css/sinet-quickbar.css?v=15.7.7.7">
+  <script defer src="js/sinet-page-nav.js?v=16.0.0.20"></script>
 </head>
 <body>
   <div class="wrap">
+    <div data-sinet-admin-nav style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px 0;">
+      <a href="index.html" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:10px;background:#334155;color:#fff;text-decoration:none;">🏠 Početak</a>
+      <button type="button" onclick="history.length>1?history.back():location.href='index.html'" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:10px;border:0;background:#2563eb;color:#fff;cursor:pointer;">⬅ Nazad</button>
+    </div>
     <h1 style="margin:4px 0 10px 0;">🛠️ SINET Admin Tools</h1>
     <p class="muted">
       Preporuka: pokreni preko lokalnog servera (npr. <code>python -m http.server 8000</code>) da bi sve radilo offline i bez CORS problema.

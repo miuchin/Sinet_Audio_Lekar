@@ -1,4 +1,4 @@
-/* SINET Page Nav — v16.0.0.19
+/* SINET Page Nav — v16.0.0.20
    Visible navigation for standalone pages and docs.
    Adds: ⬅ Nazad + 🏠 Početna (+ optional Biblioteka / Dokumentacija)
 */
@@ -146,7 +146,7 @@
       var el = (typeof targetId === 'string') ? (qs('#' + String(targetId).replace(/^#/,'')) || qs(String(targetId))) : targetId;
       if (el) return el;
     }
-    return qs('.wrap') || qs('.container') || qs('.card') || document.body;
+    return qs('.wrap') || qs('.container-fluid') || qs('.container') || qs('.card') || document.body;
   }
 
   function mount(targetId){

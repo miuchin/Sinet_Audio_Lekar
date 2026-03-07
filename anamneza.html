@@ -28,6 +28,7 @@
         .lead { font-size: 1.1rem; }
     </style>
   <link rel="stylesheet" href="css/sinet-quickbar.css?v=15.7.7.7">
+  <script defer src="js/sinet-page-nav.js?v=16.0.0.20"></script>
 </head>
 <body>
 
@@ -864,7 +865,8 @@ function spisiPacijenta(e, editIndex = null) {
                 });
             } else {
                 // Minimal fallback
-                doc = `<!doctype html><html lang="sr"><head><meta charset="utf-8"><title>${title}</title></head><body>${warningsHtml}${blocks}</body></html>`;
+                doc = `<!doctype html><html lang="sr"><head><meta charset="utf-8"><title>${title}</title>  <script defer src="js/sinet-page-nav.js?v=16.0.0.20"></script>
+</head><body>${warningsHtml}${blocks}</body></html>`;
             }
             downloadFile(doc, 'anamneza_template_v2.html', 'text/html;charset=utf-8');
         }catch(e){
