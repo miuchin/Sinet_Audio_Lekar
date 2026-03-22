@@ -1,16 +1,16 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.117.0 (SINGLE FAVORITE BUTTON + VERSION SYNC)
+  Version: 16.0.0.118.0 (SEARCH SUBMIT + SESSION FALLBACK + NETLIFY PATCH)
   Author: miuchins | Co-author: SINET AI
 */
 
 // Cache-bust audio engine updates (NO-SW mode relies on browser cache)
-import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.117.0';
-import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.117.0';
-import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.117.0';
+import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.0';
+import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.0';
+import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.0';
 
-const SINET_APP_VERSION = "16.0.0.117.0";
+const SINET_APP_VERSION = "16.0.0.118.0";
 
 
 
@@ -268,7 +268,7 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.117.0 SINGLE FAVORITE BUTTON + VERSION SYNC');
+    console.log('SINET v16.0.0.118.0 SEARCH SUBMIT + SESSION FALLBACK + NETLIFY PATCH');
     this.cacheUI();
     try { this._ensureSpaPageTools(); } catch(_) {}
     try { this._ensureMenuPriorityOrder(); } catch(_) {}
@@ -312,7 +312,7 @@ class App {
       try {
         const dbInitResult = await Promise.race([
           this.db.init().then(() => true),
-          new Promise(resolve => setTimeout(() => resolve(false), 1800))
+          new Promise(resolve => setTimeout(() => resolve(false), 4200))
         ]);
         dbReady = !!dbInitResult;
       } catch (e) {
@@ -322,7 +322,7 @@ class App {
     this._dbReady = dbReady;
     if (!dbReady) {
       console.warn('SINET DB not ready in time; continuing with catalog-only boot');
-      try { this.showToast('ℹ️ Lokalna baza se nije otvorila na vreme. Katalog radi, a DB funkcije mogu biti ograničene dok se browser ne osveži.', { timeoutMs: 6000 }); } catch(_) {}
+      try { this.showToast('ℹ️ Lokalna baza se nije otvorila na vreme. Katalog radi, a Favoriti i Sesije prelaze na lokalni fallback režim.', { timeoutMs: 6000 }); } catch(_) {}
     }
     // System audit retention (7 days)
     try { if (dbReady && this.db?.rotateAudit) await this.db.rotateAudit(this.getAuditRetentionSettings()); } catch(_) {}
@@ -2430,7 +2430,7 @@ this.selectedItem = item;
   }
 
   async setSessionNote(sessionId) {
-    if (!this.db || !sessionId) return;
+    if (!sessionId || !this.db) return;
     try {
       const sessions = await (this.db.getSessions ? this.db.getSessions() : []);
       const s = (Array.isArray(sessions) ? sessions : []).find(x => x && x.id === sessionId) || null;
@@ -2467,7 +2467,7 @@ this.selectedItem = item;
   async renderHomeResumePanel() {
     const panel = document.getElementById('home-resume-panel');
     const body = document.getElementById('home-resume-body');
-    if (!panel || !body || !this.db) return;
+    if (!panel || !body) return;
 
     if (!this.isResumeEnabled()) {
       panel.style.display = 'none';
@@ -2501,7 +2501,7 @@ this.selectedItem = item;
     const aNote = (audit && typeof audit.note === 'string' && audit.note.trim()) ? audit.note.trim() : ((top && typeof top.note === 'string' && top.note.trim()) ? top.note.trim() : '');
     let recentHtml = '';
     try {
-      const rows = await this.db.getAuditLog({ limit: 60 });
+      const rows = this.db?.getAuditLog ? await this.db.getAuditLog({ limit: 60 }) : []; 
       const pick = (rows || []).filter(r => {
         const c = String(r.category||'').toUpperCase();
         return (c === 'USER' || c === 'PLAYER' || c === 'SESSION');
@@ -2543,7 +2543,7 @@ this.selectedItem = item;
 
   async renderSessionsUI() {
     const box = document.getElementById('sessions-content');
-    if (!box || !this.db) return;
+    if (!box) return;
 
     // Load / init filter state
     if (!this._sessionsFilter) {
@@ -2754,12 +2754,12 @@ this.selectedItem = item;
 
   async openSessionAudit(sessionId) {
     const id = String(sessionId || '');
-    if (!id || !this.db) return;
+    if (!id) return;
     const modal = this._ensureAuditModal();
     const box = document.getElementById("audit-table");
     if (!modal || !box) return;
 
-    const rows = await this.db.getAuditLog({ limit: 2500, includeArchive: true });
+    const rows = this.db?.getAuditLog ? await this.db.getAuditLog({ limit: 2500, includeArchive: true }) : []; 
     const rel = rows.filter(r => String(r.entityId || '') === id).slice(-500).reverse();
 
     if (!rel.length) {
@@ -2792,7 +2792,7 @@ this.selectedItem = item;
     modal.style.display = "flex";
   }
   async resumeSavedSession(sessionId) {
-    if (!this.db || !sessionId) return;
+    if (!sessionId || !this.db) return;
     const sessions = await (this.db.getSessions ? this.db.getSessions() : []);
     const s = (Array.isArray(sessions) ? sessions : []).find(x => x && x.id === sessionId);
     if (!s || !s.state) return alert('Ne mogu da nađem sesiju.');
@@ -2808,7 +2808,7 @@ this.selectedItem = item;
   }
 
   async deleteSavedSession(sessionId) {
-    if (!this.db || !sessionId) return;
+    if (!sessionId || !this.db) return;
     try { await this.db.deleteSession(sessionId); } catch(_) {}
 
     // if it was the current resume pointer, clear it
@@ -4755,7 +4755,7 @@ async importData(fileInput) {
   async renderAuditPreview() {
     const box = document.getElementById('audit-preview');
     const stats = document.getElementById('audit-stats');
-    if (!box || !this.db) return;
+    if (!box) return;
 
     const q = String((document.getElementById('audit-filter-text') || {}).value || '').trim().toLowerCase();
     const lvl = String((document.getElementById('audit-filter-level') || {}).value || '').trim().toUpperCase();
@@ -6927,13 +6927,13 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
 
     if (!items.length) {
       this._setCatalogSearchStatus(`⚠️ Nema rezultata za <b>${this.escapeHtml(q)}</b>. Probajte širi pojam: <b>bolovi</b>, <b>reuma</b>, <b>štitna</b>, <b>stomak</b>, <b>koža</b>, <b>disanje</b>.`, 'warn');
-      return this.renderCatalogList([], `Rezultati: ${q}`, true);
+      return this.renderCatalogList([], `Rezultati: ${q}`, true, { compact: true, compactMode: 'search' });
     }
 
     const scrollHint = items.length > 6 ? ' • Skrolujte nadole — ima još rezultata.' : '';
     const relatedHint = related.length ? ` • povezani: <b>${related.length}</b>` : '';
     this._setCatalogSearchStatus(`🔎 Pronađeno: <b>${items.length}</b> rezultata • glavni: <b>${main.length}</b>${relatedHint}${scrollHint}`, 'info');
-    this.renderCatalogList(items, `Rezultati: ${q}`, true);
+    this.renderCatalogList(items, `Rezultati: ${q}`, true, { compact: true, compactMode: 'search' });
   }
 
 
@@ -10925,7 +10925,7 @@ window.toggleNowList = () => window.app && window.app.toggleNowList();
 window.toggleDockLoopPanel = () => window.app && window.app.toggleDockLoopPanel();
 window.onDockRepeatChange = () => window.app && window.app.onDockRepeatChange();
 window.clearPlaylist = () => window.app && window.app.clearPlaylist();
-window.doSearch = (v) => window.app && window.app.filterCatalog(v, { source: 'input' });
+window.doSearch = () => true;
 window.generateAIPrompt = () => window.app && window.app.generateAIPrompt();
 window.copyAIPrompt = () => window.app && window.app.copyAIPrompt();
 window.exportCatalogTxt = (mode) => window.app && window.app.exportCatalogTxt(mode);

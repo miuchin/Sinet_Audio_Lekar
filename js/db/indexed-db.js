@@ -20,6 +20,8 @@ class SinetDB {
     this._lastInitError = null;
     this._disabledUntil = 0;
     this._favFallbackKey = 'sinet_favorites_fallback_v1';
+    this._playerStateFallbackKey = 'sinet_player_state_fallback_v1';
+    this._sessionsFallbackKey = 'sinet_sessions_fallback_v1';
   }
 
   _readLocalFavorites() {
@@ -52,6 +54,47 @@ class SinetDB {
     }
   }
 
+  _readLocalPlayerState() {
+    try {
+      const raw = localStorage.getItem(this._playerStateFallbackKey);
+      const data = JSON.parse(raw || 'null');
+      return (data && typeof data === 'object') ? data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  _writeLocalPlayerState(stateData) {
+    try {
+      const safe = (stateData && typeof stateData === 'object') ? stateData : null;
+      if (safe === null) localStorage.removeItem(this._playerStateFallbackKey);
+      else localStorage.setItem(this._playerStateFallbackKey, JSON.stringify(safe));
+      return safe;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  _readLocalSessions() {
+    try {
+      const raw = localStorage.getItem(this._sessionsFallbackKey);
+      const list = JSON.parse(raw || '[]');
+      return Array.isArray(list) ? list.filter(it => it && typeof it === 'object' && it.id) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  _writeLocalSessions(list) {
+    try {
+      const safe = Array.isArray(list) ? list.filter(it => it && typeof it === 'object' && it.id) : [];
+      localStorage.setItem(this._sessionsFallbackKey, JSON.stringify(safe));
+      return safe;
+    } catch (_) {
+      return [];
+    }
+  }
+
   async _syncLocalFavoritesToDb() {
     if (!this.db || !this.isReady) return false;
     const fallback = this._readLocalFavorites();
@@ -67,7 +110,7 @@ class SinetDB {
     }
   }
 
-  async init(timeoutMs = 1500) {
+  async init(timeoutMs = 4500) {
     if (this.isReady && this.db) return true;
     if (this._disabledUntil && Date.now() < this._disabledUntil) {
       throw this._lastInitError || new Error("IndexedDB temporarily unavailable");
@@ -103,7 +146,7 @@ class SinetDB {
       timer = setTimeout(() => {
         console.warn('SINET DB: Init timeout');
         safeReject(new Error('IndexedDB init timeout'));
-      }, Math.max(400, Number(timeoutMs) || 1500));
+      }, Math.max(1200, Number(timeoutMs) || 4500));
 
       const request = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
 
@@ -535,38 +578,60 @@ class SinetDB {
 
   /* ---------- Resume state ---------- */
   async savePlayerState(stateData) {
-    await this._ensure();
-    return this._put("state", { key: "last_session", data: stateData || null, updatedAt: Date.now() });
+    const payload = { key: "last_session", data: stateData || null, updatedAt: Date.now() };
+    try {
+      await this._ensure();
+      return this._put("state", payload);
+    } catch (_) {
+      this._writeLocalPlayerState(payload.data || null);
+      return true;
+    }
   }
 
   async getPlayerState() {
-    await this._ensure();
-    return this._get("state", "last_session");
+    try {
+      await this._ensure();
+      return this._get("state", "last_session");
+    } catch (_) {
+      return this._readLocalPlayerState();
+    }
   }
 
   async clearPlayerState() {
-    await this._ensure();
-    return this._delete("state", "last_session");
+    try {
+      await this._ensure();
+      return this._delete("state", "last_session");
+    } catch (_) {
+      this._writeLocalPlayerState(null);
+      return true;
+    }
   }
 
   /* ===================== Sessions (multi resume) ===================== */
 
   async getSessions() {
-    await this._ensure();
-    const r = await this._get('state', 'sessions_v1');
-    const v = r ? r.value : null;
-    return Array.isArray(v) ? v : [];
+    try {
+      await this._ensure();
+      const r = await this._get('state', 'sessions_v1');
+      const v = r ? r.value : null;
+      return Array.isArray(v) ? v : [];
+    } catch (_) {
+      return this._readLocalSessions();
+    }
   }
 
   async saveSessions(list) {
-    await this._ensure();
     const safe = Array.isArray(list) ? list : [];
-    await this._put('state', { key: 'sessions_v1', value: safe });
+    try {
+      await this._ensure();
+      await this._put('state', { key: 'sessions_v1', value: safe });
+    } catch (_) {
+      this._writeLocalSessions(safe);
+    }
     return safe;
   }
 
   async upsertSession(session) {
-    await this._ensure();
     if (!session || !session.id) return this.getSessions();
     const list = await this.getSessions();
     const idx = list.findIndex(s => s && s.id === session.id);
@@ -580,7 +645,6 @@ class SinetDB {
   }
 
   async deleteSession(sessionId) {
-    await this._ensure();
     const id = String(sessionId || '');
     if (!id) return this.getSessions();
     const list = await this.getSessions();

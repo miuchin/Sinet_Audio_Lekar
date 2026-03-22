@@ -417,10 +417,10 @@
         <div id="page-catalog" class="section">
             <div style="position:sticky; top:0; background:var(--bg); padding-bottom:10px; z-index:10;">
                 <div style="display:flex; gap:8px; align-items:center;">
-                    <input type="text" id="search-input" placeholder="🔍 Pretraži (naziv, opis, MKB-10, reuma, štitna...)" oninput="doSearch(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); app.performCatalogSearchFromInput();}" style="flex:1; width:100%; padding:15px; border:1px solid #ddd; border-radius:8px; font-size:1rem; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                    <input type="text" id="search-input" placeholder="🔍 Unesi pojam pa pritisni Traži (naziv, opis, MKB-10...)" onkeydown="if(event.key==='Enter'){event.preventDefault(); app.performCatalogSearchFromInput();}" style="flex:1; width:100%; padding:15px; border:1px solid #ddd; border-radius:8px; font-size:1rem; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
                     <button class="btn-full" style="margin-top:0; width:auto; min-width:110px; padding:12px 14px; background:#2563eb;" onclick="app.performCatalogSearchFromInput()">🔎 Traži</button>
                 </div>
-                <div id="catalog-search-hint" class="catalog-hint" style="background:#fff; border:1px solid #eee; padding:10px 12px; border-radius:10px; color:#555; margin:8px 0 0 0; font-size:0.92rem;">💡 Možete tražiti i po širim pojmovima: <b>bolovi</b>, <b>reuma</b>, <b>štitna</b>, <b>stomak</b>, <b>koža</b>, <b>disanje</b>.</div>
+                <div id="catalog-search-hint" class="catalog-hint" style="background:#fff; border:1px solid #eee; padding:10px 12px; border-radius:10px; color:#555; margin:8px 0 0 0; font-size:0.92rem;">💡 Upiši pojam pa klikni <b>Traži</b>. Možete tražiti i po širim pojmovima: <b>bolovi</b>, <b>reuma</b>, <b>štitna</b>, <b>stomak</b>, <b>koža</b>, <b>disanje</b>.</div>
                 <div id="catalog-search-status" style="display:none;"></div>
             </div>
             <div class="catalog-actions" style="display:flex; gap:10px; margin:10px 0 12px 0;">
@@ -1313,7 +1313,7 @@
     </div>
 </div>
 
-    <script src="js/db/indexed-db.js?v=16.0.0.25"></script>
+    <script src="js/db/indexed-db.js?v=16.0.0.29"></script>
 
     <script>
       // Same behavior as index.html: on iOS/PWA or while audio is playing,
@@ -1390,7 +1390,7 @@
 
     <script src="js/sinet-quickbar.js?v=15.7.9.4" defer></script>
     <script src="js/sinet-template-v2.js?v=15.7.9.4" defer></script>
-    <script type="module" src="js/app.js?v=16.0.0.108.0.1"></script>
+    <script type="module" src="js/app.js?v=16.0.0.118.0.1"></script>
 
     <script>
         // PWA & WORKER (index-nosw.html)

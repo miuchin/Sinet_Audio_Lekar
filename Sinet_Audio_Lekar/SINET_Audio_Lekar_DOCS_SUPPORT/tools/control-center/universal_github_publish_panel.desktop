@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=SINET / Paprikas GitHub Panel
-Comment=Jedan meni za GitHub init/publish za SINET i Paprikas Hub
-Exec=bash -lc 'cd "$HOME/Downloads" && chmod +x ./universal_github_publish_panel_manjaro.sh && ./universal_github_publish_panel_manjaro.sh'
-Icon=utilities-terminal
-Terminal=false
-Categories=Utility;Development;
