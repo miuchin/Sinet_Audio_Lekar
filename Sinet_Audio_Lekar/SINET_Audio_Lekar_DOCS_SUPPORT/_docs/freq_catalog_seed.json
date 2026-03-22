@@ -1,0 +1,213 @@
+{
+  "7.83": {
+    "naziv": "Šumanova rezonanca (fundamental)",
+    "opis": "7.83 Hz je približna fundamentalna frekvencija Šumanovih rezonanci — elektromagnetnog rezonantnog fenomena u šupljini Zemlja–jonosfera. Audio reprodukcija 7.83 Hz obično se realizuje kao modulacija/beat; to nije isto što i elektromagnetno polje.",
+    "izvor": {
+      "url": "https://en.wikipedia.org/wiki/Schumann_resonances",
+      "autor": "Wikipedia contributors",
+      "delo": "Schumann resonances",
+      "licenca": "CC BY-SA"
+    },
+    "evidence": "physics_fact",
+    "tags": [
+      "schumann",
+      "reference"
+    ]
+  },
+  "10": {
+    "naziv": "10 Hz (u opsegu alfa talasa)",
+    "opis": "10 Hz je u tipičnom opsegu alfa moždanih oscilacija (≈8–13 Hz), prisutnih pri opuštenoj budnosti. U audio aplikacijama 10 Hz se često koristi kao ciljna 'beat' frekvencija (binaural/isohrono); rezultati istraživanja su mešoviti i nisu garantovan efekat.",
+    "izvor": {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10198548/",
+      "autor": "Ingendoh et al.",
+      "delo": "Systematic review on binaural beats / entrainment",
+      "licenca": "Open access"
+    },
+    "evidence": "mixed_research",
+    "tags": [
+      "alpha",
+      "binaural",
+      "relaxation"
+    ]
+  },
+  "40": {
+    "naziv": "40 Hz (gama; istraživanja entrainment-a)",
+    "opis": "40 Hz je u gama opsegu. U istraživanjima se 40 Hz audio/visual stimulacija koristi za entrainment; postoje preklinički i rani klinički radovi, ali to ne predstavlja kućnu medicinsku terapiju.",
+    "izvor": {
+      "url": "https://news.mit.edu/2025/evidence-40hz-gamma-stimulation-promotes-brain-health-expanding-0314",
+      "autor": "MIT News",
+      "delo": "Evidence that 40Hz gamma stimulation promotes brain health is expanding",
+      "licenca": "MIT News"
+    },
+    "evidence": "emerging_research",
+    "tags": [
+      "gamma",
+      "entrainment"
+    ]
+  },
+  "432": {
+    "naziv": "432 Hz (alternativno štimovanje)",
+    "opis": "432 Hz se pominje kao alternativno štimovanje u odnosu na standard A4=440 Hz. Nije međunarodni standard; koristi se u pojedinim muzičkim praksama, bez naučnog konsenzusa o posebnim zdravstvenim efektima.",
+    "izvor": {
+      "url": "https://en.wikipedia.org/wiki/A440_(pitch_standard)",
+      "autor": "Wikipedia contributors",
+      "delo": "A440 (pitch standard)",
+      "licenca": "CC BY-SA"
+    },
+    "evidence": "music_practice",
+    "tags": [
+      "tuning",
+      "music"
+    ]
+  },
+  "440": {
+    "naziv": "A4=440 Hz (muzički standard)",
+    "opis": "440 Hz je standardna referentna frekvencija (A4) za štimovanje instrumenata (ISO 16).",
+    "izvor": {
+      "url": "https://en.wikipedia.org/wiki/A440_(pitch_standard)",
+      "autor": "Wikipedia contributors",
+      "delo": "A440 (pitch standard)",
+      "licenca": "CC BY-SA"
+    },
+    "evidence": "standard",
+    "tags": [
+      "tuning",
+      "iso16"
+    ]
+  },
+  "174": {
+    "naziv": "Solfeggio 174 Hz (popularna alternativa)",
+    "opis": "174 Hz se često navodi u modernim listama 'Solfeggio' tonova. Ove liste su popularizovane u savremenoj alternativnoj literaturi; istorijski i muzičko-teorijski izvori ne tretiraju ih kao standardni sistem.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "285": {
+    "naziv": "Solfeggio 285 Hz (popularna alternativa)",
+    "opis": "285 Hz je deo proširenih 'Solfeggio' lista. Efekti koji se navode u marketingu nisu potvrđeni kliničkim standardima; najbolje je prikazati uz izvor i nivo dokaza.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "396": {
+    "naziv": "Solfeggio 396 Hz (popularna alternativa)",
+    "opis": "396 Hz je deo modernih Solfeggio lista (396/417/528/639/741/852). Poreklo modernog skupa se obično vezuje za tvrdnje iz 20. veka; istorijske veze su sporne.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "417": {
+    "naziv": "Solfeggio 417 Hz (popularna alternativa)",
+    "opis": "417 Hz je deo modernih Solfeggio lista. Preporuka: prikazati kao alternativnu praksu uz izvor, bez medicinskih obećanja.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "528": {
+    "naziv": "Solfeggio 528 Hz (popularna alternativa)",
+    "opis": "528 Hz je vrlo popularna Solfeggio frekvencija u savremenoj upotrebi. Naučni konsenzus ne podržava specifične medicinske tvrdnje samo na osnovu ove vrednosti; prikazati kao alternativni audio sadržaj uz transparentan izvor.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "639": {
+    "naziv": "Solfeggio 639 Hz (popularna alternativa)",
+    "opis": "639 Hz je deo modernih Solfeggio lista. U aplikaciji ga je najbezbednije označiti kao alternativno/duhovno, uz izvor i nivo dokaza.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "741": {
+    "naziv": "Solfeggio 741 Hz (popularna alternativa)",
+    "opis": "741 Hz je deo modernih Solfeggio lista; često se koristi u relaks/meditativnim audio zapisima. Efekat zavisi od konteksta i individualne reakcije.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "852": {
+    "naziv": "Solfeggio 852 Hz (popularna alternativa)",
+    "opis": "852 Hz je deo modernih Solfeggio lista. Preporučeno: prikazati kao alternativno/duhovno uz izvor, bez medicinskih obećanja.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  },
+  "963": {
+    "naziv": "Solfeggio 963 Hz (popularna alternativa)",
+    "opis": "963 Hz je deo proširenih Solfeggio lista. Najbezbednije: tretirati kao alternativni audio sadržaj uz transparentan izvor.",
+    "izvor": {
+      "url": "https://www.sylviavillamusic.com/blog/the-solfeggio-frequencies-vs-the-solfege-system",
+      "autor": "Sylvia Villa",
+      "delo": "The Solfeggio Frequencies vs. The Solfège System",
+      "licenca": "Blog / commentary"
+    },
+    "evidence": "alt_claims",
+    "tags": [
+      "solfeggio",
+      "alt"
+    ]
+  }
+}

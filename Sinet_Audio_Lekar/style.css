@@ -1,0 +1,49 @@
+/* SINET shared stylesheet entrypoint
+   Added in v16.0.0.17 to unify pages + docs look and prevent 404 on ../style.css.
+*/
+@import url("./css/main.css");
+@import url("./css/sinet-quickbar.css");
+
+/* Small safety defaults for standalone pages/docs */
+:root{
+  color-scheme: light;
+}
+html,body{height:100%;}
+body{
+  margin:0;
+  background: linear-gradient(180deg,#f8fafc 0%, #f1f5f9 100%);
+}
+a{color:#0f766e;}
+a:hover{opacity:.9;}
+/* Improve readability in docs without touching their internal layout too much */
+.card, .wrap, .container{
+  max-width: 980px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* Home entry selector (senior-friendly) */
+.home-entry-selector{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.home-entry-tab{
+  flex:1;
+  min-width:160px;
+  padding:12px 14px;
+  border-radius:12px;
+  border:2px solid rgba(37,99,235,0.25);
+  background:#ffffff;
+  color:#0f172a;
+  font-weight:900;
+  font-size:1rem;
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+.home-entry-tab.active{
+  border-color:rgba(37,99,235,0.75);
+  background:#e8f0ff;
+}
+@media (max-width:420px){
+  .home-entry-tab{min-width:0; width:100%;}
+}

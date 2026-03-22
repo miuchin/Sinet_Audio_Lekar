@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎓 Tutor / Vodiči (indeks)</title>
+<style>
+:root{--bg:#f7f5f1;--card:#fff;--ink:#2c231b;--muted:#6d5f52;--accent:#7a5233;--line:#e4d8c8;--chip:#efe2cf;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.45}
+.header{position:sticky;top:0;z-index:10;background:rgba(247,245,241,.95);backdrop-filter: blur(6px);border-bottom:1px solid var(--line)}
+.wrap{max-width:920px;margin:0 auto;padding:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:999px;border:1px solid #6c4a30;background:#7a5233;color:#fff;font-weight:700;text-decoration:none;cursor:pointer}
+.btn.light{background:#fff;color:#4b3828;border-color:#d7c4ad}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(60,40,20,.06)}
+.hint{background:var(--chip);border-radius:14px;padding:10px 12px;font-weight:700;display:inline-block;margin-top:8px}
+ h1,h2,h3{line-height:1.2;margin:14px 0 10px} h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
+ p{margin:8px 0;color:var(--ink)} .muted{color:var(--muted)} ul,ol{margin:6px 0 10px 22px;padding:0} li{margin:4px 0} code{background:#f2eadf;padding:1px 5px;border-radius:6px} hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+ .grid{display:grid;gap:12px} @media (min-width:760px){.grid.two{grid-template-columns:1fr 1fr;}}
+ .sp{height:2px} .k{font-weight:700;color:#533a24} .foot{font-size:.92rem;color:var(--muted);text-align:center;padding:20px 0 28px}
+ a{color:#7a5233}
+ .tree li{margin-bottom:8px}
+</style>
+<script defer src="../../js/sinet-page-nav.js?v=16.0.0.18"></script>
+</head>
+<body>
+<div class="header"><div class="wrap"><div class="actions">
+<a class="btn" href="#" onclick="if(window.parent&&window.parent.app&&window.parent.app.closeDocModal){window.parent.app.closeDocModal();return false;} history.back(); return false;">← Nazad</a>
+<a class="btn light" href="./00_TUTOR_VODICI_INDEX_v1.0_SR.html">🎓 Tutor indeks</a>
+<a class="btn light" href="../../SINET_User_Manual_v1.1_SR.html">📘 Uputstvo</a>
+</div></div></div>
+<div class="wrap">
+<div class="card">
+<h1>🎓 Tutor / Vodiči (indeks)</h1>
+<div class="sp"></div>
+<p>Ovo je centralno mesto za <strong>praktične tutor stranice</strong> (use-case protokole). Cilj je da korisnik <strong>za 1 minut odluči</strong> koji vodič mu treba, a zatim prati korake bez nagađanja.</p>
+<div class="sp"></div>
+<p><strong>Kako koristiti ovu stranicu:</strong></p>
+<ul>
+<li>Ako želiš samo da pustiš zvuk → otvori **Quick Start (3 klika)**.</li>
+<li>Ako želiš da sačuvaš svoje liste → otvori **Backup / Restore**.</li>
+<li>Ako praviš rutinu (40 min × N dana) → otvori **Moj protokol iz Queue**.</li>
+<li>Ako radiš katalog/diagnostiku → otvori **MKB Linker → dx_index → Anamneza**.</li>
+<li>Ako koristiš AI pomoć za unos → otvori **AI Upitnik → Moji simptomi → Queue → Protokol**.</li>
+</ul>
+<div class="sp"></div>
+<h2>⏱ 1-min decision tree (gde da idem?)</h2>
+<div class="sp"></div>
+<ul>
+<li>**Treba mi samo reprodukcija odmah (bez podešavanja)**</li>
+<li>➜ <a href="./09_QUICK_START_3_KLIKA_v1.0_SR.html">Quick Start — 3 klika do reprodukcije</a></li>
+<li>**Menjao sam telefon / browser ili hoću rezervu podataka**</li>
+<li>➜ <a href="./14_USECASE_BACKUP_RESTORE_v1.0_SR.html">Tutor #1 — Backup / Restore</a></li>
+<li>**Sastavio sam listu i hoću da je pretvorim u rutinu/protokol**</li>
+<li>➜ <a href="./15_USECASE_MOJ_PROTOKOL_IZ_QUEUE_v1.0_SR.html">Tutor #2 — Moj protokol iz Queue (40 min × N dana)</a></li>
+<li>**Radim medicinski tok (MKB mapiranje → indeks → Anamneza)**</li>
+<li>➜ <a href="./16_USECASE_MKB_LINKER_DXINDEX_ANAMNEZA_v1.0_SR.html">Tutor #3 — MKB Linker → dx_index → Anamneza</a></li>
+<li>**Hoću da AI predloži stavke pa da ih pretvorim u protokol**</li>
+<li>➜ <a href="./17_USECASE_AI_UPITNIK_DO_PROTOKOLA_v1.0_SR.html">Tutor #4 — AI Upitnik → Moji simptomi → Queue → Protokol</a></li>
+</ul>
+<div class="sp"></div>
+<hr>
+<div class="sp"></div>
+<h2>📚 Preporučeni redosled za nove korisnike (stariji korisnici / početnici)</h2>
+<div class="sp"></div>
+<ol>
+<li><a href="./09_QUICK_START_3_KLIKA_v1.0_SR.html">Quick Start — 3 klika</a></li>
+<li><a href="./14_USECASE_BACKUP_RESTORE_v1.0_SR.html">Backup / Restore</a></li>
+<li><a href="./15_USECASE_MOJ_PROTOKOL_IZ_QUEUE_v1.0_SR.html">Moj protokol iz Queue</a></li>
+<li><a href="./17_USECASE_AI_UPITNIK_DO_PROTOKOLA_v1.0_SR.html">AI Upitnik → Protokol</a></li>
+</ol>
+<div class="sp"></div>
+<h2>✅ Napomena</h2>
+<div class="sp"></div>
+<p>Svaki tutor je pisan tako da može da se prati <strong>korak-po-korak</strong>, sa objašnjenjem tipičnih grešaka i kratkim savetima.</p>
+</div>
+<div class="foot">SINET tutor stranica • miuchins + SINET AI</div>
+</div>
+<script>
+(function(){
+  document.querySelectorAll('a[href]').forEach(a=>{
+    const href = a.getAttribute('href')||'';
+    if (href.startsWith('./') || href.startsWith('../')) {
+      a.addEventListener('click', function(ev){
+        try {
+          if (window.parent && window.parent.app && window.parent.app.openDoc) {
+            ev.preventDefault();
+            window.parent.app.openDoc(href, (a.textContent||'Dokument').trim());
+          }
+        } catch(_e) {}
+      });
+    }
+  });
+})();
+</script>
+</body></html>

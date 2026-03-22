@@ -1,0 +1,15 @@
+Pozdrav 🙂
+
+Šaljem ti SINET Audio Lekar — web aplikaciju za pregled simptoma, frekvencijske sesije, lične liste, favorite i protokole.
+
+Šta može:
+- pretraga simptoma
+- puni katalog i atlas oblasti
+- otvaranje detalja simptoma
+- dodavanje u listu i favorite
+- rad sa protokolima i ponavljanjem
+
+Važno:
+Ovo je informativno-organizacioni alat i nije zamena za lekara, hitnu pomoć ili terapiju.
+
+Kada otvoriš aplikaciju, prvo pogledaj broj verzije na Početnoj strani.

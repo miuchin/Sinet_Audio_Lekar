@@ -1,0 +1,45 @@
+{
+  "id": "/index.html?source=pwa",
+  "name": "SINET Audio Lekar - Alternativni pristup",
+  "short_name": "SINET Audio",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4F7F6",
+  "theme_color": "#4A90E2",
+  "description": "Offline Audio Frekventna Terapija - SINET Standard",
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "LAB Bridge",
+      "short_name": "LAB",
+      "url": "./index.html?nav=labs",
+      "description": "Otvori LAB Bridge"
+    },
+    {
+      "name": "Zdravstveni Karton",
+      "short_name": "Karton",
+      "url": "./index.html?nav=health-record",
+      "description": "Otvori Zdravstveni Karton"
+    },
+    {
+      "name": "Anamneza",
+      "short_name": "Anamneza",
+      "url": "./anamneza.html",
+      "description": "Otvori Anamnezu"
+    }
+  ]
+}

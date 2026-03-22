@@ -1,0 +1,9 @@
+Ćao 🙂 Objavio sam novu verziju SINET Audio Lekar (demo).
+
+✅ Mobile UI popravke (Huawei / manji ekrani)
+✅ Stabilniji audio scenario
+✅ Tutor / Vodiči + Quick Start
+✅ Novi use-case protokoli
+
+Testirajte i javite feedback 🙏
+https://sinet-audio-lekar-nutri-pro-demo.netlify.app/

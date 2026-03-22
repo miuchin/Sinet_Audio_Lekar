@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SINET — Anamneza Step-by-Step (v1.0 SR)</title>
+
+  <style>
+    :root{--bg:#f8fafc;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--muted:#475569;--blue:#2563eb;--green:#0f766e;--amber:#b45309}
+    body{font-family:Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);line-height:1.6}
+    .wrap{max-width:1080px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+    h1,h2,h3{margin-top:0}
+    .muted{color:var(--muted)}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#dbeafe;font-size:12px;font-weight:700;margin-right:6px}
+    .badge.green{background:#dcfce7}
+    .badge.warn{background:#fef3c7}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:12px;background:var(--blue);color:#fff;text-decoration:none;font-weight:700}
+    .btn.alt{background:var(--green)}
+    .btn.warn{background:var(--amber)}
+    ol,ul{padding-left:22px}
+    code{background:#eef2ff;padding:2px 6px;border-radius:6px}
+    .step{border-left:4px solid #93c5fd;padding-left:12px;margin:12px 0}
+    .note{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px}
+  </style>
+
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SINET — Anamneza Step-by-Step (v1.0 SR)</h1>
+      <p class="muted">Vođeni unos osnovnog zdravstvenog okvira, važnih događaja, terapija i polaznog SINET konteksta.</p>
+      <div class="btns"><a class="btn" href="./00_MASTER_STEP_BY_STEP_v1.0_SR.html">📘 Master Step-by-Step</a></div>
+    </div>
+    <div class="card"><p><span class="badge">STEP-BY-STEP</span><span class="badge green">NOVO</span></p>
+        <p><b>Šta je ovo:</b> Vođeni unos osnovnog zdravstvenog okvira, važnih događaja, terapija i polaznog SINET konteksta.</p></div><div class="card"><h2>Koraci 1–2–3–4</h2><ol><li>Otvori <b>Anamneza</b> i prvo unesi osnovne podatke koje već znaš: glavne tegobe, dijagnoze, terapije i važne događaje.</li><li>Ako imaš MKB-10 šifru, iskoristi je kao orijentir; ako nemaš, počni od simptoma i običnog opisa.</li><li>Unesi najvažnije hronične probleme, alergije, operacije i hospitalizacije — ne mora sve iz prve.</li><li>Sačuvaj stanje i posle toga pređi na <b>Zdravstveni karton</b> za pregled kroz vreme, ili na <b>LAB Bridge</b> ako imaš laboratorije.</li></ol></div><div class="card"><h2>Tipične zabune</h2>
+        <ul>
+          <li>Ne moraš sve uneti odjednom — kreni od najvažnijih podataka.</li>
+          <li>Ako nisi siguran gde nešto pripada, prvo ga zapiši u osnovni modul pa tek onda doteruj.</li>
+          <li>Pre većih izmena i importa uradi backup.</li>
+        </ul></div><div class="card"><h2>Šta dalje posle ovog modula</h2><div class="btns"><a class="btn" href="./35_ZDRAVSTVENI_KARTON_STEP_BY_STEP_v1.0_SR.html">🗂 Zdravstveni karton</a><a class="btn" href="./34_LAB_BRIDGE_STEP_BY_STEP_v1.0_SR.html">🧪 LAB Bridge</a></div></div>
+  </div>
+  <script>
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('a[href]');
+      if(!a) return;
+      const href = a.getAttribute('href') || '';
+      if(/^https?:/i.test(href) || href.startsWith('#')) return;
+      try {
+        if (window.parent && window.parent !== window && window.parent.app && typeof window.parent.app.openDoc === 'function') {
+          e.preventDefault();
+          window.parent.app.openDoc(href, (a.textContent || 'Dokument').trim());
+        }
+      } catch(_ ) {}
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINET · Integrativni vodič (generator)</title>
+    <link rel="stylesheet" href="../css/sinet-quickbar.css?v=15.7.7.7">
+    <script defer src="../js/sinet-quickbar.js?v=15.7.7.7"></script>
+    <script defer src="../js/sinet-profiles-core.js?v=16.0.0.1"></script>
+    <script defer src="../js/sinet-shared-context.js?v=16.0.0.1"></script>
+    <script defer src="../js/sinet-integrative-engine.js?v=16.0.0.6"></script>
+    <script defer src="../js/sinet-health-tags.js?v=16.0.0.1"></script>
+    <script defer src="../js/sinet-ui-standards.js?v=16.0.0.8"></script>
+    <script defer src="../js/sinet-frequency-canonical.js?v=16.0.0.10"></script>
+    <script defer src="../js/sinet-item-shell.js?v=16.0.0.10"></script>
+    <script defer src="../js/sinet-template-v2.js?v=16.0.0.1"></script>
+
+  <style>
+    *{ box-sizing:border-box; }
+    body{
+      font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+      line-height:1.6; color:#2c3e50;
+      max-width:1200px; margin:20px auto; padding:20px;
+      background-color:#faf9f7;
+    }
+    h1,h2,h3{ color:#1e4660; border-bottom:2px solid #b89e84; padding-bottom:8px; }
+    .topbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .btn{ border:none; padding:12px 18px; border-radius:999px; cursor:pointer; font-weight:600; }
+    .btn-primary{ background:#6f4e37; color:#fff; border:1px solid #5a3e2b; box-shadow:0 4px 12px rgba(111,78,55,0.25); }
+    .btn-primary:hover{ background:#5a3e2b; }
+    .btn-ghost{ background:#fff; border:1px solid #e8dfd3; }
+    .btn-ghost:hover{ background:#faf6f1; }
+    .btn-danger{ background:#b02a37; color:#fff; }
+    .btn-danger:hover{ background:#8f1f2a; }
+    .badge{ background:#d9c8b2; color:#3d2b1c; font-weight:700; padding:5px 14px; border-radius:30px; display:inline-block; font-size:0.85rem; }
+    .warning-box{ background:#fff3cd; border-left:6px solid #ffc107; padding:15px 20px; border-radius:8px; margin:20px 0; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+    .card{ background:#fff; border-radius:20px; padding:18px 18px; box-shadow:0 5px 20px rgba(0,20,30,0.08); border:1px solid #e8dfd3; }
+    .section-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; margin:16px 0; }
+    .muted{ color:#6b6b6b; }
+    .pill{ display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border:1px solid #e8dfd3; border-radius:999px; background:#fff; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .small{ font-size:0.92rem; }
+    .protocol-box{ background:#f7f1e9; border-left:4px solid #6f4e37; padding:12px 16px; margin:12px 0; border-radius:14px; }
+    .soul-box{ background:#f3e9de; border-left:6px solid #9b6b43; padding:15px 20px; border-radius:8px; margin:18px 0; }
+    .folk-box{ background:#e8f0e0; border-left:6px solid #2d6a4f; padding:15px 20px; border-radius:8px; margin:18px 0; }
+    .two-col{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+    .freq-table{ width:100%; border-collapse:collapse; background:#fcf8f3; margin:10px 0; }
+    .freq-table th{ background:#d9c8b2; color:#3d2b1c; padding:10px; text-align:left; }
+    .freq-table td{ padding:10px; border-bottom:1px solid #e8dfd3; vertical-align:top; }
+    .inputs{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    input[type="text"]{ padding:10px 12px; border-radius:12px; border:1px solid #e8dfd3; width:min(520px,100%); }
+    .helper-note{ color:#6b6b6b; font-size:0.92rem; margin-top:8px; }
+    .mkb-suggest{ display:none; width:min(760px,100%); border:1px solid #e8dfd3; border-radius:14px; overflow:hidden; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .mkb-suggest button{ width:100%; border:none; background:#fff; text-align:left; padding:12px 14px; cursor:pointer; border-bottom:1px solid #f0e8dd; }
+    .mkb-suggest button:last-child{ border-bottom:none; }
+    .mkb-suggest button:hover{ background:#faf6f1; }
+    details{ background:#fff; border:1px solid #e8dfd3; border-radius:14px; padding:10px 12px; }
+    summary{ cursor:pointer; font-weight:700; }
+    .hr{ height:1px; background:#eadfd2; border:0; margin:18px 0; }
+    label.chk{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid #eadfd2; border-radius:14px; margin:8px 0; }
+    label.chk:hover{ background:#faf6f1; }
+    @media print{ .no-print{ display:none !important; } body{ background:#fff; } }
+  </style>
+<script defer src="../js/sinet-page-nav.js?v=16.0.0.18"></script>
+</head>
+<body>
+
+  <div class="topbar no-print">
+    <div class="row">
+      <button class="btn btn-ghost" onclick="goBack()">← Nazad u SINET</button>
+      <button class="btn btn-ghost" id="btnJSON">JSON</button>
+      <button class="btn btn-ghost" id="btnTXT">TXT</button>
+      <button class="btn btn-primary" id="btnMD">📋 Kopiraj (.md)</button>
+      <button class="btn btn-ghost" id="btnHTML">HTML</button>
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Štampaj</button>
+      <button class="btn btn-ghost" id="btnEmail">✉️ E-mail</button>
+      <button class="btn btn-danger" id="btnInsert">🎵 Ubaci u SINET</button>
+    </div>
+    <div class="row">
+      <div class="pill small"><span id="tplBadge">Template: SINET_TEMPLATE_v2</span></div>
+      <div class="pill small"><span id="freqBadge">Frekvencije: 0</span></div>
+      <div class="pill small"><span>miuchins</span><span class="muted">&</span><span>SINET AI</span></div>
+    </div>
+  </div>
+
+  <h1>🧩 SINET integrativni vodič (generator)</h1>
+  <p class="muted">Standardna medicina + podrška životnim navikama + alternativne metode + duhovnost + SINET zvučna terapija (offline/PWA).</p>
+
+  <div class="warning-box">
+    ⚠️ <strong>Obavezno upozorenje:</strong> Ovo je informativni vodič i nije zamena za lekarski pregled. Kod naglog pogoršanja, jakog bola, gušenja, slabosti jedne strane tela, krvarenja, visoke temperature ili sumnje na hitno stanje — odmah potraži urgentnu pomoć.
+  </div>
+
+  <div class="card no-print" style="margin-bottom:14px;">
+    <div class="inputs">
+      <span class="badge" id="badgeIcd">MKB-10</span>
+      <input id="icdInput" type="text" placeholder="Unesi MKB-10 šifru (npr. I10, M05.9) ili naziv..." />
+      <button class="btn btn-primary" onclick="applyIcdFromInput()">Generiši</button>
+      <span class="muted small" id="status"></span>
+    </div>
+    <div class="helper-note">Ako ne znaš MKB-10 šifru, počni da kucaš naziv bolesti ili simptoma i izaberi najbliži predlog.</div>
+    <div id="mkbSuggest" class="mkb-suggest" aria-live="polite"></div>
+  </div>
+
+  <div id="contentToCopy">
+    <div class="card"><span class="muted">Učitavam…</span></div>
+  </div>
+
+  <div id="sinetChooser" class="card no-print" style="margin-top:14px; display:none;"></div>
+
+  <script>
+    // ===================== Helpers =====================
+    const qs = new URLSearchParams(location.search);
+    const esc = (s)=>String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    const norm = (s)=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+    async function loadJson(url){
+      try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) return null; return await r.json(); }
+      catch(_){ return null; }
+    }
+    async function loadJsonFirst(urls){
+      for(const u of urls){ const j = await loadJson(u); if(j!=null) return j; }
+      return null;
+    }
+    function goBack(){
+      const back = qs.get('back');
+      if(back){ location.href = back; return; }
+      location.href = '../index.html';
+    }
+
+    // ===================== Data loading =====================
+    let mkb = [];
+    let dxIndex = {};
+    let catalog = [];
+    let byId = {};
+    let selectedICD = '';
+    let selectedLabel = '';
+    let selectedIds = new Set();
+    let candidateIds = [];
+    let patient = null;
+
+    function showMkbSuggestions(list){
+      const box = document.getElementById('mkbSuggest');
+      if(!box) return;
+      if(!list || !list.length){ box.innerHTML=''; box.style.display='none'; return; }
+      box.innerHTML = list.map(it => `<button type="button" onclick="pickMkbSuggestion('${esc(it.code)}','${esc(it.title)}')"><strong>${esc(it.code)}</strong> — ${esc(it.title || 'Bez naziva')}</button>`).join('');
+      box.style.display = 'block';
+    }
+    window.pickMkbSuggestion = function(code, title){
+      selectedICD = String(code || '').trim().toUpperCase();
+      selectedLabel = String(title || code || '').trim();
+      const inp = document.getElementById('icdInput');
+      if(inp) inp.value = selectedLabel || selectedICD;
+      computeCandidates();
+      render();
+      showMkbSuggestions([]);
+    };
+    function setupIcdAutocomplete(){
+      const inp = document.getElementById('icdInput');
+      if(!inp) return;
+      inp.addEventListener('input', function(){
+        const q = norm(this.value);
+        if(!q || q.length < 2){ showMkbSuggestions([]); return; }
+        const hits = (mkb || []).filter(e => norm(e.code).includes(q) || norm(e.title).includes(q)).slice(0, 8);
+        showMkbSuggestions(hits);
+      });
+      inp.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          applyIcdFromInput();
+        }
+      });
+      document.addEventListener('click', function(ev){
+        const box = document.getElementById('mkbSuggest');
+        if(!box || ev.target === inp || box.contains(ev.target)) return;
+        box.style.display = 'none';
+      });
+    }
+
+    function bestName(it){
+      const n = String(it?.naziv ?? '').trim();
+      const o = String(it?.opis ?? '').trim();
+      const s = String(it?.simptom ?? '').trim();
+      const isGeneric = /^Simptom\s*\d+$/i.test(n) || /^Simptom\s*\d+$/i.test(s);
+      if(o && (isGeneric || !n)) return o;
+      return (s || n || o || String(it?.id||'')).trim();
+    }
+
+    function codeKey(code){
+      const m = String(code||'').toUpperCase().match(/^([A-Z])(\d{2})/);
+      if(!m) return null;
+      return { L: m[1].charCodeAt(0), N: parseInt(m[2],10) };
+    }
+    function inRange(code, start, end){
+      const c = codeKey(code), a = codeKey(start), b = codeKey(end);
+      if(!c||!a||!b) return false;
+      const v = c.L*100 + c.N, va = a.L*100 + a.N, vb = b.L*100 + b.N;
+      return v>=va && v<=vb;
+    }
+    function chapterFor(code){
+      const ch = [
+        { title:'I. Zarazne i parazitarne bolesti', start:'A00', end:'B99' },
+        { title:'II. Neoplazme', start:'C00', end:'D48' },
+        { title:'III. Krv i imuni sistem', start:'D50', end:'D89' },
+        { title:'IV. Endokrine bolesti', start:'E00', end:'E90' },
+        { title:'V. Mentalni poremećaji', start:'F00', end:'F99' },
+        { title:'VI. Nervni sistem', start:'G00', end:'G99' },
+        { title:'VII. Oko', start:'H00', end:'H59' },
+        { title:'VIII. Uvo', start:'H60', end:'H95' },
+        { title:'IX. Cirkulacijski sistem', start:'I00', end:'I99' },
+        { title:'X. Respiratorni sistem', start:'J00', end:'J99' },
+        { title:'XI. Digestivni sistem', start:'K00', end:'K93' },
+        { title:'XII. Koža', start:'L00', end:'L99' },
+        { title:'XIII. Mišićno–koštani sistem', start:'M00', end:'M99' },
+        { title:'XIV. Genitourinarni sistem', start:'N00', end:'N99' },
+        { title:'XVIII. Simptomi i abnormalni nalazi', start:'R00', end:'R99' },
+        { title:'XXI. Faktori i kontakti', start:'Z00', end:'Z99' },
+      ];
+      for(const x of ch){ if(inRange(code, x.start, x.end)) return x.title; }
+      return 'MKB-10 poglavlje';
+    }
+
+    function guessTestsFor(code){
+      const c = String(code||'').toUpperCase();
+      if(inRange(c,'I00','I99')){
+        return [
+          'Krvni pritisak (dnevnik), EKG (12 kanala), laboratorija: KKS, glukoza, kreatinin, elektroliti, lipidogram, TSH',
+          'Holter RR (24h) po potrebi, UZV srca / ehokardiografija, Doppler krvnih sudova (vrat/ekstremiteti) po indikaciji',
+          'Procena bubrežne funkcije (urin, mikroalbuminurija), pregled očnog dna'
+        ];
+      }
+      if(inRange(c,'J00','J99')){
+        return [
+          'Saturacija O₂, auskultacija, spirometrija po indikaciji, RTG pluća po proceni lekara',
+          'CRP/KKS ako se sumnja na infekciju, alergološka obrada kod astme/alergija'
+        ];
+      }
+      if(inRange(c,'M00','M99')){
+        return [
+          'Upalni markeri (CRP/SE), reumatološki panel po indikaciji (RF, anti-CCP, ANA)',
+          'RTG/UZV/MR zglobova po proceni specijaliste, procena funkcije i opsega pokreta',
+          'Vitamin D, metabolizam kostiju (kalcijum, fosfor, PTH) po indikaciji'
+        ];
+      }
+      if(inRange(c,'E00','E90')){
+        return [
+          'Glukoza/HbA1c, lipidogram, TSH/T3/T4 (zavisno od problema), krvni pritisak',
+          'Procena bubrega i jetre (kreatinin, ALT/AST), mikroalbuminurija kod dijabetesa'
+        ];
+      }
+      return [
+        'Osnovno: anamneza + pregled + KKS/CRP, glukoza, kreatinin/urea, elektroliti (po proceni lekara)',
+        'Dodatne pretrage i snimanja zavise od simptoma i MKB-10 šifre (specijalista).'
+      ];
+    }
+
+    function patientSummary(p){
+      if(!p) return { title:'(bez pacijenta)', lines:[] };
+      const o = p.osobni || {};
+      const ime = `${o.ime||''} ${o.prezime||''}`.trim() || 'Pacijent';
+      let age = '';
+      const y = parseInt(o.godina||'',10);
+      if(y && y>1900){ age = String(new Date().getFullYear() - y); }
+      const lines = [];
+      if(o.godina) lines.push(`God. rođ.: ${o.godina}${age?` (≈${age} god.)`:''}`);
+      if(o.mjesto) lines.push(`Mesto: ${o.mjesto}`);
+      if(p.razlog) lines.push(`Razlog: ${p.razlog}`);
+      if(p.status?.zakljucak) lines.push(`Zaključak: ${p.status.zakljucak}`);
+      if(p.lijekovi) lines.push(`Lekovi: ${p.lijekovi}`);
+      if(p.alergije) lines.push(`Alergije: ${p.alergije}`);
+      return { title: ime, lines };
+    }
+
+    function buildIntegrativeInput(){
+      return {
+        icd: selectedICD || '',
+        label: selectedLabel || selectedICD || '',
+        notes: [patient?.razlog, patient?.osobna?.sadasnja, patient?.osobna?.dosadasnje, patient?.status?.zakljucak, patient?.lijekovi || patient?.lekovi, patient?.alergije].filter(Boolean).join(' | '),
+        diagnosis: patient?.status?.zakljucak || '',
+        goal: patient?.razlog || ''
+      };
+    }
+
+    function getIntegrativeRecommendations(){
+      try{
+        if(!(window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.computeRecommendations)) return null;
+        return window.SINET_IntegrativeEngine.computeRecommendations(buildIntegrativeInput(), { basePrefix:'../' });
+      }catch(_){ return null; }
+    }
+
+    function getIntegrativePlan(){
+      try{
+        if(!(window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.computePlan)) return null;
+        return window.SINET_IntegrativeEngine.computePlan(buildIntegrativeInput(), { basePrefix:'../' });
+      }catch(_){ return null; }
+    }
+
+    function buildIntegrativeBlockHtml(){
+      try{
+        if(!(window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.renderBundleHtml)) return '';
+        return window.SINET_IntegrativeEngine.renderBundleHtml(buildIntegrativeInput(), {
+          heading: '🌿 Preporučene integrativne grane',
+          intro: 'Ovo je personalizovan izbor iz SINET biblioteke za trenutni MKB, poslednju anamnezu i aktivni profil.',
+          basePrefix: '../'
+        });
+      }catch(_){ return ''; }
+    }
+
+    function buildFrequencyRows(ids){
+      const rows = [];
+      for(const id of ids){
+        const it = byId[String(id)];
+        if(!it) continue;
+        const perMin = Math.max(1, Number(it.trajanjePoFrekvencijiMin || it.trajanjeMin || 5) || 5);
+        const freqs = Array.isArray(it.frekvencije) ? it.frekvencije : [];
+        for(const f of freqs){
+          if(!f || f.enabled === false) continue;
+          const hz = Number(f.value ?? f.hz);
+          if(!hz || !isFinite(hz)) continue;
+          rows.push({ hz, minutes: perMin, src: bestName(it) });
+        }
+      }
+      return rows;
+    }
+
+    function buildGuideHtml(){
+      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
+      const title = entry?.title || '';
+      const chapter = chapterFor(selectedICD);
+      const pSum = patientSummary(patient);
+      const tests = guessTestsFor(selectedICD);
+      const integrativeBlock = buildIntegrativeBlockHtml();
+
+      const ids = Array.from(selectedIds);
+      const items = ids.map(id => byId[String(id)]).filter(Boolean);
+      const freqRows = buildFrequencyRows(ids);
+      const freqTable = freqRows.length ? `
+        <table class="freq-table">
+          <thead><tr><th>Frekvencija</th><th>Trajanje</th><th>Izvor (SINET)</th></tr></thead>
+          <tbody>
+            ${freqRows.slice(0, 80).map(r=>`<tr><td><strong>${esc(r.hz)} Hz</strong></td><td>${esc(r.minutes)} min</td><td>${esc(r.src)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+        ${freqRows.length>80?`<div class="muted small">Prikazano 80 od ${freqRows.length} frekvencija.</div>`:''}
+      ` : `<div class="muted">Nema odabranih frekvencija. Označi SINET stavke ispod.</div>`;
+
+      const candList = items.length ? items.map(it=>`<li><strong>${esc(bestName(it))}</strong><br><span class="muted small">${esc(String(it.opis||'')).slice(0,220)}${String(it.opis||'').length>220?'…':''}</span></li>`).join('') : '<li class="muted">(Nema izabranih stavki)</li>';
+
+      const audioPlan = `
+        <div class="protocol-box">
+          <div><strong>Default:</strong> 5 min po frekvenciji (ili preporuka iz stavke) · Loop: 1 · Dnevno: 1 · Pauza: 0–3 dana (individualno).</div>
+          <div class="muted small">Napomena: početne vrednosti. Prilagodi prema toleranciji.</div>
+        </div>
+      `;
+
+      const html = `
+        <div class="card" style="margin-bottom:14px;">
+          <div class="row" style="justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="badge">${esc(selectedICD || 'MKB-10')}</div>
+              <h2 style="margin:8px 0 0 0;">${esc(title || selectedLabel || selectedICD || 'Izaberi šifru')}</h2>
+              <div class="muted small">${esc(chapter)}</div>
+            </div>
+            <div class="small" style="text-align:right;">
+              <div class="muted">Generisano: ${esc(new Date().toLocaleString('sr-RS'))}</div>
+              <div class="muted">Autor: miuchins &amp; SINET AI</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-grid">
+          <div class="card">
+            <h3>🧑‍⚕️ Personalizovani sažetak</h3>
+            <div class="muted small">Generator koristi poslednjeg izabranog pacijenta iz Anamneze (ako postoji).</div>
+            <div class="protocol-box">
+              <div><strong>${esc(pSum.title)}</strong></div>
+              <ul>${pSum.lines.map(x=>`<li>${esc(x)}</li>`).join('') || '<li class="muted">(nema dodatnih podataka)</li>'}</ul>
+            </div>
+            <div class="muted small">Ovaj vodič je okvir; uvek proveri kontraindikacije.</div>
+          </div>
+          <div class="card">
+            <h3>🔬 Preporučene pretrage (osnovno)</h3>
+            <ul>${tests.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+            <div class="muted small">Snimanja/analize se određuju prema simptomima i nalazima.</div>
+          </div>
+        </div>
+
+        ${integrativeBlock}
+
+        <h2>🔷 1) Standardna medicina (orijentacija)</h2>
+        <div class="two-col">
+          <div class="card">
+            <h3>Šta obično radi lekar</h3>
+            <ul>
+              <li>Potvrda dijagnoze (anamneza, pregled, pretrage) + procena težine.</li>
+              <li>Plan terapije u skladu sa smernicama i rizicima.</li>
+              <li>Kontrola i praćenje (simptomi, laboratorija, neželjeni efekti).</li>
+            </ul>
+            <div class="muted small">Ne navodimo doziranja i recepte — to određuje lekar.</div>
+          </div>
+          <div class="card">
+            <h3>Kada hitno kod lekara</h3>
+            <ul>
+              <li>Naglo pogoršanje, otežano disanje, bol u grudima, slabost, konfuzija.</li>
+              <li>Visoka temperatura, krvarenje, jaka dehidracija, znakovi sepse.</li>
+              <li>Neuobičajen bol ili simptomi koji se brzo šire.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="soul-box">
+          <h2>🌀 2) Psihosomatika i stres (podrška)</h2>
+          <ul>
+            <li><strong>Stres → inflamacija:</strong> hronični stres često pogoršava simptome. Uvedi mikro-pauze (3–5 min) više puta dnevno.</li>
+            <li><strong>Dnevnik simptoma:</strong> beleži okidače (hrana, san, emocije, napor).</li>
+            <li><strong>Disanje:</strong> 4–6 sek udah / 6–8 sek izdah, 5 min, 2× dnevno.</li>
+          </ul>
+          <div class="protocol-box"><strong>Afirmacija:</strong> "Moje telo se umiruje. Biram mir, strpljenje i postepeno ozdravljenje."</div>
+        </div>
+
+        <div class="folk-box">
+          <h2>🌿 3) Ishrana i podrška navikama</h2>
+          <div class="two-col">
+            <div>
+              <h3>Osnovna pravila</h3>
+              <ul>
+                <li>San 7–9h, hidratacija, dnevna šetnja (koliko možeš).</li>
+                <li>Više: povrće, riba, maslinovo ulje, integralno; manje: ultra-prerađeno, šećer.</li>
+                <li>Ako imaš alergije/lekove — proveri interakcije pre suplemenata.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Suplemeti (opciono)</h3>
+              <ul>
+                <li>Vitamin D (ako je nizak), magnezijum (po toleranciji), omega-3.</li>
+                <li>Probiotik kod digestivnih smetnji (individualno).</li>
+              </ul>
+              <div class="muted small">Uvoditi postepeno — jedan po jedan.</div>
+            </div>
+          </div>
+        </div>
+
+        <h2>🎵 4) SINET zvučna terapija (protokol)</h2>
+        <p class="muted">Na osnovu MKB-10 šifre biramo SINET stavke (katalog) i gradimo listu frekvencija. Izbor stavki menjaš ispod (ne ulazi u kopirani tekst).</p>
+        ${audioPlan}
+        ${freqTable}
+        <div class="card" style="margin-top:14px;">
+          <h3>Izabrane SINET stavke</h3>
+          <ol>${candList}</ol>
+        </div>
+
+        <h2>🙏 5) Duhovna podrška</h2>
+        <div class="card">
+          <div class="protocol-box" style="text-align:center; font-style:italic;">
+            "Gospode, daruj mi mir, snagu i jasnoću. Pomozi mi da biram ono što mi koristi, uz mudrost i strpljenje."
+            <div class="muted small">(Prilagodi prema svojoj tradiciji.)</div>
+          </div>
+        </div>
+
+        <hr class="hr">
+        <div class="muted small">Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi <code>data/sinet_dx_index.json</code> i SINET katalog stavke.</div>
+      `;
+      return html;
+    }
+
+    function render(){
+      document.getElementById('badgeIcd').textContent = selectedICD ? `MKB-10: ${selectedICD}` : 'MKB-10';
+      document.title = selectedICD ? `SINET vodič · ${selectedICD}` : 'SINET · Integrativni vodič';
+      document.getElementById('contentToCopy').innerHTML = buildGuideHtml();
+      renderChooser();
+      updateBadgesAndButtons();
+    }
+
+    function computeCandidates(){
+      if(!selectedICD) return;
+      selectedIds = new Set();
+      candidateIds = [];
+
+      const refsParam = (qs.get('refs')||'').trim();
+      let refs = refsParam ? refsParam.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+      if(!refs.length && dxIndex && dxIndex[selectedICD] && Array.isArray(dxIndex[selectedICD].sinet_refs)){
+        refs = dxIndex[selectedICD].sinet_refs.map(String);
+      }
+
+      if(!refs.length && catalog && catalog.length){
+        const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
+        const keyText = `${selectedLabel||''} ${entry?.title||''}`.trim() || selectedICD;
+        const rawParts = norm(keyText).split(/\s+/).map(x=>x.replace(/[^a-z0-9]+/g,'')).filter(x=>x.length>=4 && !/^\d+$/.test(x));
+        const parts = Array.from(new Set(rawParts)).slice(0, 10);
+        const scored = [];
+        for(const it of catalog){
+          const hay = norm(`${it.simptom||''} ${it.naziv||''} ${it.opis||''}`);
+          let score = 0;
+          for(const p of parts){ if(hay.includes(p)) score++; }
+          if(score>0) scored.push({ id: String(it.id), score });
+        }
+        scored.sort((a,b)=> b.score - a.score);
+        for(const x of scored.slice(0,24)) refs.push(x.id);
+      }
+
+      candidateIds = refs.slice(0, 30).map(String);
+      for(const id of candidateIds) selectedIds.add(String(id));
+    }
+
+    function renderChooser(){
+      const box = document.getElementById('sinetChooser');
+      if(!box) return;
+
+      if(!selectedICD){
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+
+      const items = candidateIds.map(id=>byId[String(id)]).filter(Boolean);
+      const list = items.map(it=>{
+        const id = String(it.id);
+        const checked = selectedIds.has(id) ? 'checked' : '';
+        const title = bestName(it);
+        const opis = String(it.opis||'');
+        return `
+          <label class="chk">
+            <input type="checkbox" data-id="${esc(id)}" ${checked} style="margin-top:3px;">
+            <div>
+              <div><strong>${esc(title)}</strong> <span class="muted small">(#${esc(id)})</span></div>
+              <div class="muted small">${esc(opis).slice(0, 220)}${opis.length>220?'…':''}</div>
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      box.innerHTML = `
+        <h3 style="margin-top:0;">✅ Izbor SINET stavki (menja audio protokol)</h3>
+        <div class="muted small">Ovo je praktična lista kandidata za <strong>${esc(selectedICD)}</strong>. Ukloni/dodaj stavke, pa klikni <strong>„Ažuriraj vodič“</strong>.</div>
+        <div style="margin-top:10px;">${list || '<div class="muted">(Nema kandidata)</div>'}</div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="applyChooser()">Ažuriraj vodič</button>
+          <button class="btn btn-ghost" onclick="selectAll(true)">Označi sve</button>
+          <button class="btn btn-ghost" onclick="selectAll(false)">Poništi sve</button>
+        </div>
+        <hr class="hr">
+        <h3 style="margin:0 0 8px 0;">🔎 Dodaj iz SINET kataloga</h3>
+        <div class="muted small">Ako nema automatskih predloga za ovu MKB-10 šifru, pretraži ceo katalog i dodaj stavke ručno.</div>
+        <div class="inputs" style="margin-top:8px;">
+          <input id="catSearch" type="text" placeholder="pretraga (npr. artritis, bol, inflamacija)..." oninput="searchCatalog(this.value)" />
+        </div>
+        <div id="catResults" style="margin-top:10px;"></div>
+      `;
+    }
+
+    window.selectAll = function(on){
+      const box = document.getElementById('sinetChooser');
+      box.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb=>cb.checked = !!on);
+    }
+
+    window.applyChooser = function(){
+      const box = document.getElementById('sinetChooser');
+      const set = new Set();
+      box.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb=>{
+        if(cb.checked) set.add(String(cb.getAttribute('data-id')));
+      });
+      selectedIds = set;
+      render();
+    }
+
+    // Search & add from full catalog (fallback when dx_index has no refs)
+    window.searchCatalog = function(q){
+      const box = document.getElementById('catResults');
+      if(!box) return;
+      const nq = norm(q || '');
+      if(!nq || nq.length < 3){
+        box.innerHTML = '<div class="muted small">Unesi bar 3 slova za pretragu.</div>';
+        return;
+      }
+      const hits = (catalog||[])
+        .map(it=>{
+          const hay = norm(`${it.simptom||''} ${it.naziv||''} ${it.opis||''}`);
+          let score = 0;
+          const tokens = nq.split(/\s+/).filter(Boolean);
+          for(const t of tokens){ if(hay.includes(t)) score++; }
+          return { it, score };
+        })
+        .filter(x=>x.score>0 && x.it && x.it.id!=null)
+        .sort((a,b)=> b.score - a.score)
+        .slice(0, 10);
+
+      if(!hits.length){
+        box.innerHTML = '<div class="muted small">(Nema rezultata u katalogu)</div>';
+        return;
+      }
+
+      box.innerHTML = hits.map(x=>{
+        const it = x.it;
+        const id = String(it.id);
+        const title = esc(bestName(it));
+        const opis = esc(String(it.opis||'')).slice(0, 180);
+        const already = selectedIds.has(id);
+        return `
+          <div class="card" style="padding:12px 14px; margin:10px 0;">
+            <div style="display:flex; gap:10px; justify-content:space-between; align-items:flex-start;">
+              <div style="flex:1;">
+                <div><strong>${title}</strong> <span class="muted small">(#${esc(id)})</span></div>
+                <div class="muted small">${opis}${String(it.opis||'').length>180?'…':''}</div>
+              </div>
+              <div>
+                <button class="btn ${already?'btn-ghost':'btn-primary'}" style="padding:10px 14px;" onclick="addFromCatalog('${esc(id)}')">${already?'Dodato':'➕ Dodaj'}</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.addFromCatalog = function(id){
+      const sid = String(id);
+      selectedIds.add(sid);
+      if(!candidateIds.includes(sid)) candidateIds.push(sid);
+      render();
+      renderChooser();
+      updateBadgesAndButtons();
+    }
+
+    window.applyIcdFromInput = async function(){
+      const q = String(document.getElementById('icdInput').value||'').trim();
+      if(!q) return;
+      const m = q.toUpperCase().match(/^([A-Z]\d{2}(?:\.[0-9A-Z]{1,2})?)/);
+      if(m){
+        selectedICD = m[1];
+        selectedLabel = q;
+        computeCandidates();
+        render();
+        showMkbSuggestions([]);
+        return;
+      }
+      const nq = norm(q);
+      const hit = mkb.find(e => norm(e.title).includes(nq) || norm(e.code).includes(nq));
+      if(hit){
+        selectedICD = String(hit.code).toUpperCase();
+        selectedLabel = `${hit.code} — ${hit.title}`;
+        computeCandidates();
+        render();
+        showMkbSuggestions([]);
+      }else{
+        alert('Nisam našao šifru/naziv u MKB bazi. Pokušaj šifru (npr. I10) ili izaberi iz predloga.');
+      }
+    }
+
+    // ===================== Unified export / template =====================
+    const TEMPLATE_ID = 'SINET_TEMPLATE_v1';
+
+    function buildGuideMarkdown(){
+      if(!selectedICD) return '# SINET vodič\n\n(Nije izabrana MKB-10 šifra.)\n';
+      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
+      const title = entry?.title || selectedLabel || selectedICD;
+      const chapter = chapterFor(selectedICD);
+      const pSum = patientSummary(patient);
+      const tests = guessTestsFor(selectedICD);
+      const integrative = getIntegrativeRecommendations();
+      const integrativePlan = getIntegrativePlan();
+
+      const ids = Array.from(selectedIds);
+      const items = ids.map(id => byId[String(id)]).filter(Boolean);
+      const freqRows = buildFrequencyRows(ids);
+
+      const md = [];
+      md.push(`# SINET integrativni vodič — ${selectedICD}`);
+      md.push(`**${title}**`);
+      md.push(`_${chapter}_`);
+      md.push('');
+      md.push('> ⚠️ Informativno: nije zamena za lekarski pregled. Kod hitnih simptoma odmah potraži urgentnu pomoć.');
+      md.push('');
+      md.push(`Generisano: ${new Date().toLocaleString('sr-RS')}`);
+      md.push(`Autor: miuchins & SINET AI`);
+      md.push(`Template: ${TEMPLATE_ID}`);
+      md.push('');
+      md.push('## 🧑‍⚕️ Personalizovani sažetak');
+      md.push(`**${pSum.title}**`);
+      if(pSum.lines.length) md.push(...pSum.lines.map(x=>`- ${x}`));
+      else md.push('- (nema dodatnih podataka)');
+      md.push('');
+      md.push('## 🔬 Preporučene pretrage (osnovno)');
+      md.push(...tests.map(x=>`- ${x}`));
+      md.push('');
+      if(integrative && Array.isArray(integrative.recommendations) && integrative.recommendations.length){
+        md.push('## 🌿 Preporučene integrativne grane');
+        integrative.recommendations.slice(0,5).forEach(r=> md.push(`- ${r.emoji||'🌿'} ${r.title} — ${r.summary||''}`));
+        if(integrative.redFlags && integrative.redFlags.length) md.push(`- Oprez / red flags: ${integrative.redFlags.join(', ')}`);
+        md.push('');
+      }
+      if(integrativePlan && integrativePlan.today){
+        md.push('## 📅 Plan za danas');
+        md.push(`- Stil: ${integrativePlan.style || ''}`);
+        md.push(`- Ukupno približno: ${integrativePlan.today.totalMinutes || 0} min`);
+        (integrativePlan.today.items || []).forEach(it => md.push(`- ${it.slot}: ${it.title}${it.durationMin ? ` — ${it.durationMin} min` : ''} — ${it.instruction}`));
+        md.push('');
+      }
+      if(integrativePlan && integrativePlan.week && Array.isArray(integrativePlan.week.days)){
+        md.push('## 🗓️ Plan za 7 dana');
+        integrativePlan.week.days.forEach(day => {
+          md.push(`- ${day.label} (${day.focus}) — oko ${day.totalMinutes || 0} min`);
+          (day.items || []).slice(0,4).forEach(it => md.push(`  - ${it.title}${it.durationMin ? ` — ${it.durationMin} min` : ''}`));
+        });
+        md.push(`- Pravilo: ${integrativePlan.week.rule || ''}`);
+        md.push(`- Posle 7 dana: ${integrativePlan.week.pauseRule || ''}`);
+        md.push('');
+      }
+      md.push('## 🔷 1) Standardna medicina (orijentacija)');
+      md.push('- Potvrda dijagnoze (anamneza, pregled, pretrage) + procena težine.');
+      md.push('- Plan terapije u skladu sa smernicama i rizicima.');
+      md.push('- Kontrola i praćenje (simptomi, laboratorija, neželjeni efekti).');
+      md.push('_Ne navodimo doziranja i recepte — to određuje lekar._');
+      md.push('');
+      md.push('**Kada hitno kod lekara**');
+      md.push('- Naglo pogoršanje, otežano disanje, bol u grudima, slabost, konfuzija.');
+      md.push('- Visoka temperatura, krvarenje, jaka dehidracija, znakovi sepse.');
+      md.push('- Neuobičajen bol ili simptomi koji se brzo šire.');
+      md.push('');
+      md.push('## 🌀 2) Psihosomatika i stres (podrška)');
+      md.push('- **Stres → inflamacija:** uvedi mikro-pauze (3–5 min) više puta dnevno.');
+      md.push('- **Dnevnik simptoma:** beleži okidače (hrana, san, emocije, napor).');
+      md.push('- **Disanje:** 4–6 s udah / 6–8 s izdah, 5 min, 2× dnevno.');
+      md.push('- **Afirmacija:** "Moje telo se umiruje. Biram mir, strpljenje i postepeno ozdravljenje."');
+      md.push('');
+      md.push('## 🌿 3) Ishrana i podrška navikama');
+      md.push('- San 7–9h, hidratacija, dnevna šetnja (koliko možeš).');
+      md.push('- Više: povrće, riba, maslinovo ulje, integralno; manje: ultra-prerađeno, šećer.');
+      md.push('- Ako imaš alergije/lekove — proveri interakcije pre suplemenata.');
+      md.push('');
+      md.push('## 🎵 4) SINET zvučna terapija (protokol)');
+      md.push('- Default: **5 min** po frekvenciji (ili preporuka iz stavke) · Loop: **1** · Dnevno: **1** · Pauza: **0–3 dana** (individualno).');
+      if(freqRows.length){
+        md.push('');
+        md.push('**Frekvencije**');
+        freqRows.slice(0,200).forEach(r=>{
+          md.push(`- ${r.hz} Hz — ${r.minutes} min — ${r.src}`);
+        });
+        if(freqRows.length>200) md.push(`- … (prikazano 200 od ${freqRows.length})`);
+      } else {
+        md.push('- (Nema odabranih frekvencija — izaberi SINET stavke.)');
+      }
+      md.push('');
+      md.push('**Izabrane SINET stavke**');
+      if(items.length){
+        items.forEach(it=> md.push(`- ${bestName(it)} (#${it.id})`));
+      } else {
+        md.push('- (Nema izabranih stavki)');
+      }
+      md.push('');
+      md.push('## 🙏 5) Duhovna podrška');
+      md.push('> "Gospode, daruj mi mir, snagu i jasnoću. Pomozi mi da biram ono što mi koristi, uz mudrost i strpljenje."');
+      md.push('');
+      md.push('_Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi data/sinet_dx_index.json i SINET katalog._');
+
+      return md.join('\n');
+    }
+
+    function buildGuideText(){
+      // Plain text = markdown without headings markers
+      return buildGuideMarkdown()
+        .replace(/^#\s+/gm,'')
+        .replace(/^##\s+/gm,'')
+        .replace(/^>\s?/gm,'')
+        .replace(/\*\*(.*?)\*\*/g,'$1')
+        .replace(/_([^_]+)_/g,'$1');
+    }
+
+    function buildGuideFullHtml(){
+      const contentHtml = document.getElementById('contentToCopy')?.innerHTML || '';
+      const backUrl = qs.get('back') || '';
+      const patientLine = patient ? (
+        `<strong>Osoba:</strong> ${esc(patient?.osobni?.ime||'')} ${esc(patient?.osobni?.prezime||'')} (${esc(patient?.osobni?.nick||'')}) · ${esc(patient?.osobni?.pol||'')} · ${esc(patient?.osobni?.datum_rodjenja||'')}`
+      ) : ((window.SINET_ProfilesCore && window.SINET_ProfilesCore.getActiveProfile) ? (function(){ const p = window.SINET_ProfilesCore.getActiveProfile(); return p ? `<strong>Aktivni profil:</strong> ${esc((p.displayName || [p.firstName,p.lastName].filter(Boolean).join(' ')))}` : ''; })() : '');
+      const title = `SINET vodič · ${selectedICD||'MKB'} ${selectedLabel||''}`.trim();
+      const integrative = getIntegrativeRecommendations();
+      const subtitle = 'Standardna medicina + alternativne metode + duhovnost + SINET zvučna terapija (informativno)';
+      const warningsHtml = `<div class="warning-box">⚠️ <strong>Upozorenje:</strong> Ovo je informativni vodič i nije zamena za lekarski pregled. Kod naglog pogoršanja, jakog bola, gušenja, slabosti jedne strane tela, krvarenja, visoke temperature ili sumnje na hitno stanje — odmah potraži urgentnu pomoć.</div>`;
+      if(!window.SINET_TemplateV2 || typeof window.SINET_TemplateV2.buildDoc !== 'function'){
+        // Fallback minimal
+        const style = document.querySelector('style')?.innerHTML || '';
+        return `<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${style}</style><script defer src="../js/sinet-page-nav.js?v=16.0.0.18"></script>
+</head><body>${warningsHtml}<div id="contentToCopy">${contentHtml}</div></body></html>`;
+      }
+      return window.SINET_TemplateV2.buildDoc({
+        title,
+        subtitle,
+        templateName: 'SINET_TEMPLATE_v2',
+        coauthor: 'miuchins (Svetozar Miučin) + SINET AI',
+        backUrl: backUrl || null,
+        patientLine: patientLine || '',
+        profileSnapshotHtml: (window.SINET_SharedContext && window.SINET_SharedContext.getProfileSnapshotHtml ? window.SINET_SharedContext.getProfileSnapshotHtml() : ''),
+        warningsHtml,
+        contentHtml,
+        anamnezaJson: patient || null,
+        badgesHtml: `<span class="badge">MKB: ${esc(selectedICD||'')}</span><span class="badge">Frekvencije: ${String(buildFrequencyRows(Array.from(selectedIds)).length)}</span>${integrative && integrative.recommendations && integrative.recommendations.length ? `<span class="badge">Integrativno: ${esc((window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.recommendationsToBadges) ? window.SINET_IntegrativeEngine.recommendationsToBadges(integrative) : integrative.recommendations.slice(0,3).map(r=>r.title).join(', '))}</span>` : ''}`
+      });
+    }
+    function downloadText(content, filename, mime){
+      const blob = new Blob([content], {type: mime || 'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>{ try{ URL.revokeObjectURL(url);}catch(_){} }, 30000);
+    }
+
+    async function copyPlain(text){
+      await navigator.clipboard.writeText(text);
+    }
+
+    function updateBadgesAndButtons(){
+      const freqCount = buildFrequencyRows(Array.from(selectedIds)).length;
+      const fb = document.getElementById('freqBadge');
+      if(fb) fb.textContent = `Frekvencije: ${freqCount}`;
+      const canProtocol = freqCount > 0;
+      const bInsert = document.getElementById('btnInsert');
+      const bJson = document.getElementById('btnJSON');
+      if(bInsert) bInsert.disabled = !canProtocol;
+      if(bJson) bJson.disabled = !canProtocol;
+    }
+
+    // Buttons (unified)
+    document.getElementById('btnMD').addEventListener('click', async ()=>{
+      try{
+        await copyPlain(buildGuideMarkdown());
+        alert('✅ Kopirano kao Markdown (.md).');
+      }catch(e){
+        console.warn(e);
+        alert('Ne mogu da kopiram (browser dozvole).');
+      }
+    });
+
+    document.getElementById('btnTXT').addEventListener('click', ()=>{
+      try{
+        downloadText(buildGuideText(), `SINET_GUIDE_${selectedICD||'UNKNOWN'}.txt`, 'text/plain;charset=utf-8');
+      }catch(e){ alert(e.message || 'Ne mogu TXT.'); }
+    });
+
+    document.getElementById('btnHTML').addEventListener('click', ()=>{
+      try{
+        downloadText(buildGuideFullHtml(), `SINET_GUIDE_${selectedICD||'UNKNOWN'}.html`, 'text/html;charset=utf-8');
+      }catch(e){ alert(e.message || 'Ne mogu HTML.'); }
+    });
+
+    document.getElementById('btnEmail').addEventListener('click', ()=>{
+      try{
+        const subj = `SINET vodič ${selectedICD||''}`.trim();
+        const body = buildGuideText();
+        window.location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+      }catch(e){ alert(e.message || 'Ne mogu E-mail.'); }
+    });
+
+    document.getElementById('btnJSON').addEventListener('click', ()=>{
+      try{
+        const pack = buildSharePack();
+        downloadJSON(pack, `SINET_GUIDE_${selectedICD || 'UNKNOWN'}.json`);
+      }catch(e){ alert(e.message || 'Ne mogu JSON/SharePack.'); }
+    });
+function buildSharePack(){
+      if(!selectedICD) throw new Error('Nema MKB-10 šifre.');
+      const ids = Array.from(selectedIds);
+      const steps = [];
+      for(const id of ids){
+        const it = byId[String(id)];
+        if(!it) continue;
+        const perMin = Math.max(1, Number(it.trajanjePoFrekvencijiMin || it.trajanjeMin || 5) || 5);
+        const freqs = Array.isArray(it.frekvencije) ? it.frekvencije : [];
+        for(const f of freqs){
+          if(!f || f.enabled === false) continue;
+          const hz = Number(f.value ?? f.hz) || 0;
+          if(!hz) continue;
+          const obj = JSON.parse(JSON.stringify(f));
+          obj.value = hz; obj.hz = hz;
+          obj._from = { symptomId: it.id, symptom: bestName(it) };
+          steps.push({ freq: obj, minutes: perMin });
+        }
+      }
+
+      if(!steps.length){
+        throw new Error('Nema odabranih frekvencija. Izaberi bar jednu SINET stavku (desno) ili dodaj iz pretrage kataloga.');
+      }
+
+      const now = Date.now();
+      const guideHtml = buildGuideFullHtml();
+      const guideMd = buildGuideMarkdown();
+      const protocol = {
+        id: `GUIDE_${now}`,
+        name: `Vodič – ${selectedICD}`,
+        steps,
+        loopCount: 1,
+        createdAt: now,
+        updatedAt: now,
+        _meta: { mkb10: selectedICD, dxLabel: selectedLabel || selectedICD, template: TEMPLATE_ID, integrativeRecommendations: getIntegrativeRecommendations(), integrativePlan: getIntegrativePlan() },
+        _guideHtml: guideHtml,
+        _guideMd: guideMd
+      };
+      return { format:'SINET_SHAREPACK_v1', createdAt: now, protocol };
+    }
+
+    function downloadJSON(obj, filename){
+      const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>{ try{ URL.revokeObjectURL(url);}catch(_){} }, 30000);
+    }
+
+    function insertToSinet(){
+      const pack = buildSharePack();
+      const bridge = { format:'SINET_DS_TO_PROTOCOL_v1', protocol: pack.protocol, guideHtml: pack.protocol._guideHtml, meta: pack.protocol._meta };
+      localStorage.setItem('SINET_DS_BRIDGE', JSON.stringify(bridge));
+      location.href = '../index.html?dsimport=1';
+    }
+
+    document.getElementById('btnInsert').addEventListener('click', ()=>{
+      try{ insertToSinet(); }catch(e){ alert(e.message || 'Ne mogu ubacivanje.'); }
+    });
+
+    // ===================== Boot =====================
+    (async function boot(){
+      const st = document.getElementById('status');
+      st.textContent = 'Učitavam baze…';
+
+      try{ patient = JSON.parse(localStorage.getItem('ANAMNEZA_LAST_PATIENT')||'null'); }catch(_){ patient = null; }
+      if(!patient){
+        try{
+          const ap = window.SINET_ProfilesCore && window.SINET_ProfilesCore.getActiveProfile ? window.SINET_ProfilesCore.getActiveProfile() : null;
+          if(ap){
+            patient = { osobni:{ ime: ap.firstName || '', prezime: ap.lastName || '', godina: ap.yearOfBirth || '', pol: ap.sex || '', mjesto: ap.city || '' }, razlog: ap.reason || '', osobna:{ sadasnja: ap.currentCondition || '', dosadasnje: ap.personalHistory || '' }, alergije: ap.allergies || '', lijekovi: ap.meds || '', status:{ zakljucak: ap.primaryDiagnosis || '' } };
+          }
+        }catch(_){ }
+      }
+      try{ window.SINET_SharedContext && window.SINET_SharedContext.refreshSharedContext && window.SINET_SharedContext.refreshSharedContext('integrativni_vodic', { currentState:{ source:'integrativni_vodic', symptom: selectedLabel || selectedICD || '', notes: patient?.status?.zakljucak || '' } }); }catch(_){ }
+
+      const mkbRaw = await loadJsonFirst(['../data/mkb10_sr.json','/data/mkb10_sr.json','./data/mkb10_sr.json']);
+      if(Array.isArray(mkbRaw)) mkb = mkbRaw;
+      else if(Array.isArray(mkbRaw?.entries)) mkb = mkbRaw.entries;
+      mkb = (mkb||[]).filter(x=>x && (x.code||x.sifra)).map(x=>({ code:String(x.code||x.sifra).trim(), title:String(x.title||x.naziv||x.opis||'').trim() }));
+
+      const dx = await loadJsonFirst(['../data/sinet_dx_index.json','/data/sinet_dx_index.json','./data/sinet_dx_index.json']);
+      if(dx && typeof dx === 'object') dxIndex = dx;
+
+      const cat = await loadJsonFirst(['../data/SINET_STL.json','/data/SINET_STL.json','./data/SINET_STL.json']);
+      try{ const fc = cat?.meta?.freq_catalog; if(fc && window.SINET_FrequencySchema?.setFreqCatalog) window.SINET_FrequencySchema.setFreqCatalog(fc); }catch(_){}
+      if(Array.isArray(cat)) catalog = cat;
+      else if(cat && Array.isArray(cat.simptomi)) catalog = cat.simptomi;
+      else if(cat && Array.isArray(cat.items)) catalog = cat.items;
+      byId = {};
+      for(const it of (catalog||[])) if(it && it.id!=null) byId[String(it.id)] = it;
+
+      selectedICD = String(qs.get('icd') || '').trim().toUpperCase();
+      selectedLabel = String(qs.get('label') || selectedICD).trim();
+      if(selectedICD){
+        document.getElementById('icdInput').value = selectedLabel || selectedICD;
+        computeCandidates();
+      }
+
+      st.textContent = `MKB=${mkb.length} • katalog=${catalog.length}`;
+      setupIcdAutocomplete();
+      render();
+      window.addEventListener('load', ()=>{ try{ render(); }catch(_){} });
+    })();
+  </script>
+</body>
+</html>

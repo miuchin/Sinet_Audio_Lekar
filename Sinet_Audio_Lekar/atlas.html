@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SINET Atlas simptoma v16.0.0.118.0</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./css/main.css">
+  <style>
+    :root{--bg:#f5f7fb;--card:#ffffff;--line:#e5e7eb;--line-soft:#d8e7ff;--text:#0f172a;--muted:#64748b;--primary:#2563eb;--primary-dark:#0f3d66;--ok:#0f766e;--purple:#7c3aed;--warning:#d97706}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#1f2937;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .atlas-wrap{max-width:1440px;margin:0 auto;padding:16px}
+    .atlas-top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+    .atlas-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .atlas-btn{border:none;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;transition:.15s transform,.15s box-shadow,.15s opacity}
+    .atlas-btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.08)}
+    .atlas-btn.primary{background:var(--primary);color:#fff}
+    .atlas-btn.ghost{background:#475569;color:#fff}
+    .atlas-btn.ok{background:var(--ok);color:#fff}
+    .atlas-btn.purple{background:var(--purple);color:#fff}
+    .atlas-btn.warn{background:var(--warning);color:#fff}
+    .atlas-hero{background:linear-gradient(135deg,#eef6ff 0%,#f8fbff 100%);border:1px solid var(--line-soft);border-radius:18px;padding:18px;box-shadow:0 2px 8px rgba(15,98,254,.08);margin-bottom:14px}
+    .atlas-hero h1{margin:0 0 8px 0;font-size:1.6rem;color:var(--primary-dark)}
+    .atlas-hero p{margin:0;color:#4b5d73;line-height:1.55}
+    .atlas-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 10px}
+    .atlas-toolbar input{flex:1;min-width:240px;padding:14px;border:1px solid #d3dce6;border-radius:12px;font-size:1rem;background:#fff}
+    .atlas-quick{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+    .chip{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;padding:9px 12px;cursor:pointer;font-weight:700;background:#fff;border:1px solid #dbe7f8;color:#24425f}
+    .chip:hover{box-shadow:0 6px 14px rgba(15,23,42,.08)}
+    .atlas-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 12px}
+    .atlas-kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+    .atlas-kpi span{display:block;font-size:.9rem;color:var(--muted);margin-bottom:6px}
+    .atlas-kpi strong{font-size:1.35rem;color:var(--text)}
+    .atlas-meta-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin:0 0 16px}
+    .atlas-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+    .atlas-panel h2{margin:0 0 8px 0;font-size:1.05rem;color:var(--text)}
+    .atlas-panel .sub{color:var(--muted);font-size:.93rem;line-height:1.5}
+    .atlas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 20px}
+    .atlas-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s box-shadow,.15s transform,.15s border-color}
+    .atlas-card:hover{box-shadow:0 10px 24px rgba(15,23,42,.08);transform:translateY(-1px)}
+    .atlas-card.active{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,.15)}
+    .atlas-card h3{margin:0 0 6px 0;font-size:1rem;color:var(--text)}
+    .atlas-card .meta{font-size:.88rem;color:var(--muted);line-height:1.45}
+    .atlas-layout{display:grid;grid-template-columns:minmax(340px,1fr) minmax(380px,1.1fr);gap:14px;align-items:start}
+    .atlas-list{display:flex;flex-direction:column;gap:10px;max-height:72vh;overflow:auto;padding-right:4px}
+    .item{border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:#fbfdff}
+    .item.active{border-color:var(--primary);background:#eef6ff}
+    .item-title{font-weight:800;color:var(--text);margin-bottom:6px}
+    .item-desc{font-size:.93rem;color:#475569;line-height:1.45}
+    .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#f1f5f9;color:#334155;font-size:.82rem;border:1px solid #e2e8f0}
+    .detail-title{margin:0 0 8px 0;font-size:1.25rem;color:var(--text)}
+    .detail-block{margin-top:12px;padding-top:12px;border-top:1px solid #eef2f7}
+    .detail-copy{white-space:pre-wrap;line-height:1.6;color:#334155}
+    .freq{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fafcff}
+    .actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+    .actions button{border:none;border-radius:12px;padding:12px 10px;font-weight:800;cursor:pointer}
+    .a-catalog{background:var(--primary);color:#fff}.a-list{background:#f59e0b;color:#fff}.a-fav{background:#eab308;color:#1f2937}.a-my{background:#10b981;color:#fff}.a-proto{background:var(--purple);color:#fff}.a-copy{background:#475569;color:#fff}.a-ai{background:#2563eb;color:#fff}
+    .status{margin:10px 0 0;color:#475569;font-size:.95rem;line-height:1.5}
+    .list-empty{padding:18px;border:1px dashed #cbd5e1;border-radius:14px;background:#fff}
+    .legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+    .legend .mini{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.9rem;color:#475569}
+    .muted{color:var(--muted)}
+    @media (max-width: 1180px){.atlas-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.atlas-layout{grid-template-columns:1fr}.atlas-list{max-height:none}.atlas-meta-grid{grid-template-columns:1fr}}
+    @media (max-width: 760px){.atlas-wrap{padding:10px}.atlas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.atlas-grid{grid-template-columns:1fr}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.legend{grid-template-columns:1fr}.atlas-top{align-items:stretch}.atlas-actions{width:100%}.atlas-actions .atlas-btn{flex:1}}
+  </style>
+</head>
+<body>
+  <div class="atlas-wrap">
+    <div class="atlas-top">
+      <div class="atlas-actions">
+        <button class="atlas-btn ghost" onclick="location.href='index.html'">← Nazad u aplikaciju</button>
+        <button class="atlas-btn primary" onclick="location.href='index.html'">🏠 Početak</button>
+      </div>
+      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.0</div>
+    </div>
+
+    <section class="atlas-hero">
+      <h1>🗺️ Atlas simptoma</h1>
+      <p>Pregled po <b>oblastima</b>, zatim po <b>simptomima</b>, sa punim prikazom <b>MKB-10</b> i povezanih <b>frekvencija</b>. Atlas ostaje <b>zaseban ekran</b>, da ne remeti stabilan početni tok aplikacije.</p>
+      <div class="atlas-toolbar">
+        <input id="q" type="text" placeholder="Pretraži simptom, opis, MKB-10, bolovi, koža, reuma, štitna..." />
+        <button class="atlas-btn primary" id="searchBtn">🔎 Traži</button>
+        <button class="atlas-btn ok" id="allBtn">📚 Ceo atlas</button>
+        <button class="atlas-btn ghost" id="resetBtn">↺ Reset</button>
+      </div>
+      <div class="atlas-quick">
+        <button class="chip" data-filter="term" data-value="bolovi">💥 bolovi</button>
+        <button class="chip" data-filter="term" data-value="reuma">🦴 reuma</button>
+        <button class="chip" data-filter="term" data-value="štitna">🦋 štitna</button>
+        <button class="chip" data-filter="term" data-value="stomak">🥣 stomak</button>
+        <button class="chip" data-filter="term" data-value="koža">🧴 koža</button>
+        <button class="chip" data-filter="term" data-value="disanje">🫁 disanje</button>
+        <button class="chip" data-filter="mode" data-value="freq">🎵 samo sa frekvencijama</button>
+        <button class="chip" data-filter="mode" data-value="mkb">🏷️ samo sa MKB-10</button>
+      </div>
+      <div class="atlas-kpis">
+        <div class="atlas-kpi"><span>Ukupno simptoma</span><strong id="kpiTotal">0</strong></div>
+        <div class="atlas-kpi"><span>Sa frekvencijama</span><strong id="kpiFreq">0</strong></div>
+        <div class="atlas-kpi"><span>Sa MKB-10</span><strong id="kpiMkb">0</strong></div>
+        <div class="atlas-kpi"><span>Oblasti</span><strong id="kpiOblast">0</strong></div>
+      </div>
+      <div id="status" class="status">Prvo izaberi oblast ili unesi pojam.</div>
+    </section>
+
+    <section class="atlas-meta-grid">
+      <div class="atlas-panel">
+        <h2>📌 Kako se koristi Atlas</h2>
+        <div class="sub">1. Klikni oblast. 2. Otvori simptom. 3. Iz detalja idi u <b>Katalog</b>, <b>Listu</b>, <b>Favorite</b>, <b>Moje</b>, <b>Protokol</b> ili <b>AI</b>.</div>
+        <div class="legend">
+          <div class="mini"><b>🔎 Pretraga</b><br><span class="muted">Radi po nazivu, opisu, MKB-10, oblastima i širim pojmovima.</span></div>
+          <div class="mini"><b>🎵 Freq filter</b><br><span class="muted">Prikazuje samo simptome koji imaju povezane frekvencije.</span></div>
+          <div class="mini"><b>🏷️ MKB filter</b><br><span class="muted">Prikazuje simptome sa MKB-10 šifrom ili opisom.</span></div>
+        </div>
+      </div>
+      <div class="atlas-panel">
+        <h2>⚡ Brzi ulazi</h2>
+        <div class="sub">Atlas je namenski brz pregled. Za puni radni tok koristi aplikaciju.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+          <button class="atlas-btn primary" style="flex:1;min-width:180px;" onclick="location.href='index.html'">📚 Povratak u aplikaciju</button>
+          <button class="atlas-btn purple" style="flex:1;min-width:180px;" onclick="location.href='index.html';">🤖 AI u aplikaciji</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="margin:0 0 10px 0; color:#0f172a;">📂 Oblasti</h2>
+      <div id="oblastGrid" class="atlas-grid"></div>
+    </section>
+
+    <section class="atlas-layout">
+      <div class="atlas-panel">
+        <h2 id="listTitle">Simptomi</h2>
+        <div id="listSub" class="sub">Klik na oblast prikazuje simptome. Pretraga radi preko celog kataloga.</div>
+        <div id="atlasList" class="atlas-list"></div>
+      </div>
+      <div class="atlas-panel">
+        <h2>Detalj simptoma</h2>
+        <div class="sub">Otvori simptom da vidiš opis, MKB-10 i frekvencije.</div>
+        <div id="detail"><div class="detail-copy">Ovde će se prikazati detalj izabrane stavke.</div></div>
+      </div>
+    </section>
+  </div>
+<script>
+const state={items:[], filtered:[], selected:null, oblast:'', query:'', mode:'all'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const short=(s,n=180)=>{s=String(s||'').trim(); return s.length>n? s.slice(0,n-1)+'…':s};
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'dj').replace(/[^a-z0-9]+/g,' ').trim();
+const uniq=arr=>Array.from(new Set((arr||[]).filter(Boolean)));
+const hasFreq=it=>Array.isArray(it?.frekvencije) && it.frekvencije.length>0;
+const mkbCode=it=>String(it?.mkb10_obj?.sifra || it?.mkb10 || '').trim();
+const mkbDesc=it=>String(it?.mkb10_obj?.naziv || '').trim();
+const hasMkb=it=>{const c=mkbCode(it); const d=mkbDesc(it); return !!((c && c!=='NONE') || d);};
+function listItems(){ return state.filtered.length ? state.filtered : []; }
+function searchTerms(q){
+  const base = uniq(norm(q).split(/\s+/).filter(Boolean));
+  const extra=[];
+  const nq=norm(q);
+  const groups=[
+    {keys:['bol','bolovi','glavobolja','migrena'], terms:['bol','bolovi','glava','glavobolja','migrena','zglob','kicma','vrat']},
+    {keys:['reuma','reumatoidni','artritis','artroza','ra'], terms:['reuma','reumatoidni','artritis','artroza','ra','zglob','zglobovi']},
+    {keys:['stitna','stitna zlezda','hashimoto','hasimoto','tiroid'], terms:['stitna','hashimoto','hasimoto','tiroid','hormoni','autoimuno']},
+    {keys:['stomak','zeludac','creva','digestivno','nadimanje'], terms:['stomak','zeludac','creva','digestivno','nadimanje','varenje']},
+    {keys:['koza','psorijaza','ekcem','osip'], terms:['koza','psorijaza','ekcem','osip','dermatitis','svrab']},
+    {keys:['disanje','kasalj','sinusi','pluca','bronh'], terms:['disanje','kasalj','sinusi','pluca','bronh','respiratorno']}
+  ];
+  groups.forEach(g=>{ if(g.keys.some(k=>nq.includes(k))) extra.push(...g.terms); });
+  return uniq(base.concat(extra));
+}
+function searchText(it){
+  return norm([
+    it.simptom,it.opis,it.preporuka,it.oblast,it.podOblast,it.quickGroup,
+    mkbCode(it),mkbDesc(it),
+    (it.tags||[]).join(' '),(it.keywords||[]).join(' '),(it.search_terms||[]).join(' '),(it.alias_terms||[]).join(' '),
+    (it.frekvencije||[]).map(f=>[f?.naziv,f?.opis,f?.svrha,f?.value,f?.hz].join(' ')).join(' ')
+  ].join(' '));
+}
+function score(it,q){
+  if(!q) return 1;
+  const title=norm(it.simptom||'');
+  const opis=norm(it.opis||'');
+  const oblast=norm((it.oblast||'')+' '+(it.podOblast||'')+' '+(it.quickGroup||''));
+  const code=norm(mkbCode(it));
+  const desc=norm(mkbDesc(it));
+  const blob=searchText(it);
+  let s=0;
+  if(title===q) s+=140;
+  else if(title.startsWith(q)) s+=95;
+  else if(title.includes(q)) s+=70;
+  if(code && (code===q || code.includes(q))) s+=48;
+  if(desc.includes(q)) s+=42;
+  if(oblast.includes(q)) s+=30;
+  if(opis.includes(q)) s+=24;
+  if(blob.includes(q)) s+=10;
+  for(const term of searchTerms(q)){
+    if(!term || term.length<2 || term===q) continue;
+    if(title.includes(term)) s+=12;
+    else if(code.includes(term) || desc.includes(term)) s+=8;
+    else if(oblast.includes(term)) s+=7;
+    else if(blob.includes(term)) s+=4;
+  }
+  if(hasFreq(it)) s+=1;
+  if(hasMkb(it)) s+=1;
+  return s;
+}
+function updateKpis(items){
+  $('kpiTotal').textContent=items.length;
+  $('kpiFreq').textContent=items.filter(hasFreq).length;
+  $('kpiMkb').textContent=items.filter(hasMkb).length;
+  $('kpiOblast').textContent=new Set(items.map(it=>it.oblast||'Ostalo')).size;
+}
+function filteredBase(){
+  let items = [...state.items];
+  if(state.mode==='freq') items = items.filter(hasFreq);
+  if(state.mode==='mkb') items = items.filter(hasMkb);
+  if(state.oblast) items = items.filter(it => (it.oblast||'Ostalo') === state.oblast);
+  return items;
+}
+function renderOblasti(){
+  const map=new Map();
+  filteredBase().forEach(it=>{
+    const k=it.oblast||'Ostalo';
+    const v=map.get(k)||{count:0,freq:0,mkb:0};
+    v.count++;
+    if(hasFreq(it)) v.freq++;
+    if(hasMkb(it)) v.mkb++;
+    map.set(k,v);
+  });
+  const html=[...map.entries()]
+    .sort((a,b)=>b[1].count-a[1].count || a[0].localeCompare(b[0],'sr'))
+    .map(([oblast,v])=>`<div class="atlas-card ${state.oblast===oblast?'active':''}" onclick="openOblast(${JSON.stringify(oblast)})"><h3>📌 ${esc(oblast)}</h3><div class="meta">${v.count} simptoma • ${v.freq} sa frekvencijama • ${v.mkb} sa MKB-10</div></div>`)
+    .join('');
+  $('oblastGrid').innerHTML=html || '<div class="list-empty">Nema oblasti za trenutni filter.</div>';
+}
+function statusText(total){
+  const mode = state.mode==='freq' ? 'Samo sa frekvencijama' : state.mode==='mkb' ? 'Samo sa MKB-10' : 'Ceo atlas';
+  const oblast = state.oblast ? ` • oblast: ${state.oblast}` : '';
+  const query = state.query ? ` • upit: ${state.query}` : '';
+  return `${mode} • rezultata: ${total}${oblast}${query}`;
+}
+function renderList(items){
+  const modeLabel = state.mode==='freq' ? ' — samo sa frekvencijama' : state.mode==='mkb' ? ' — samo sa MKB-10' : '';
+  $('listTitle').textContent = state.query ? `Rezultati za: ${state.query}` : (state.oblast ? `Oblast: ${state.oblast}${modeLabel}` : `Simptomi${modeLabel}`);
+  $('listSub').textContent = state.query ? `${items.length} rezultata. Klik otvara puni opis i frekvencije.` : (state.oblast ? `${items.length} simptoma u oblasti.` : 'Izaberi oblast, “Ceo atlas” ili unesi pojam za punu listu.');
+  if(!items.length){ $('atlasList').innerHTML='<div class="list-empty">Nema rezultata za ovaj izbor.</div>'; return; }
+  $('atlasList').innerHTML = items.map(it=>{
+    const code = mkbCode(it) || 'bez MKB';
+    const name = mkbDesc(it) || '';
+    const freqCount=(it.frekvencije||[]).length;
+    return `<div class="item ${state.selected===it.id?'active':''}" onclick="selectItem(${JSON.stringify(it.id)})"><div class="item-title">${esc(it.simptom||'(bez naziva)')}</div><div class="item-desc">${esc(short(it.opis||'Opis nije popunjen.',160))}</div><div class="pills"><span class="pill">📂 ${esc(it.oblast||'Ostalo')}</span><span class="pill">🏷️ ${esc(code)}</span><span class="pill">🎵 ${freqCount}</span></div>${name?`<div class="item-desc" style="margin-top:8px; font-size:.88rem; color:#64748b;">${esc(short(name,180))}</div>`:''}</div>`;
+  }).join('');
+}
+function renderDetail(it){
+  if(!it){ $('detail').innerHTML='<div class="detail-copy">Ovde će se prikazati detalj izabrane stavke.</div>'; return; }
+  const freqs=(it.frekvencije||[]).slice(0,24);
+  const code=mkbCode(it);
+  const name=mkbDesc(it);
+  $('detail').innerHTML=`<h3 class="detail-title">${esc(it.simptom||'(bez naziva)')}</h3>
+    <div class="pills"><span class="pill">📂 ${esc(it.oblast||'Ostalo')}</span>${it.podOblast?`<span class="pill">🧩 ${esc(it.podOblast)}</span>`:''}${it.quickGroup?`<span class="pill">🏷️ ${esc(it.quickGroup)}</span>`:''}<span class="pill">🏷️ ${esc(code||'bez MKB-10')}</span><span class="pill">🎵 ${(it.frekvencije||[]).length} frekvencija</span></div>
+    <div class="detail-block"><div class="detail-copy">${esc(it.opis||'Opis nije popunjen za ovu stavku.')}</div></div>
+    <div class="detail-block"><h4 style="margin:0 0 8px 0;">🏷️ MKB-10</h4><div class="detail-copy">${esc(name || 'MKB-10 opis nije povezan za ovu stavku.')}</div></div>
+    ${it.preporuka?`<div class="detail-block"><h4 style="margin:0 0 8px 0;">💡 Preporuka</h4><div class="detail-copy">${esc(it.preporuka)}</div></div>`:''}
+    <div class="detail-block"><h4 style="margin:0 0 8px 0;">🎵 Frekvencije</h4>${freqs.length?freqs.map(f=>`<div class="freq"><strong>${esc(f.naziv || ((f.value??f.hz)+' Hz'))}</strong>${f.opis?`<div style="margin-top:6px; color:#475569;">${esc(f.opis)}</div>`:''}</div>`).join(''):'<div class="detail-copy">Ovaj simptom trenutno nema povezane frekvencije.</div>'}</div>
+    <div class="actions">
+      <button class="a-catalog" onclick="sendBridge('catalog', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">📖 Otvori</button>
+      <button class="a-list" onclick="sendBridge('playlist', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">➕ U listu</button>
+      <button class="a-fav" onclick="sendBridge('favorite', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">⭐ Favorit</button>
+      <button class="a-my" onclick="sendBridge('mysymptoms', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">🧬 Moje</button>
+      <button class="a-proto" onclick="sendBridge('protocol', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">📑 Protokol</button>
+      <button class="a-ai" onclick="sendBridge('ai', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">🤖 AI</button>
+      <button class="a-copy" onclick="copyText(${JSON.stringify(it.simptom||'')})">📋 Kopiraj naziv</button>
+    </div>`;
+}
+function applyMode(mode){
+  state.mode = mode || 'all';
+  if(state.query){ doSearch(); return; }
+  if(state.oblast){ state.filtered = filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); }
+  else { state.filtered = []; state.selected=''; }
+  $('status').textContent = statusText(state.filtered.length || filteredBase().length);
+  render();
+}
+function openOblast(oblast){ state.oblast=oblast; state.query=''; $('q').value=''; state.filtered=filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
+function selectItem(id){ state.selected=id; renderDetail((listItems().find(it=>it.id===id)||state.items.find(it=>it.id===id))); renderList(listItems()); }
+function doSearch(){ const raw=$('q').value.trim(); const q=norm(raw); state.query=raw; state.oblast=''; if(!q){ state.filtered=[]; state.selected=''; $('status').textContent='Prvo izaberi oblast ili unesi pojam.'; render(); return; } const base=filteredBase(); const scored=base.map(it=>({it,s:score(it,q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s||String(a.it.simptom||'').localeCompare(String(b.it.simptom||''),'sr',{sensitivity:'base'})); state.filtered=scored.map(x=>x.it); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
+function openAll(){ state.query=''; state.oblast=''; $('q').value=''; state.filtered=filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
+function render(){ renderOblasti(); const items=listItems(); renderList(items); renderDetail(items.find(it=>it.id===state.selected)||null); }
+function copyText(txt){ navigator.clipboard?.writeText(String(txt||'')); $('status').textContent='Naziv simptoma je kopiran.'; }
+function sendBridge(action,id,symptom){ localStorage.setItem('sinet_atlas_bridge', JSON.stringify({action,id,symptom,query:symptom})); location.href='index.html'; }
+function resetAtlas(){ state.query=''; state.oblast=''; state.filtered=[]; state.selected=''; state.mode='all'; $('q').value=''; $('status').textContent='Prvo izaberi oblast ili unesi pojam.'; render(); }
+async function init(){
+  const res=await fetch('./data/SINET_CATALOG.json');
+  const data=await res.json();
+  state.items=(data.items||[]).filter(it=>String(it.status||'active')!=='archived');
+  updateKpis(state.items);
+  renderOblasti();
+  renderList([]);
+  $('searchBtn').onclick=doSearch;
+  $('allBtn').onclick=openAll;
+  $('resetBtn').onclick=resetAtlas;
+  $('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); doSearch();}});
+  document.querySelectorAll('[data-filter]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const type=btn.getAttribute('data-filter');
+      const value=btn.getAttribute('data-value') || '';
+      if(type==='term'){ $('q').value=value; doSearch(); }
+      if(type==='mode'){ applyMode(value); }
+    });
+  });
+}
+init().catch(err=>{ $('status').textContent='Greška pri učitavanju Atlasa.'; console.error(err); });
+window.openOblast=openOblast; window.selectItem=selectItem; window.sendBridge=sendBridge; window.copyText=copyText;
+</script>
+</body>
+</html>
