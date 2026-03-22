@@ -761,3 +761,45 @@ body.home-mode-entry #page-home {
     flex:1;
   }
 }
+
+
+/* Compact full catalog listing */
+.cat-item-compact{
+  align-items:center;
+  padding:10px 12px;
+  gap:10px;
+  cursor:pointer;
+}
+.cat-item-compact .cat-main{ min-width:0; }
+.cat-sub-compact{
+  margin-top:5px;
+  font-size:0.82rem;
+  line-height:1.25;
+  color:#5b6b82;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.cat-compact-arrow{
+  font-size:1.8rem;
+  line-height:1;
+  color:#9aa7b7;
+  padding:0 2px;
+  flex:0 0 auto;
+}
+@media (max-width: 520px){
+  .cat-item-compact{
+    padding:9px 10px;
+    margin-bottom:8px;
+  }
+  .cat-item-compact .cat-title{
+    font-size:0.96rem;
+  }
+  .cat-sub-compact{
+    font-size:0.79rem;
+  }
+  .cat-compact-arrow{
+    font-size:1.5rem;
+  }
+}

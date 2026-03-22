@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medical workflow — Anamneza → Karton → LAB</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#0f172a;--muted:#475569;--blue:#2563eb;--green:#0f766e;--amber:#b45309}
+    body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.65}
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+    h1,h2,h3{margin-top:0}.muted{color:var(--muted)}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#dbeafe;font-size:12px;font-weight:700;margin-right:6px}
+    .grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .step{padding:14px;border-left:4px solid #93c5fd;background:#f8fbff;border-radius:12px;margin:10px 0}
+    ul,ol{padding-left:22px} code{background:#eef2ff;padding:2px 6px;border-radius:6px}
+    a.btn{display:inline-block;text-decoration:none;background:var(--blue);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;margin-right:8px}
+    a.btn.alt{background:var(--green)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>🧭 Medical workflow — Anamneza → Zdravstveni Karton → LAB Bridge</h1>
+    <p class="muted">v16.0.0.79 • senior-friendly tok rada za stvarni zdravstveni dosije</p>
+    <p><span class="badge">PRIORITET</span><span class="badge">WORKFLOW</span><span class="badge">ANAMNEZA/KARTON/LAB</span></p>
+    <p>Ovaj vodič rešava najvažniju zabunu: <b>šta ide u koji modul i kojim redom</b>. Pravilo rada je sada jasno:</p>
+    <div class="step"><b>1) Anamneza</b> = istorijski okvir slučaja</div>
+    <div class="step"><b>2) Zdravstveni Karton</b> = vremenska linija, terapije, događaji, prilozi i snapshot-i</div>
+    <div class="step"><b>3) LAB Bridge</b> = unos novog laboratorijskog nalaza i pravljenje Lab Snapshot-a</div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2>1) Anamneza — šta ovde pripada</h2>
+      <ul>
+        <li>osnovna istorija bolesti i tegoba</li>
+        <li>važni datumi, period korone, operacije, hospitalizacije</li>
+        <li>porodična anamneza</li>
+        <li>alergije, ranije terapije, glavne dijagnoze i sumnje</li>
+        <li>kratak odgovor na pitanje: <b>kako je korisnik došao do sadašnjeg stanja</b></li>
+      </ul>
+      <p><b>Ne koristi Anamnezu</b> kao tabelu svih laboratorija. Ona je istorijski i lični okvir.</p>
+    </div>
+    <div class="card">
+      <h2>2) Zdravstveni Karton — šta ovde pripada</h2>
+      <ul>
+        <li>medicinski događaji i kontrole</li>
+        <li>terapije i promene terapije</li>
+        <li>Lab Snapshot-i uvezeni iz LAB Bridge modula</li>
+        <li>prilozi, specijalistički sažeci i compare/trend pregled</li>
+        <li>pregled stanja po vremenu i po oblasti</li>
+      </ul>
+      <p><b>Karton je centar sistema</b>: spaja aktivnu Anamnezu sa novim laboratorijama.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3) LAB Bridge — šta ovde pripada</h2>
+    <ul>
+      <li>novi laboratorijski nalaz</li>
+      <li>sirovi tekst, prilog ili prepis parametara</li>
+      <li>kontekst nalaza: simptomi, anamneza, terapija, cilj</li>
+      <li>AI JSON rezultat i Book/Pro izveštaj</li>
+      <li>Lab Snapshot koji se zatim uvozi u Karton</li>
+    </ul>
+    <p><b>LAB Bridge nije zamena za Anamnezu</b>. On služi da novi nalaz dobije kontekst i da kasnije uđe u vremensku liniju Kartona.</p>
+  </div>
+
+  <div class="card">
+    <h2>Praktičan radni tok</h2>
+    <ol>
+      <li>U <b>Anamnezi</b> označi ili sačuvaj <b>aktivni profil</b>.</li>
+      <li>U <b>Zdravstvenom Kartonu</b> uvezi aktivnu Anamnezu.</li>
+      <li>Kada stigne nov nalaz, otvori <b>LAB Bridge</b>.</li>
+      <li>Klikni <b>Uvezi aktivnu Anamnezu</b> da se kontekst popuni brže.</li>
+      <li>Unesi nalaz, napravi JSON/Book-Pro izveštaj i sačuvaj <b>Lab Snapshot</b>.</li>
+      <li>U Kartonu klikni <b>Uvezi poslednji Lab Snapshot</b>.</li>
+      <li>Po potrebi dodaj događaj, terapijski zapis ili prilog.</li>
+    </ol>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2>Kada dopunjavaš Anamnezu?</h2>
+      <p>Kada novi pregled ili nalaz menja širu sliku slučaja: nova dijagnoza, nova dugotrajna terapija, važan istorijski događaj ili nova glavna tegoba.</p>
+    </div>
+    <div class="card">
+      <h2>Kada dopunjavaš Karton?</h2>
+      <p>Kada imaš novu kontrolu, specijalistički izveštaj, laboratoriju, terapijsku promenu ili želiš da vidiš trend i vremensku liniju.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Najkraći odgovor</h2>
+    <ul>
+      <li><b>Anamneza</b> = ko je korisnik kao zdravstveni slučaj</li>
+      <li><b>Karton</b> = kako izgleda vremenska linija i trenutno stanje</li>
+      <li><b>LAB Bridge</b> = gde unosiš novi nalaz i praviš Snapshot</li>
+    </ul>
+    <p>
+      <a class="btn" href="02_ANAMNEZA_STEP_BY_STEP_v1.0_SR.html">🩺 Anamneza Step-by-Step</a>
+      <a class="btn alt" href="35_ZDRAVSTVENI_KARTON_STEP_BY_STEP_v1.0_SR.html">🗂 Karton Step-by-Step</a>
+      <a class="btn" href="34_LAB_BRIDGE_STEP_BY_STEP_v1.0_SR.html">🧪 LAB Step-by-Step</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>

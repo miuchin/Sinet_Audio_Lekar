@@ -16,12 +16,95 @@ class SinetDB {
   constructor() {
     this.db = null;
     this.isReady = false;
+    this._initPromise = null;
+    this._lastInitError = null;
+    this._disabledUntil = 0;
+    this._favFallbackKey = 'sinet_favorites_fallback_v1';
   }
 
-  async init() {
-    if (this.isReady && this.db) return true;
+  _readLocalFavorites() {
+    try {
+      const raw = localStorage.getItem(this._favFallbackKey);
+      const list = JSON.parse(raw || '[]');
+      if (!Array.isArray(list)) return [];
+      return list
+        .map(it => {
+          if (!it) return null;
+          if (typeof it === 'string') return { id: it, addedAt: Date.now() };
+          if (typeof it === 'object' && it.id) return { id: String(it.id), addedAt: Number(it.addedAt) || Date.now() };
+          return null;
+        })
+        .filter(Boolean);
+    } catch (_) {
+      return [];
+    }
+  }
 
-    return new Promise((resolve, reject) => {
+  _writeLocalFavorites(list) {
+    try {
+      const safe = (Array.isArray(list) ? list : [])
+        .map(it => (it && it.id) ? { id: String(it.id), addedAt: Number(it.addedAt) || Date.now() } : null)
+        .filter(Boolean);
+      localStorage.setItem(this._favFallbackKey, JSON.stringify(safe));
+      return safe;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async _syncLocalFavoritesToDb() {
+    if (!this.db || !this.isReady) return false;
+    const fallback = this._readLocalFavorites();
+    if (!fallback.length) return true;
+    try {
+      for (const row of fallback) {
+        await this._put('favorites', row);
+      }
+      localStorage.removeItem(this._favFallbackKey);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async init(timeoutMs = 1500) {
+    if (this.isReady && this.db) return true;
+    if (this._disabledUntil && Date.now() < this._disabledUntil) {
+      throw this._lastInitError || new Error("IndexedDB temporarily unavailable");
+    }
+    if (this._initPromise) return this._initPromise;
+    if (typeof indexedDB === 'undefined' || !indexedDB?.open) {
+      this._lastInitError = new Error('IndexedDB nije dostupan u ovom browser okruženju');
+      this._disabledUntil = Date.now() + 10000;
+      throw this._lastInitError;
+    }
+
+    this._initPromise = new Promise((resolve, reject) => {
+      let settled = false;
+      let timer = null;
+      const finalize = () => {
+        if (timer) clearTimeout(timer);
+        this._initPromise = null;
+      };
+      const safeResolve = (value) => {
+        if (settled) return;
+        settled = true;
+        finalize();
+        resolve(value);
+      };
+      const safeReject = (err) => {
+        if (settled) return;
+        settled = true;
+        this._lastInitError = err || new Error('IndexedDB init failed');
+        this._disabledUntil = Date.now() + 10000;
+        finalize();
+        reject(this._lastInitError);
+      };
+      timer = setTimeout(() => {
+        console.warn('SINET DB: Init timeout');
+        safeReject(new Error('IndexedDB init timeout'));
+      }, Math.max(400, Number(timeoutMs) || 1500));
+
       const request = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
 
       request.onupgradeneeded = (event) => {
@@ -70,19 +153,34 @@ class SinetDB {
       request.onsuccess = (event) => {
         this.db = event.target.result;
         this.isReady = true;
+        this._lastInitError = null;
+        this._disabledUntil = 0;
+        try {
+          this.db.onversionchange = () => {
+            try { this.db && this.db.close && this.db.close(); } catch(_) {}
+            this.isReady = false;
+          };
+        } catch(_) {}
         console.log("SINET DB: Ready");
-        resolve(true);
+        try { Promise.resolve(this._syncLocalFavoritesToDb()).catch(() => {}); } catch(_) {}
+        safeResolve(true);
+      };
+
+      request.onblocked = () => {
+        console.warn("SINET DB: Init blocked");
+        safeReject(new Error("IndexedDB blocked"));
       };
 
       request.onerror = () => {
         console.error("SINET DB: Init error", request.error);
-        reject(request.error);
+        safeReject(request.error || new Error("IndexedDB init failed"));
       };
     });
   }
 
   async _ensure() {
-    if (!this.db || !this.isReady) await this.init();
+    if (this.db && this.isReady) return true;
+    return this.init();
   }
 
   _tx(storeName, mode) {
@@ -384,21 +482,38 @@ class SinetDB {
 
   /* ---------- Favorites ---------- */
   async toggleFavorite(simptomId) {
-    await this._ensure();
-    const exists = await this._getRaw("favorites", simptomId);
-    if (exists) {
-      await this._delete("favorites", simptomId);
-      this.logAction("USER", "Removed Favorite", simptomId);
-      return false;
+    const id = String(simptomId || '');
+    if (!id) return false;
+    try {
+      await this._ensure();
+      const exists = await this._getRaw("favorites", id);
+      if (exists) {
+        await this._delete("favorites", id);
+        this.logAction("USER", "Removed Favorite", id);
+        return false;
+      }
+      await this._put("favorites", { id, addedAt: Date.now() });
+      this.logAction("USER", "Added Favorite", id);
+      return true;
+    } catch (_) {
+      const current = this._readLocalFavorites();
+      const exists = current.some(it => String(it.id) === id);
+      const next = exists
+        ? current.filter(it => String(it.id) !== id)
+        : current.concat([{ id, addedAt: Date.now() }]);
+      this._writeLocalFavorites(next);
+      return !exists;
     }
-    await this._put("favorites", { id: simptomId, addedAt: Date.now() });
-    this.logAction("USER", "Added Favorite", simptomId);
-    return true;
   }
 
   async getFavorites() {
-    await this._ensure();
-    return this._getAll("favorites");
+    try {
+      await this._ensure();
+      const rows = await this._getAll("favorites");
+      return Array.isArray(rows) ? rows : [];
+    } catch (_) {
+      return this._readLocalFavorites();
+    }
   }
 
   /* ---------- Main playlist ---------- */

@@ -231,12 +231,20 @@ export function stlToRuntimeItems(stlCatalog){
     const isHitno = String(s.id).startsWith("sys-hitno-");
     const quickGroup = s.quickGroup || (isHitno ? "01. PRVA POMOĆ (AKUTNO)" : undefined);
     const seniorQuick = (typeof s.seniorQuick === "boolean") ? s.seniorQuick : isHitno;
+    const tags = Array.from(new Set([
+      ...(Array.isArray(s.tags) ? s.tags : []),
+      ...(Array.isArray(s.keywords) ? s.keywords : []),
+      ...(Array.isArray(s.search_terms) ? s.search_terms : []),
+      ...(Array.isArray(s.alias_terms) ? s.alias_terms : []),
+      ...(Array.isArray(s.alias_id_list) ? s.alias_id_list : []),
+      ...(Array.isArray(s.alias_naziv_list) ? s.alias_naziv_list : [])
+    ].filter(Boolean).map(v => String(v).trim()).filter(Boolean)));
 
     items.push({
       uid: s.uid ?? null,
       id: String(s.id),
-      version: "stl",
-      status: "active",
+      version: s.version || "stl",
+      status: s.status || "active",
 
       oblast: s.oblast || oblastFromId(s.id),
       podOblast: s.podOblast ?? null,
@@ -252,6 +260,33 @@ export function stlToRuntimeItems(stlCatalog){
       akupresura: s.akupresura || null,
 
       frekvencije: freqs,
+      preporuka: s.preporuka || s.preporuke || s.recommendation || null,
+      trajanjePoFrekvencijiMin: s.trajanjePoFrekvencijiMin ?? s.trajanje_po_frekv_min ?? null,
+
+      // Search / bridge metadata
+      tags,
+      keywords: Array.isArray(s.keywords) ? s.keywords : [],
+      search_terms: Array.isArray(s.search_terms) ? s.search_terms : [],
+      alias_terms: Array.isArray(s.alias_terms) ? s.alias_terms : [],
+      warnings: s.warnings || '',
+      red_flags: s.red_flags || '',
+      risk: s.risk || '',
+      evidence: s.evidence || '',
+      frequency_protocol_family: s.frequency_protocol_family || '',
+      frequency_target_system: s.frequency_target_system || '',
+      frequency_intent: s.frequency_intent || '',
+      frequency_time_window: s.frequency_time_window || '',
+      frequency_pattern: s.frequency_pattern || '',
+      frequency_target_region: s.frequency_target_region || '',
+      frequency_caution: s.frequency_caution || '',
+      mkb10_primary_block: s.mkb10_primary_block || '',
+      mkb10_primary_chapter: s.mkb10_primary_chapter || '',
+      mkb10_shortlist: Array.isArray(s.mkb10_shortlist) ? s.mkb10_shortlist : [],
+      mkb10_confidence: s.mkb10_confidence || '',
+      canonical_seq: s.canonical_seq ?? s.seq ?? null,
+      canonical_id: s.canonical_id || s.id || '',
+      canonical_naziv: s.canonical_naziv || s.naziv || display,
+      source_bridge: s.source_bridge === true,
 
       // Presets / quick help
       seniorQuick,

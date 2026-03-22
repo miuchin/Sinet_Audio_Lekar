@@ -1,0 +1,6 @@
+📣 Novo unapređenje: SINET Audio Lekar (demo)
+
+Veliki fokus na mobilne telefone (iPhone/Huawei), stabilniji rad i nove Tutor/Vodiči stranice (korak-po-korak).
+
+Demo: https://sinet-audio-lekar-nutri-pro-demo.netlify.app/
+GitHub: https://github.com/miuchin/Sinet_Audio_Lekar_-Public-Demo-/tree/main

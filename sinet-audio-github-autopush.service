@@ -1,0 +1,14 @@
+[Unit]
+Description=SINET Audio Lekar GitHub auto-push watcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/miuchins/Desktop/SINET/Sinet_Audio_Lekar/scripts/SINET_Audio_Lekar_github_autopush_watch.sh
+Restart=always
+RestartSec=8
+WorkingDirectory=/home/miuchins/Desktop/SINET/Sinet_Audio_Lekar
+
+[Install]
+WantedBy=default.target

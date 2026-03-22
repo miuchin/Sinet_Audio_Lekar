@@ -1,16 +1,16 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.69 (System + Studio pipeline)n audit + filters + backup)
+  Version: 16.0.0.117.0 (SINGLE FAVORITE BUTTON + VERSION SYNC)
   Author: miuchins | Co-author: SINET AI
 */
 
 // Cache-bust audio engine updates (NO-SW mode relies on browser cache)
-import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.69';
-import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.69';
-import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.69';
+import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.117.0';
+import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.117.0';
+import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.117.0';
 
-const SINET_APP_VERSION = "16.0.0.69";
+const SINET_APP_VERSION = "16.0.0.117.0";
 
 
 
@@ -268,7 +268,7 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.73 Init');
+    console.log('SINET v16.0.0.117.0 SINGLE FAVORITE BUTTON + VERSION SYNC');
     this.cacheUI();
     try { this._ensureSpaPageTools(); } catch(_) {}
     try { this._ensureMenuPriorityOrder(); } catch(_) {}
@@ -306,10 +306,26 @@ class App {
     this._setupMediaSession();
     this._bindBackgroundRecovery();
 
-    // ✅ ensure DB ready BEFORE any favorites / playlist read
-    if (this.db) await this.db.init();
+    // ✅ DB boot must never block catalog/app startup.
+    let dbReady = false;
+    if (this.db && typeof this.db.init === 'function') {
+      try {
+        const dbInitResult = await Promise.race([
+          this.db.init().then(() => true),
+          new Promise(resolve => setTimeout(() => resolve(false), 1800))
+        ]);
+        dbReady = !!dbInitResult;
+      } catch (e) {
+        console.warn('DB init failed; continuing without DB bootstrap', e);
+      }
+    }
+    this._dbReady = dbReady;
+    if (!dbReady) {
+      console.warn('SINET DB not ready in time; continuing with catalog-only boot');
+      try { this.showToast('ℹ️ Lokalna baza se nije otvorila na vreme. Katalog radi, a DB funkcije mogu biti ograničene dok se browser ne osveži.', { timeoutMs: 6000 }); } catch(_) {}
+    }
     // System audit retention (7 days)
-    try { await this.db.rotateAudit(this.getAuditRetentionSettings()); } catch(_) {}
+    try { if (dbReady && this.db?.rotateAudit) await this.db.rotateAudit(this.getAuditRetentionSettings()); } catch(_) {}
 
     // Frequency catalog (shared)
     try { await this.loadFrequencyCatalog(); } catch(_) {}
@@ -318,25 +334,42 @@ class App {
     try { this._installGlobalErrorHooks(); } catch(_) {}
 
 
-    // v15.4.7 — preload favorites set for fast UI toggles
-    await this.refreshFavoritesSet();
-    await this.loadCatalogData();
-    await this.loadPlaylistFromDB();
-    await this.loadProtocolsFromDB();
+    // Catalog must render even if local DB is slow/unavailable.
+    if (dbReady) {
+      try { await this.refreshFavoritesSet(); } catch (e) { console.warn('refreshFavoritesSet failed', e); }
+    } else {
+      this._favSet = new Set();
+    }
+    try { await this.loadCatalogData(); } catch (e) { console.warn('loadCatalogData failed', e); }
+    if (dbReady) {
+      try { await this.loadPlaylistFromDB(); } catch (e) { console.warn('loadPlaylistFromDB failed', e); }
+      try { await this.loadProtocolsFromDB(); } catch (e) { console.warn('loadProtocolsFromDB failed', e); }
+    } else {
+      this.playlist = [];
+      this.protocols = [];
+    }
 
     // optional offline registry (images, licensing)
-    await this.loadAcupressureRegistry();
+    try { await this.loadAcupressureRegistry(); } catch (e) { console.warn('loadAcupressureRegistry failed', e); }
 
     // v15.3 — load senior presets + user symptoms + overrides (never break init)
-    await this.loadSeniorPresets();
-    await this.loadUserSymptoms();
-    await this.loadOverrides();
-    this.applyUserDataToCatalog();
+    try { await this.loadSeniorPresets(); } catch (e) { console.warn('loadSeniorPresets failed', e); }
+    try { await this.loadUserSymptoms(); } catch (e) { console.warn('loadUserSymptoms failed', e); }
+    try { await this.loadOverrides(); } catch (e) { console.warn('loadOverrides failed', e); }
+    try { this.applyUserDataToCatalog(); } catch (e) { console.warn('applyUserDataToCatalog failed', e); }
+
+    // Failsafe: if anything before or after DB bootstrap left catalog empty, retry with cache-bust.
+    if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
+      console.warn('Catalog empty after init pipeline; retrying with force=true');
+      try { await this.loadCatalogData(true); } catch (e) { console.warn('loadCatalogData(force) failed', e); }
+      try { this.applyUserDataToCatalog(); } catch (e) { console.warn('applyUserDataToCatalog(force) failed', e); }
+    }
+    try { if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none'; } catch(_) {}
     try { this.renderWorkbenchPicker(''); } catch(_) {}
 
-    this.renderSystemPresets();
-    this.showCatalogHome();
-    this.renderPlaylistUI();
+    try { this.renderSystemPresets(); } catch (e) { console.warn('renderSystemPresets failed', e); }
+    try { this.showCatalogHome(); } catch (e) { console.warn('showCatalogHome failed', e); }
+    try { this.renderPlaylistUI(); } catch (e) { console.warn('renderPlaylistUI failed', e); }
 
     // Engine hooks
     this.audio.onTick = (stats) => this.onAudioTick(stats);
@@ -344,10 +377,16 @@ class App {
     this.audio.onSkip = (freqObj, stats) => this.onAudioSkip(freqObj, stats);
     this.audio.onFreqChange = (freqObj, stats) => this.onFreqChange(freqObj, stats);
 
-    await this.renderResumeHint();
+    if (dbReady) {
+      await this.renderResumeHint();
+    } else {
+      try { const hint = document.getElementById("resume-hint"); if (hint) hint.style.display = 'none'; } catch(_) {}
+    }
     try { this._loadResumePref(); this._syncResumeButtonUI(); } catch(_) {}
-    try { await this.renderHomeResumePanel(); } catch(_) {}
-    try { await this.maybeToastResumeOnStartup(); } catch(_) {}
+    if (dbReady) {
+      try { await this.renderHomeResumePanel(); } catch(_) {}
+      try { await this.maybeToastResumeOnStartup(); } catch(_) {}
+    }
 
     
 // iOS UX: show 🍏 iPhone MODE button only on iOS devices
@@ -355,7 +394,7 @@ try {
   const b1 = document.getElementById("iphone-mode-btn");
   if (b1) b1.style.display = this._isIOS ? "inline-flex" : "none";
 } catch(_) {}
-    try { await this.renderAuditPreview(); } catch(_) {}
+    if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
     // Restore UX hardening: after successful restore/import we reload once; on next boot show a toast.
     try {
       if (localStorage.getItem("sinet_restore_completed") === "1") {
@@ -363,6 +402,21 @@ try {
         this.showToast("Restore uspešan ✅ Aplikacija je osvežena radi stabilnosti.", { timeoutMs: 6000 });
       }
     } catch(_) {}
+    if (!dbReady) {
+      setTimeout(async () => {
+        try {
+          await this.db?.init?.(1200);
+          this._dbReady = !!(this.db && this.db.isReady);
+          if (!this._dbReady) return;
+          try { await this.refreshFavoritesSet(); } catch(_) {}
+          try { await this.loadPlaylistFromDB(); } catch(_) {}
+          try { await this.loadProtocolsFromDB(); } catch(_) {}
+          try { await this.renderHomeResumePanel(); } catch(_) {}
+          try { await this.renderAuditPreview(); } catch(_) {}
+          try { this.showToast('✅ Lokalna baza je naknadno povezana.', { timeoutMs: 3500 }); } catch(_) {}
+        } catch(_) {}
+      }, 2500);
+    }
     this.log("APP", "Init", "OK");
   }
 
@@ -1271,7 +1325,9 @@ async loadCatalogData(force = false) {
       } catch(_) {}
 
       const norm = normalizeCatalogPayload(raw);
-      this.catalogItems = Array.isArray(norm.items) ? norm.items : [];
+      const items = Array.isArray(norm.items) ? norm.items : [];
+      if (!items.length) throw new Error(`${url} je učitan ali katalog je prazan`);
+      this.catalogItems = items;
 
       // v15.3 — keep canonical core list (without user additions/overrides)
       this.catalogCoreItems = this.catalogItems.slice();
@@ -1956,10 +2012,16 @@ _restoreNavContext(ctx) {
     this._playlistTempActive = false;
     this._playlistTempBackup = null;
 this.renderPlaylistUI();
-    await this.renderResumeHint();
+    if (dbReady) {
+      await this.renderResumeHint();
+    } else {
+      try { const hint = document.getElementById("resume-hint"); if (hint) hint.style.display = 'none'; } catch(_) {}
+    }
     try { this._loadResumePref(); this._syncResumeButtonUI(); } catch(_) {}
-    try { await this.renderHomeResumePanel(); } catch(_) {}
-    try { await this.maybeToastResumeOnStartup(); } catch(_) {}
+    if (dbReady) {
+      try { await this.renderHomeResumePanel(); } catch(_) {}
+      try { await this.maybeToastResumeOnStartup(); } catch(_) {}
+    }
 
   }
 
@@ -3577,7 +3639,7 @@ closeAcupressureViewer(){
       const mkbDesc = this.getMKB10Desc(item.mkb10);
       const mkbBadge = mkbCode ? `<span class="mkb-badge" style="background:#eef3ff; font-size:0.75rem; padding:2px 6px; border-radius:7px; margin-left:6px;">${this.escapeHtml(mkbCode)}</span>` : "";
       const mkbLine = (mkbCode || mkbDesc)
-        ? `<small style="color:#777;">🏷️ ${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || "").slice(0,80))}</small>`
+        ? `<small style="color:#777;">🏷️ ${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || ""))}</small>`
         : `<small style="color:#999;">🏷️ MKB-10: nije popunjeno</small>`;
 
       const checked = (this.playlistSelected && this.playlistSelected.has(String(item.uid))) ? "checked" : "";
@@ -4495,7 +4557,7 @@ _repeatSteps(steps, loops) {
             <div class="cat-main" onclick="app.openModal('${this.escapeJsString(it.id)}')">
               <div class="cat-title">⭐ ${this.escapeHtml(it.simptom)} ${mkbBadge}</div>
               <div class="cat-sub">${this.escapeHtml(short || "Klikni za detalje i frekvencije.")}</div>
-              <div class="cat-sub" style="margin-top:3px;">🏷️ MKB-10: ${mkbCode || mkbDesc ? `${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || "").slice(0,80))}` : `<span class="muted">nije popunjeno</span>`}</div>
+              <div class="cat-sub" style="margin-top:3px;">🏷️ MKB-10: ${mkbCode || mkbDesc ? `${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || ""))}` : `<span class="muted">nije popunjeno</span>`}</div>
             </div>
             <div class="cat-actions">
               <button class="cat-mini-btn" title="Pusti odmah" onclick="event.stopPropagation(); app.playItemNow('${this.escapeJsString(it.id)}')">▶ <span class="btn-label">Pusti</span></button>
@@ -4840,7 +4902,7 @@ async importData(fileInput) {
         const ns = readSettingsFromUI();
         this.setAuditRetentionSettings(ns);
         this.showToast('Podešavanje sačuvano ✅', { timeoutMs: 3000 });
-        try { await this.renderAuditPreview(); } catch(_) {}
+        if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
         await this.renderAdminUI();
       } catch (e) {
         this.showToast('Greška pri čuvanju podešavanja', { timeoutMs: 4000 });
@@ -4854,7 +4916,7 @@ async importData(fileInput) {
         const res = await this.db.rotateAudit(ns);
         if (res && res.moved) this.showToast(`Arhivirano ${res.moved} zapisa ✅`, { timeoutMs: 4000 });
         else this.showToast('Nema zapisa za arhiviranje', { timeoutMs: 3000 });
-        try { await this.renderAuditPreview(); } catch(_) {}
+        if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
         await this.renderAdminUI();
       } catch (e) {
         this.showToast('Greška pri arhiviranju', { timeoutMs: 4000 });
@@ -4978,192 +5040,69 @@ async importData(fileInput) {
     ].join("\n");
   }
 
-  async renderStudioUI() {
+  _studioResetResults({ keepPrompts = true } = {}) {
     this._studioLoadState();
-    const topicEl = document.getElementById("studio-topic");
-    const ndEl = document.getElementById("studio-ndjson");
-    const promptsEl = document.getElementById("studio-prompts");
-    const reportEl = document.getElementById("studio-report");
-
-    if (topicEl && typeof this.studioState.topic === "string") topicEl.value = this.studioState.topic;
-    if (ndEl && typeof this.studioState.ndjson === "string") ndEl.value = this.studioState.ndjson;
-
-    // render prompts
-    const prompts = Array.isArray(this.studioState.prompts) ? this.studioState.prompts : [];
-    if (promptsEl) {
-      promptsEl.innerHTML = "";
-      if (prompts.length === 0) {
-        const p = document.createElement("div");
-        p.className = "muted";
-        p.style.opacity = "0.8";
-        p.style.marginTop = "6px";
-        p.textContent = "Generiši prompt (1×100 ili 10×100), kopiraj u AI, pa nalepi NDJSON rezultat ispod.";
-        promptsEl.appendChild(p);
-      } else {
-        prompts.forEach((txt, i) => {
-          const wrap = document.createElement("div");
-          wrap.style.marginTop = "10px";
-          wrap.style.border = "1px solid #e5e7eb";
-          wrap.style.borderRadius = "10px";
-          wrap.style.overflow = "hidden";
-          wrap.style.background = "white";
-
-          const head = document.createElement("div");
-          head.style.display = "flex";
-          head.style.alignItems = "center";
-          head.style.justifyContent = "space-between";
-          head.style.padding = "10px 12px";
-          head.style.background = "#f8fafc";
-          head.style.borderBottom = "1px solid #e5e7eb";
-          const title = document.createElement("div");
-          title.style.fontWeight = "700";
-          title.textContent = `Prompt ${i+1} / ${prompts.length}`;
-          const btn = document.createElement("button");
-          btn.className = "btn-full";
-          btn.style.padding = "10px 12px";
-          btn.style.width = "auto";
-          btn.style.background = "#0ea5e9";
-          btn.style.fontWeight = "700";
-          btn.textContent = "📋 Kopiraj";
-          btn.onclick = async () => {
-            try {
-              if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
-              else {
-                const ta = document.createElement("textarea");
-                ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
-              }
-              alert("Prompt kopiran ✅");
-            } catch(e) { alert("Kopiranje nije uspelo."); }
-          };
-          head.appendChild(title);
-          head.appendChild(btn);
-
-          const pre = document.createElement("pre");
-          pre.style.margin = "0";
-          pre.style.padding = "12px";
-          pre.style.whiteSpace = "pre-wrap";
-          pre.style.wordBreak = "break-word";
-          pre.style.fontSize = "12px";
-          pre.textContent = txt;
-
-          wrap.appendChild(head);
-          wrap.appendChild(pre);
-          promptsEl.appendChild(wrap);
-        });
-      }
-    }
-
-    // render validation report (if any)
-    if (reportEl) {
-      reportEl.innerHTML = "";
-      const rep = this.studioState.lastReport;
-      if (rep && typeof rep === "object") {
-        const box = document.createElement("div");
-        box.style.border = "1px solid #e5e7eb";
-        box.style.borderRadius = "10px";
-        box.style.padding = "12px";
-        box.style.background = "#fff";
-        box.innerHTML = `
-          <div style="font-weight:800; margin-bottom:6px;">📊 Rezime</div>
-          <div>Ukupno linija: <b>${rep.total||0}</b> • Validnih: <b>${rep.valid||0}</b> • Grešaka: <b>${rep.invalid||0}</b> • Duplikata: <b>${rep.dup||0}</b></div>
-          <div class="muted" style="margin-top:6px;">${rep.note||""}</div>
-        `;
-        if (Array.isArray(rep.errors) && rep.errors.length) {
-          const ul = document.createElement("div");
-          ul.style.marginTop = "10px";
-          ul.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">Greške (prvih ${Math.min(10,rep.errors.length)})</div>`;
-          const list = document.createElement("ul");
-          list.style.margin = "0 0 0 18px";
-          rep.errors.slice(0,10).forEach(e => {
-            const li = document.createElement("li");
-            li.textContent = e;
-            list.appendChild(li);
-          });
-          ul.appendChild(list);
-          box.appendChild(ul);
-        }
-        reportEl.appendChild(box);
-      } else {
-        const p = document.createElement("div");
-        p.className = "muted";
-        p.style.opacity = "0.8";
-        p.textContent = "Nalepi NDJSON i klikni ✅ Validiraj.";
-        reportEl.appendChild(p);
-      }
-    }
-
-    // live-save textarea
-    if (ndEl && !ndEl._sinetBound) {
-      ndEl._sinetBound = true;
-      ndEl.addEventListener("input", () => {
-        this.studioState.ndjson = ndEl.value || "";
-        this._studioSaveState();
-      });
-    }
-    if (topicEl && !topicEl._sinetBound) {
-      topicEl._sinetBound = true;
-      topicEl.addEventListener("input", () => {
-        this.studioState.topic = topicEl.value || "";
-        this._studioSaveState();
-      });
-    }
-  }
-
-  async studioGeneratePrompts(batches = 1, batchSize = 100) {
-    this._studioLoadState();
-    const topic = (document.getElementById("studio-topic")?.value || this.studioState.topic || "").trim();
-    const B = Math.max(1, Math.min(50, Number(batches)||1));
-    const N = Math.max(10, Math.min(500, Number(batchSize)||100));
-    const prompts = [];
-    for (let i=1;i<=B;i++) prompts.push(this._studioMakePrompt(i, B, N, topic));
-    this.studioState.topic = topic;
-    this.studioState.prompts = prompts;
+    const prompts = keepPrompts ? this.studioState.prompts : [];
+    this.studioState.lastValid = [];
+    this.studioState.lastReport = null;
+    this.studioState.lastCommit = null;
+    this.studioState.lastAnalyzedNdjson = "";
+    this.studioState.lastAnalyzedAt = "";
+    if (!keepPrompts) this.studioState.prompts = [];
+    else this.studioState.prompts = Array.isArray(prompts) ? prompts : [];
     this._studioSaveState();
-    try { await this.db?.logAction("STUDIO","STUDIO_PROMPT_GEN",`Batches=${B} size=${N}`,{ entityType:"studio", entityId:"symptom", meta:{batches:B,size:N,topic} }); } catch(_) {}
-    await this.renderStudioUI();
   }
 
-  _studioParseNDJSON(text) {
-    const lines = String(text||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-    const out = [];
-    const errors = [];
-    for (let i=0;i<lines.length;i++) {
-      const ln = lines[i];
-      try {
-        const obj = JSON.parse(ln);
-        out.push(obj);
-      } catch(e) {
-        errors.push(`Linija ${i+1}: nevažeći JSON`);
-      }
-    }
-    return { lines, objects: out, errors };
+  _studioCollectExistingKeys() {
+    const core = Array.isArray(this.catalogCoreItems) && this.catalogCoreItems.length
+      ? this.catalogCoreItems
+      : (Array.isArray(this.catalogItems) ? this.catalogItems.filter(it => !String(it?.id || '').startsWith('usr-')) : []);
+    const user = Array.isArray(this.userSymptoms) ? this.userSymptoms : [];
+    const coreNames = new Set();
+    const userNames = new Set();
+
+    core.forEach(it => {
+      const key = this._normalizeSymptomNameForDedupe(it?.simptom || it?.naziv || '');
+      if (key) coreNames.add(key);
+    });
+    user.forEach(it => {
+      const key = this._normalizeSymptomNameForDedupe(it?.simptom || it?.naziv || '');
+      if (key) userNames.add(key);
+    });
+
+    return { coreNames, userNames };
   }
 
   _studioNormalizeToUserItem(obj) {
-    const simptom = (obj?.simptom || obj?.naziv || obj?.title || "").toString().trim();
-    const oblast = (obj?.oblast || obj?.category || "MOJI SIMPTOMI").toString().trim() || "MOJI SIMPTOMI";
-    const opis = (obj?.opis || obj?.description || "").toString();
-    const mkb10 = (obj?.mkb10 || obj?.mkb10_sifra || obj?.icd10 || "").toString().trim();
-    const izvor = (obj?.izvor || obj?.source || "AI").toString().trim();
+    const nested = obj?.simptom && typeof obj.simptom === 'object' ? obj.simptom : null;
+    const source = nested || obj || {};
+    const symptomName = typeof obj?.simptom === 'string' ? obj.simptom : (source?.simptom || source?.naziv || source?.name || source?.title || '');
+    const simptom = String(symptomName || '').trim();
+    const oblastRaw = obj?.oblast || source?.oblast || obj?.category || source?.category || this.studioState?.topic || 'MOJI SIMPTOMI';
+    const oblast = String(oblastRaw || 'MOJI SIMPTOMI').trim() || 'MOJI SIMPTOMI';
+    const opis = String(source?.opis || source?.description || obj?.opis || obj?.description || '').trim();
+    const mkb10 = String(source?.mkb10 || source?.mkb10_sifra || source?.icd10 || obj?.mkb10 || obj?.mkb10_sifra || obj?.icd10 || '').trim();
+    const izvor = String(source?.izvor || obj?.izvor || source?.source || obj?.source || 'AI').trim() || 'AI';
 
-    const frekvencijeRaw = Array.isArray(obj?.frekvencije) ? obj.frekvencije : (Array.isArray(obj?.freqs) ? obj.freqs : []);
+    const frekvencijeRaw = Array.isArray(source?.frekvencije)
+      ? source.frekvencije
+      : (Array.isArray(source?.freqs) ? source.freqs : (Array.isArray(obj?.frekvencije) ? obj.frekvencije : []));
     const freqs = [];
     if (Array.isArray(frekvencijeRaw)) {
-      frekvencijeRaw.forEach((f,i) => {
+      frekvencijeRaw.forEach((f) => {
         if (f == null) return;
-        if (typeof f === "number" || typeof f === "string") {
+        if (typeof f === 'number' || typeof f === 'string') {
           const v = Number(f);
           if (!Number.isFinite(v)) return;
-          freqs.push({ value: v, svrha: "", izvor: izvor || "AI", enabled: true });
+          freqs.push({ value: v, svrha: '', izvor: izvor || 'AI', enabled: true });
           return;
         }
-        // object
-        const v = Number(f.value ?? f.hz ?? f.freq ?? "");
+        const v = Number(f.value ?? f.hz ?? f.freq ?? '');
         if (!Number.isFinite(v)) return;
         freqs.push({
           value: v,
-          svrha: (f.svrha || f.funkcija || f.purpose || "").toString(),
-          izvor: (f.izvor || izvor || "AI").toString(),
+          svrha: String(f.svrha || f.funkcija || f.purpose || '').trim(),
+          izvor: String(f.izvor || izvor || 'AI').trim(),
           enabled: (f.enabled !== false)
         });
       });
@@ -5172,82 +5111,125 @@ async importData(fileInput) {
     return { simptom, oblast, opis, mkb10, izvor, frekvencije: freqs };
   }
 
-  async studioValidate() {
-    this._studioLoadState();
-    const nd = (document.getElementById("studio-ndjson")?.value ?? this.studioState.ndjson ?? "");
-    this.studioState.ndjson = nd;
-    const parsed = this._studioParseNDJSON(nd);
-    const objects = parsed.objects || [];
-    const errors = (parsed.errors || []).slice();
+  _studioAnalyzeNDJSON(text) {
+    const rows = this._splitJsonlInput(text);
+    const { coreNames, userNames } = this._studioCollectExistingKeys();
+    const seenBatch = new Set();
+    const readyItems = [];
+    const duplicateItems = [];
+    const errors = [];
+    let autoclean = 0;
+    let dupBatch = 0;
+    let dupCatalog = 0;
+    let dupUser = 0;
 
-    // validate required fields
-    const norm = [];
-    const seenKey = new Set();
-    let dup = 0;
-    for (let i=0;i<objects.length;i++) {
-      const obj = objects[i];
-      const n = this._studioNormalizeToUserItem(obj);
-      if (!n.simptom) { errors.push(`Linija ${i+1}: nedostaje 'simptom'/'naziv'`); continue; }
-      const key = this._slugify(n.simptom);
-      if (seenKey.has(key)) { dup++; continue; }
-      seenKey.add(key);
-      norm.push(n);
+    for (const row of rows) {
+      const parsed = this._parseAiJsonLoose(row.text);
+      if (!parsed || !parsed.obj) {
+        errors.push({
+          lineNo: row.lineNo,
+          message: 'Nevažeći JSON / NDJSON red.',
+          loc: this._getJsonErrorLocation((parsed && parsed.parseSource) || row.text, parsed && parsed.error)
+        });
+        continue;
+      }
+
+      if (parsed.mode && parsed.mode !== 'raw') autoclean++;
+
+      const normalized = this._studioNormalizeToUserItem(parsed.obj);
+      if (!normalized.simptom) {
+        errors.push({ lineNo: row.lineNo, message: "Nedostaje polje 'simptom' ili 'naziv'.", loc: null });
+        continue;
+      }
+
+      const key = this._normalizeSymptomNameForDedupe(normalized.simptom);
+      if (!key) {
+        errors.push({ lineNo: row.lineNo, message: 'Naziv simptoma nije upotrebljiv za katalog.', loc: null });
+        continue;
+      }
+
+      if (seenBatch.has(key)) {
+        dupBatch++;
+        duplicateItems.push({ lineNo: row.lineNo, naziv: normalized.simptom, source: 'batch', reason: 'Duplikat unutar istog batch-a.' });
+        continue;
+      }
+      if (coreNames.has(key)) {
+        dupCatalog++;
+        duplicateItems.push({ lineNo: row.lineNo, naziv: normalized.simptom, source: 'catalog', reason: 'Već postoji u glavnom katalogu.' });
+        continue;
+      }
+      if (userNames.has(key)) {
+        dupUser++;
+        duplicateItems.push({ lineNo: row.lineNo, naziv: normalized.simptom, source: 'user', reason: 'Već postoji u Moji simptomi.' });
+        continue;
+      }
+
+      seenBatch.add(key);
+      readyItems.push({ lineNo: row.lineNo, ...normalized, dedupeKey: key });
     }
 
-    const rep = {
-      total: (parsed.lines||[]).length,
-      valid: norm.length,
+    const report = {
+      total: rows.length,
+      valid: readyItems.length,
       invalid: errors.length,
-      dup,
+      dup: dupBatch + dupCatalog + dupUser,
+      dupBatch,
+      dupCatalog,
+      dupUser,
+      autoclean,
       errors,
-      note: "Validacija proverava JSON + obavezno polje naziv simptoma + duplikate."
+      duplicateItems,
+      readyItems: readyItems.map(x => ({ lineNo: x.lineNo, naziv: x.simptom, oblast: x.oblast })),
+      note: 'Brzi import preskače duplikate iz batch-a, glavnog kataloga i Moji simptomi.'
     };
 
-    this.studioState.lastReport = rep;
-    this.studioState.lastValid = norm;
-    this._studioSaveState();
-
-    try { await this.db?.logAction("STUDIO","STUDIO_VALIDATE",`Valid=${rep.valid} Errors=${rep.invalid} Dup=${rep.dup}`,{ entityType:"studio", entityId:"symptom", meta:rep }); } catch(_) {}
-
-    await this.renderStudioUI();
-    if (rep.invalid > 0) alert("Ima grešaka u NDJSON (vidi rezime).");
-    else alert("Validacija OK ✅");
+    return { report, items: readyItems };
   }
 
-  async studioCommitToUserSymptoms() {
-    this._studioLoadState();
-    const norm = Array.isArray(this.studioState.lastValid) ? this.studioState.lastValid : [];
-    if (!norm.length) return alert("Nema validnih stavki. Prvo klikni ✅ Validiraj.");
-    const list = Array.isArray(this.userSymptoms) ? this.userSymptoms : [];
-    const used = new Set(list.map(x => String(x.id||"")));
-
-    let added = 0;
+  async _studioCommitItems(items) {
+    const list = Array.isArray(this.userSymptoms) ? this.userSymptoms.slice() : [];
+    const usedIds = new Set(list.map(x => String(x?.id || '')));
+    const { coreNames, userNames } = this._studioCollectExistingKeys();
+    const addedNames = new Set();
     const ids = [];
-    for (const n of norm) {
-      const base = "usr-" + this._slugify(n.simptom);
-      let id = base;
-      if (used.has(id)) {
-        let k = 2;
-        while (used.has(`${id}-${k}`)) k++;
-        id = `${id}-${k}`;
+    let added = 0;
+    let skipped = 0;
+
+    for (const raw of (Array.isArray(items) ? items : [])) {
+      const n = raw || {};
+      const key = n.dedupeKey || this._normalizeSymptomNameForDedupe(n.simptom || '');
+      if (!key) { skipped++; continue; }
+      if (coreNames.has(key) || userNames.has(key) || addedNames.has(key)) {
+        skipped++;
+        continue;
       }
-      used.add(id);
+
+      const base = 'usr-' + this._slugify(n.simptom || 'stavka');
+      let id = base || `usr-item-${Date.now()}`;
+      if (usedIds.has(id)) {
+        let k = 2;
+        while (usedIds.has(`${base}-${k}`)) k++;
+        id = `${base}-${k}`;
+      }
+      usedIds.add(id);
+      addedNames.add(key);
+      userNames.add(key);
 
       const item = window.SINET_FrequencySchema?.normalizeItem({
         id,
         simptom: n.simptom,
-        oblast: n.oblast || "MOJI SIMPTOMI",
-        opis: n.opis || "",
-        mkb10: n.mkb10 || "",
-        izvor: n.izvor || "AI",
+        oblast: n.oblast || 'MOJI SIMPTOMI',
+        opis: n.opis || '',
+        mkb10: n.mkb10 || '',
+        izvor: n.izvor || 'AI',
         frekvencije: n.frekvencije || []
       }) || {
         id,
         simptom: n.simptom,
-        oblast: n.oblast || "MOJI SIMPTOMI",
-        opis: n.opis || "",
-        mkb10: n.mkb10 || "",
-        izvor: n.izvor || "AI",
+        oblast: n.oblast || 'MOJI SIMPTOMI',
+        opis: n.opis || '',
+        mkb10: n.mkb10 || '',
+        izvor: n.izvor || 'AI',
         frekvencije: n.frekvencije || []
       };
 
@@ -5259,24 +5241,353 @@ async importData(fileInput) {
     this.userSymptoms = list;
     await this.saveUserSymptoms();
     this.applyUserDataToCatalog();
+    try { if (typeof this.renderUserSymptomsList === 'function') this.renderUserSymptomsList(); } catch(_) {}
 
-    try { await this.db?.logAction("STUDIO","STUDIO_COMMIT",`Added=${added}`,{ entityType:"studio_commit", entityId:"symptom", meta:{added, ids: ids.slice(0,50)} }); } catch(_) {}
-    alert(`Dodato u Moje simptome: ${added} ✅`);
+    return { added, skipped, ids };
+  }
+
+  async renderStudioUI() {
+    this._studioLoadState();
+    const topicEl = document.getElementById('studio-topic');
+    const ndEl = document.getElementById('studio-ndjson');
+    const promptsEl = document.getElementById('studio-prompts');
+    const reportEl = document.getElementById('studio-report');
+
+    if (topicEl && typeof this.studioState.topic === 'string') topicEl.value = this.studioState.topic;
+    if (ndEl && typeof this.studioState.ndjson === 'string') ndEl.value = this.studioState.ndjson;
+
+    const prompts = Array.isArray(this.studioState.prompts) ? this.studioState.prompts : [];
+    if (promptsEl) {
+      promptsEl.innerHTML = '';
+      if (prompts.length === 0) {
+        const p = document.createElement('div');
+        p.className = 'muted';
+        p.style.opacity = '0.8';
+        p.style.marginTop = '6px';
+        p.textContent = 'Generiši prompt (1×100 ili 10×100), kopiraj u AI, pa nalepi NDJSON rezultat ispod.';
+        promptsEl.appendChild(p);
+      } else {
+        prompts.forEach((txt, i) => {
+          const wrap = document.createElement('div');
+          wrap.style.marginTop = '10px';
+          wrap.style.border = '1px solid #e5e7eb';
+          wrap.style.borderRadius = '10px';
+          wrap.style.overflow = 'hidden';
+          wrap.style.background = 'white';
+
+          const head = document.createElement('div');
+          head.style.display = 'flex';
+          head.style.alignItems = 'center';
+          head.style.justifyContent = 'space-between';
+          head.style.padding = '10px 12px';
+          head.style.background = '#f8fafc';
+          head.style.borderBottom = '1px solid #e5e7eb';
+          const title = document.createElement('div');
+          title.style.fontWeight = '700';
+          title.textContent = `Prompt ${i + 1} / ${prompts.length}`;
+          const btn = document.createElement('button');
+          btn.className = 'btn-full';
+          btn.style.padding = '10px 12px';
+          btn.style.width = 'auto';
+          btn.style.background = '#0ea5e9';
+          btn.style.fontWeight = '700';
+          btn.textContent = '📋 Kopiraj';
+          btn.onclick = async () => {
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
+              else {
+                const ta = document.createElement('textarea');
+                ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+              }
+              alert('Prompt kopiran ✅');
+            } catch(e) { alert('Kopiranje nije uspelo.'); }
+          };
+          head.appendChild(title);
+          head.appendChild(btn);
+
+          const pre = document.createElement('pre');
+          pre.style.margin = '0';
+          pre.style.padding = '12px';
+          pre.style.whiteSpace = 'pre-wrap';
+          pre.style.wordBreak = 'break-word';
+          pre.style.fontSize = '12px';
+          pre.textContent = txt;
+
+          wrap.appendChild(head);
+          wrap.appendChild(pre);
+          promptsEl.appendChild(wrap);
+        });
+      }
+    }
+
+    if (reportEl) {
+      reportEl.innerHTML = '';
+      const rep = this.studioState.lastReport;
+      const lastCommit = this.studioState.lastCommit;
+      const currentNd = (ndEl?.value ?? this.studioState.ndjson ?? '');
+      const isStale = !!(rep && this.studioState.lastAnalyzedNdjson !== currentNd);
+
+      if (rep && typeof rep === 'object') {
+        const box = document.createElement('div');
+        box.style.border = '1px solid #e5e7eb';
+        box.style.borderRadius = '12px';
+        box.style.padding = '12px';
+        box.style.background = '#fff';
+
+        const staleHtml = isStale
+          ? `<div style="margin:10px 0 0; padding:10px; border-radius:10px; background:#fff7ed; border:1px solid #fdba74; font-weight:700;">✏️ Sadržaj je menjan posle poslednje provere. Pokreni ponovo Preview ili Validiraj + Dodaj.</div>`
+          : '';
+
+        box.innerHTML = `
+          <div style="font-weight:800; margin-bottom:6px;">📊 Studio rezime</div>
+          <div>Ukupno redova: <b>${rep.total || 0}</b></div>
+          <div>Spremno za dodavanje: <b>${rep.valid || 0}</b></div>
+          <div>Grešaka: <b>${rep.invalid || 0}</b></div>
+          <div>Duplikata u batch-u: <b>${rep.dupBatch || 0}</b></div>
+          <div>Već postoji u katalogu: <b>${rep.dupCatalog || 0}</b></div>
+          <div>Već postoji u Moji simptomi: <b>${rep.dupUser || 0}</b></div>
+          <div>Auto-clean JSON redova: <b>${rep.autoclean || 0}</b></div>
+          <div class="muted" style="margin-top:8px;">${this.escapeHtml(rep.note || '')}</div>
+          ${staleHtml}
+        `;
+
+        if (Array.isArray(rep.readyItems) && rep.readyItems.length) {
+          const sec = document.createElement('div');
+          sec.style.marginTop = '10px';
+          sec.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">Spremno za katalog (prvih ${Math.min(10, rep.readyItems.length)})</div>`;
+          const ul = document.createElement('ul');
+          ul.style.margin = '0 0 0 18px';
+          rep.readyItems.slice(0, 10).forEach(x => {
+            const li = document.createElement('li');
+            li.textContent = `${x.naziv}${x.oblast ? ' — ' + x.oblast : ''}`;
+            ul.appendChild(li);
+          });
+          sec.appendChild(ul);
+          box.appendChild(sec);
+        }
+
+        if (Array.isArray(rep.duplicateItems) && rep.duplicateItems.length) {
+          const sec = document.createElement('div');
+          sec.style.marginTop = '10px';
+          sec.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">Preskočeni duplikati (prvih ${Math.min(10, rep.duplicateItems.length)})</div>`;
+          const ul = document.createElement('ul');
+          ul.style.margin = '0 0 0 18px';
+          rep.duplicateItems.slice(0, 10).forEach(x => {
+            const li = document.createElement('li');
+            li.textContent = `[red ${x.lineNo}] ${x.naziv} — ${x.reason}`;
+            ul.appendChild(li);
+          });
+          sec.appendChild(ul);
+          box.appendChild(sec);
+        }
+
+        if (Array.isArray(rep.errors) && rep.errors.length) {
+          const sec = document.createElement('div');
+          sec.style.marginTop = '10px';
+          sec.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">Greške (prvih ${Math.min(10, rep.errors.length)})</div>`;
+          const ul = document.createElement('ul');
+          ul.style.margin = '0 0 0 18px';
+          rep.errors.slice(0, 10).forEach(e => {
+            const li = document.createElement('li');
+            li.textContent = `[red ${e.lineNo}] ${e.message}` + (e.loc ? ` (linija ${e.loc.line}, kolona ${e.loc.col})` : '');
+            ul.appendChild(li);
+          });
+          sec.appendChild(ul);
+          box.appendChild(sec);
+        }
+
+        reportEl.appendChild(box);
+      } else {
+        const p = document.createElement('div');
+        p.className = 'muted';
+        p.style.opacity = '0.85';
+        p.innerHTML = 'Nalepi NDJSON i klikni <b>✅ Validiraj + Dodaj u katalog</b> ili <b>👁 Preview / Dedupe</b>.';
+        reportEl.appendChild(p);
+      }
+
+      if (lastCommit && typeof lastCommit === 'object') {
+        const ok = document.createElement('div');
+        ok.style.marginTop = '10px';
+        ok.style.border = '1px solid #86efac';
+        ok.style.borderRadius = '12px';
+        ok.style.padding = '12px';
+        ok.style.background = '#f0fdf4';
+        ok.innerHTML = `
+          <div style="font-weight:800; margin-bottom:6px;">✅ Poslednji brzi import</div>
+          <div>Dodato u katalog kroz <b>Moje simptome</b>: <b>${lastCommit.added || 0}</b></div>
+          <div>Preskočeno pri importu: <b>${lastCommit.skipped || 0}</b></div>
+          <div class="muted" style="margin-top:8px;">${this.escapeHtml(lastCommit.note || '')}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+            <button class="btn-full" style="flex:1; min-width:180px; margin-top:0; padding:12px; background:#0f766e;" onclick="window.app && window.app.nav && window.app.nav('mysymptoms')">📂 Otvori Moje simptome</button>
+            <button class="btn-full" style="flex:1; min-width:180px; margin-top:0; padding:12px; background:#2563eb;" onclick="window.app && window.app.nav && window.app.nav('catalog')">📚 Otvori Katalog</button>
+          </div>
+        `;
+        reportEl.appendChild(ok);
+      }
+    }
+
+    if (ndEl && !ndEl._sinetBound) {
+      ndEl._sinetBound = true;
+      ndEl.addEventListener('input', () => {
+        this.studioState.ndjson = ndEl.value || '';
+        this.studioState.lastReport = null;
+        this.studioState.lastValid = [];
+        this.studioState.lastCommit = null;
+        this.studioState.lastAnalyzedNdjson = '';
+        this.studioState.lastAnalyzedAt = '';
+        this._studioSaveState();
+        const reportBox = document.getElementById('studio-report');
+        if (reportBox) reportBox.innerHTML = '<div class="muted" style="opacity:0.85;">Sadržaj je promenjen. Pokreni Preview ili Validiraj + Dodaj u katalog.</div>';
+      });
+    }
+    if (topicEl && !topicEl._sinetBound) {
+      topicEl._sinetBound = true;
+      topicEl.addEventListener('input', () => {
+        this.studioState.topic = topicEl.value || '';
+        this._studioSaveState();
+      });
+    }
+  }
+
+  async studioGeneratePrompts(batches = 1, batchSize = 100) {
+    this._studioLoadState();
+    const topic = (document.getElementById('studio-topic')?.value || this.studioState.topic || '').trim();
+    const B = Math.max(1, Math.min(50, Number(batches) || 1));
+    const N = Math.max(10, Math.min(500, Number(batchSize) || 100));
+    const prompts = [];
+    for (let i = 1; i <= B; i++) prompts.push(this._studioMakePrompt(i, B, N, topic));
+    this.studioState.topic = topic;
+    this.studioState.prompts = prompts;
+    this._studioSaveState();
+    try { await this.db?.logAction('STUDIO', 'STUDIO_PROMPT_GEN', `Batches=${B} size=${N}`, { entityType: 'studio', entityId: 'symptom', meta: { batches: B, size: N, topic } }); } catch(_) {}
+    await this.renderStudioUI();
+  }
+
+  async studioValidate() {
+    this._studioLoadState();
+    const nd = (document.getElementById('studio-ndjson')?.value ?? this.studioState.ndjson ?? '');
+    this.studioState.ndjson = nd;
+
+    const analyzed = this._studioAnalyzeNDJSON(nd);
+    const rep = analyzed.report;
+    this.studioState.lastReport = rep;
+    this.studioState.lastValid = analyzed.items;
+    this.studioState.lastCommit = null;
+    this.studioState.lastAnalyzedNdjson = nd;
+    this.studioState.lastAnalyzedAt = new Date().toISOString();
+    this._studioSaveState();
+
+    try { await this.db?.logAction('STUDIO', 'STUDIO_VALIDATE', `Ready=${rep.valid} Errors=${rep.invalid} Dup=${rep.dup}`, { entityType: 'studio', entityId: 'symptom', meta: rep }); } catch(_) {}
+
+    await this.renderStudioUI();
+    if (rep.invalid > 0) alert('Ima grešaka u NDJSON (vidi rezime).');
+    else if ((rep.valid || 0) === 0 && (rep.dup || 0) > 0) alert('Nema novih stavki za import — sve su duplikati.');
+    else alert('Preview / validacija spremni ✅');
+  }
+
+  async studioPreview() {
+    return this.studioValidate();
+  }
+
+  async studioCommitToUserSymptoms() {
+    this._studioLoadState();
+    const nd = (document.getElementById('studio-ndjson')?.value ?? this.studioState.ndjson ?? '');
+    const needsRefresh = this.studioState.lastAnalyzedNdjson !== nd;
+
+    let analyzed = null;
+    if (needsRefresh || !Array.isArray(this.studioState.lastValid) || !this.studioState.lastValid.length) {
+      analyzed = this._studioAnalyzeNDJSON(nd);
+      this.studioState.lastReport = analyzed.report;
+      this.studioState.lastValid = analyzed.items;
+      this.studioState.lastAnalyzedNdjson = nd;
+      this.studioState.lastAnalyzedAt = new Date().toISOString();
+      this._studioSaveState();
+    }
+
+    const rep = analyzed?.report || this.studioState.lastReport || {};
+    const norm = analyzed?.items || (Array.isArray(this.studioState.lastValid) ? this.studioState.lastValid : []);
+    if (!norm.length) {
+      await this.renderStudioUI();
+      if ((rep.invalid || 0) > 0) return alert('Nema novih validnih stavki. Prvo ispravi greške u NDJSON.');
+      return alert('Nema novih stavki za dodavanje — verovatno su svi redovi duplikati.');
+    }
+
+    const commit = await this._studioCommitItems(norm);
+    this.studioState.lastCommit = {
+      added: commit.added,
+      skipped: (rep.dup || 0) + (commit.skipped || 0),
+      ids: commit.ids,
+      note: 'Stavke se čuvaju u Moje simptome i odmah postaju vidljive u Katalogu.'
+    };
+    this._studioSaveState();
+
+    try { await this.db?.logAction('STUDIO', 'STUDIO_COMMIT', `Added=${commit.added}`, { entityType: 'studio_commit', entityId: 'symptom', meta: { added: commit.added, skipped: commit.skipped, ids: commit.ids.slice(0, 50) } }); } catch(_) {}
+
+    await this.renderStudioUI();
+    alert(`Dodato u katalog: ${commit.added} ✅` + ((commit.skipped || rep.dup) ? `
+Preskočeno: ${(commit.skipped || 0) + (rep.dup || 0)}` : ''));
+  }
+
+  async studioQuickImport() {
+    this._studioLoadState();
+    const nd = (document.getElementById('studio-ndjson')?.value ?? this.studioState.ndjson ?? '');
+    this.studioState.ndjson = nd;
+
+    const analyzed = this._studioAnalyzeNDJSON(nd);
+    const rep = analyzed.report;
+    this.studioState.lastReport = rep;
+    this.studioState.lastValid = analyzed.items;
+    this.studioState.lastAnalyzedNdjson = nd;
+    this.studioState.lastAnalyzedAt = new Date().toISOString();
+    this.studioState.lastCommit = null;
+    this._studioSaveState();
+
+    if (!analyzed.items.length) {
+      try { await this.db?.logAction('STUDIO', 'STUDIO_QUICK_IMPORT_EMPTY', `Ready=0 Errors=${rep.invalid} Dup=${rep.dup}`, { entityType: 'studio_quick_import', entityId: 'symptom', meta: rep }); } catch(_) {}
+      await this.renderStudioUI();
+      if (rep.invalid > 0) return alert('Import nije urađen — ispravi greške u NDJSON.');
+      return alert('Import nije urađen — nema novih stavki (duplikati su preskočeni).');
+    }
+
+    const commit = await this._studioCommitItems(analyzed.items);
+    this.studioState.lastCommit = {
+      added: commit.added,
+      skipped: (rep.dup || 0) + (commit.skipped || 0),
+      ids: commit.ids,
+      note: 'Brzi tok: nalepi NDJSON → Validiraj + Dodaj u katalog. Stavke idu u Moje simptome i odmah ulaze u aktivni katalog.'
+    };
+    this._studioSaveState();
+
+    try { await this.db?.logAction('STUDIO', 'STUDIO_QUICK_IMPORT', `Added=${commit.added}`, { entityType: 'studio_quick_import', entityId: 'symptom', meta: { report: rep, added: commit.added, skipped: commit.skipped, ids: commit.ids.slice(0, 50) } }); } catch(_) {}
+
+    await this.renderStudioUI();
+    alert(`Dodato u katalog: ${commit.added} ✅` + ((commit.skipped || rep.dup) ? `
+Preskočeno: ${(commit.skipped || 0) + (rep.dup || 0)}` : ''));
   }
 
   async studioExportPatch() {
     this._studioLoadState();
+    const nd = (document.getElementById('studio-ndjson')?.value ?? this.studioState.ndjson ?? '');
+    const needsRefresh = this.studioState.lastAnalyzedNdjson !== nd;
+    if (needsRefresh) {
+      const analyzed = this._studioAnalyzeNDJSON(nd);
+      this.studioState.lastReport = analyzed.report;
+      this.studioState.lastValid = analyzed.items;
+      this.studioState.lastAnalyzedNdjson = nd;
+      this.studioState.lastAnalyzedAt = new Date().toISOString();
+      this._studioSaveState();
+    }
+
     const norm = Array.isArray(this.studioState.lastValid) ? this.studioState.lastValid : [];
-    if (!norm.length) return alert("Nema validnih stavki. Prvo klikni ✅ Validiraj.");
+    if (!norm.length) return alert('Nema novih validnih stavki za export.');
     const today = this._studioToday();
-    // export in a lightweight NDJSON schema (portable)
     const ndjson = norm.map(o => JSON.stringify({
-      oblast: o.oblast || "MOJI SIMPTOMI",
+      oblast: o.oblast || 'MOJI SIMPTOMI',
       simptom: o.simptom,
-      opis: o.opis || "",
-      mkb10: o.mkb10 || "",
+      opis: o.opis || '',
+      mkb10: o.mkb10 || '',
       frekvencije: Array.isArray(o.frekvencije) ? o.frekvencije : []
-    })).join("\n") + "\n";
+    })).join('\n') + '\n';
 
     const rep = this.studioState.lastReport || {};
     const reportMd = [
@@ -5284,38 +5595,43 @@ async importData(fileInput) {
       ``,
       `Datum: ${today}`,
       ``,
-      `- Ukupno linija: ${rep.total||0}`,
-      `- Validnih: ${rep.valid||norm.length}`,
-      `- Grešaka: ${rep.invalid||0}`,
-      `- Duplikata: ${rep.dup||0}`,
+      `- Ukupno redova: ${rep.total || 0}`,
+      `- Spremno za dodavanje: ${rep.valid || norm.length}`,
+      `- Grešaka: ${rep.invalid || 0}`,
+      `- Duplikata u batch-u: ${rep.dupBatch || 0}`,
+      `- Već postoji u katalogu: ${rep.dupCatalog || 0}`,
+      `- Već postoji u Moji simptomi: ${rep.dupUser || 0}`,
+      `- Auto-clean JSON redova: ${rep.autoclean || 0}`,
       ``,
-      `Napomena: Ovo je 'patch' u portable formatu (oblast/simptom/opis/mkb10/frekvencije).`,
-      ``
-    ].join("\n");
+      `Napomena: Export sadrži samo stavke spremne za dodavanje.`
+    ].join('\n');
 
     const download = (filename, content, mime) => {
-      const blob = new Blob([content], { type: mime || "text/plain" });
-      const a = document.createElement("a");
+      const blob = new Blob([content], { type: mime || 'text/plain' });
+      const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = filename;
       a.click();
-      setTimeout(()=>{ try { URL.revokeObjectURL(a.href); } catch(_) {} }, 1000);
+      setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch(_) {} }, 1000);
     };
 
-    download(`SYMPTOMS_PATCH_${today}.ndjson`, ndjson, "application/x-ndjson");
-    download(`SYMPTOMS_REPORT_${today}.md`, reportMd, "text/markdown");
+    download(`SYMPTOMS_PATCH_${today}.ndjson`, ndjson, 'application/x-ndjson');
+    download(`SYMPTOMS_REPORT_${today}.md`, reportMd, 'text/markdown');
 
-    try { await this.db?.logAction("STUDIO","STUDIO_EXPORT",`Exported=${norm.length}`,{ entityType:"studio_export", entityId:"symptom", meta:{count:norm.length} }); } catch(_) {}
+    try { await this.db?.logAction('STUDIO', 'STUDIO_EXPORT', `Exported=${norm.length}`, { entityType: 'studio_export', entityId: 'symptom', meta: { count: norm.length } }); } catch(_) {}
   }
 
   async studioClear() {
     this._studioLoadState();
-    this.studioState.ndjson = "";
+    this.studioState.ndjson = '';
     this.studioState.lastValid = [];
     this.studioState.lastReport = null;
+    this.studioState.lastCommit = null;
+    this.studioState.lastAnalyzedNdjson = '';
+    this.studioState.lastAnalyzedAt = '';
     this._studioSaveState();
-    const ndEl = document.getElementById("studio-ndjson");
-    if (ndEl) ndEl.value = "";
+    const ndEl = document.getElementById('studio-ndjson');
+    if (ndEl) ndEl.value = '';
     await this.renderStudioUI();
   }
 
@@ -5724,7 +6040,7 @@ async importData(fileInput) {
   async workbenchOpenSelected() {
     const ok = this.workbenchLoadSelected({ mode: 'view' });
     if (!ok) return;
-    try { await this.renderAuditPreview(); } catch(_) {}
+    if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
   }
 
   _findItemByLookup(query) {
@@ -5757,7 +6073,7 @@ async importData(fileInput) {
     if (inp) inp.value = id;
     this.log('UI', 'Workbench Open', id);
     if (this.db && this.db.logAction) this.db.logAction('UI', 'Workbench Open', id, { entityType:'ITEM', entityId:id, source:'workbench' });
-    try { await this.renderAuditPreview(); } catch(_) {}
+    if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
   }
 
   _bumpEditCounter(entityId, context) {
@@ -5806,7 +6122,7 @@ async importData(fileInput) {
     this._bumpEditCounter(id, 'override');
 
     this._wbMsg('Override sačuvan ✅', '');
-    try { await this.renderAuditPreview(); } catch(_) {}
+    if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
   }
 
   async workbenchCloneToMySymptoms() {
@@ -5847,7 +6163,7 @@ async importData(fileInput) {
 
     this._wbMsg('Klonirano u Moji simptomi ✅ (' + newId + ')', '');
     this.showToast('✅ Stavka je klonirana u “Moji simptomi”.', { timeoutMs: 3500, actionLabel:'Otvori', actionNav:'mysymptoms' });
-    try { await this.renderAuditPreview(); } catch(_) {}
+    if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
   }
 
   async workbenchResetOverride() {
@@ -5865,7 +6181,7 @@ async importData(fileInput) {
       const item = this._findItemById(id);
       const ta = document.getElementById('wb-json');
       if (ta && item) ta.value = JSON.stringify(item, null, 2);
-      try { await this.renderAuditPreview(); } catch(_) {}
+      if (dbReady) { try { await this.renderAuditPreview(); } catch(_) {} }
       return;
     }
 
@@ -6199,11 +6515,14 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
 
   showCatalogHome() {
     this.activeOblast = null;
+    this.lastCatalogSearchMeta = null;
+    this.renderCatalogSummary();
     const inp = document.getElementById('search-input');
     if (inp) {
       inp.value = "";
       try { if (document.activeElement === inp) inp.blur(); } catch(_) {}
     }
+    this._setCatalogSearchStatus('', 'info');
 
     // FIX v15.4.4: if user previously opened an oblast, the grid may stay hidden.
     const grid = this.ui.catalogOblastGrid || document.getElementById('catalog-oblast-grid');
@@ -6211,6 +6530,73 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
 
     this.renderCatalogOblastGrid();
     if (this.ui.catalogList) this.ui.catalogList.innerHTML = "";
+  }
+
+  getCatalogStats() {
+    const items = Array.isArray(this.catalogItems) ? this.catalogItems.filter(it => String(it?.status || 'active') !== 'archived') : [];
+    const withFreq = items.filter(it => Array.isArray(it?.frekvencije) && it.frekvencije.length > 0).length;
+    const withMkb = items.filter(it => {
+      const code = this.getMKB10Code(it?.mkb10) || '';
+      const desc = this.getMKB10Desc(it?.mkb10) || '';
+      return !!String(code || desc).trim();
+    }).length;
+    const oblasts = new Set(items.map(it => String(it?.oblast || 'Ostalo'))).size;
+    return { total: items.length, withFreq, withMkb, oblasts };
+  }
+
+  renderCatalogSummary() {
+    const stats = this.getCatalogStats();
+    const map = {
+      'catalog-stat-total': stats.total,
+      'catalog-stat-freq': stats.withFreq,
+      'catalog-stat-mkb': stats.withMkb,
+      'catalog-stat-oblast': stats.oblasts
+    };
+    Object.entries(map).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(value ?? 0);
+    });
+  }
+
+  showFullCatalog(mode = 'all') {
+    const input = document.getElementById('search-input');
+    if (input) {
+      input.value = '';
+      try { if (document.activeElement === input) input.blur(); } catch(_) {}
+    }
+    this.activeOblast = null;
+    this.lastCatalogSearchMeta = null;
+    this.renderCatalogSummary();
+
+    const base = Array.isArray(this.catalogItems)
+      ? this.catalogItems.filter(it => String(it?.status || 'active') !== 'archived')
+      : [];
+
+    let items = base.slice();
+    let title = 'Puni katalog';
+    let tone = 'info';
+    if (mode === 'freq') {
+      items = items.filter(it => Array.isArray(it?.frekvencije) && it.frekvencije.length > 0);
+      title = 'Puni katalog — sa frekvencijama';
+      tone = 'ok';
+    } else if (mode === 'mkb') {
+      items = items.filter(it => {
+        const code = this.getMKB10Code(it?.mkb10) || '';
+        const desc = this.getMKB10Desc(it?.mkb10) || '';
+        return !!String(code || desc).trim();
+      });
+      title = 'Puni katalog — sa MKB-10';
+      tone = 'ok';
+    }
+
+    items.sort((a,b) => String(a?.simptom || '').localeCompare(String(b?.simptom || ''), 'sr', { sensitivity:'base' }));
+
+    const stats = this.getCatalogStats();
+    const suffix = mode === 'all'
+      ? ` • sa frekvencijama: <b>${stats.withFreq}</b> • sa MKB-10: <b>${stats.withMkb}</b>`
+      : '';
+    this._setCatalogSearchStatus(`📚 ${this.escapeHtml(title)} • stavki: <b>${items.length}</b>${suffix} • kompaktni listing`, tone);
+    this.renderCatalogList(items, title, true, { compact: true, compactMode: mode });
   }
 
   renderCatalogOblastGrid() {
@@ -6240,8 +6626,147 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     `).join("");
   }
 
+  _setCatalogSearchStatus(message = '', tone = 'info') {
+    const box = document.getElementById('catalog-search-status');
+    if (!box) return;
+    const msg = String(message || '').trim();
+    if (!msg) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+    const palette = {
+      info: { bg:'#eef6ff', border:'#b7d4ff', color:'#1d4e89' },
+      warn: { bg:'#fff7e6', border:'#f4d7a1', color:'#8a5a00' },
+      ok:   { bg:'#eefbf2', border:'#b8e2c1', color:'#1f6a36' }
+    }[tone] || { bg:'#eef6ff', border:'#b7d4ff', color:'#1d4e89' };
+    box.style.display = 'block';
+    box.style.background = palette.bg;
+    box.style.border = `1px solid ${palette.border}`;
+    box.style.color = palette.color;
+    box.style.padding = '10px 12px';
+    box.style.borderRadius = '10px';
+    box.style.margin = '8px 0 10px';
+    box.style.fontSize = '0.95rem';
+    box.innerHTML = msg;
+  }
+
+  _catalogSearchTerms(query) {
+    const nq = this._norm(query || '');
+    const out = new Set((nq.split(/\s+/).filter(Boolean)));
+    const add = (arr) => (arr || []).forEach(term => {
+      const t = this._norm(term);
+      if (t) out.add(t);
+    });
+    const groups = [
+      { keys:['bol','bolovi','bolan','bolna','bolno'], terms:['bol','bolovi','glavobolja','migrena','zglob','zglobovi','ledja','vrat','kicma'] },
+      { keys:['reuma','reumatsko','reumatoidni','artritis','arthritis','artroza','ra'], terms:['reuma','reumatsko','reumatoidni','artritis','arthritis','artroza','ra','zglob','zglobovi'] },
+      { keys:['stitna','hashimoto','hasimoto','tiroid','hormoni'], terms:['stitna','hashimoto','hasimoto','tiroid','hormoni','autoimuno','e06.3'] },
+      { keys:['stomak','digestivno','zeludac','creva','gastritis','nadimanje'], terms:['stomak','digestivno','zeludac','creva','gastritis','nadimanje','varenje'] },
+      { keys:['koza','psorijaza','ekcem','osip','dermatitis'], terms:['koza','psorijaza','ekcem','osip','dermatitis','svrab'] },
+      { keys:['disanje','respiratorno','kasalj','sinusi','pluca','bronh'], terms:['disanje','respiratorno','kasalj','sinusi','pluca','bronh','kratak dah'] },
+      { keys:['srce','kardiovaskularno','pritisak','aritmija','tahikardija'], terms:['srce','kardiovaskularno','pritisak','aritmija','tahikardija','puls'] },
+      { keys:['vitamini','minerali','suplementi','magnezijum','gvozdje','b12','d3'], terms:['vitamini','minerali','suplementi','magnezijum','gvozdje','b12','d3','deficit'] },
+      { keys:['autoimuno','autoimuna','imunitet'], terms:['autoimuno','autoimuna','hashimoto','reumatoidni','psorijaza','imunitet'] },
+      { keys:['vrtoglavica','vertigo','ravnoteza','nesvestica'], terms:['vrtoglavica','vertigo','ravnoteza','nesvestica'] }
+    ];
+    const hasKey = (k) => nq.includes(k) || Array.from(out).some(t => t === k);
+    groups.forEach(group => {
+      if (group.keys.some(hasKey)) add(group.terms);
+    });
+    return Array.from(out);
+  }
+
+  _catalogSearchBlob(it) {
+    const tags = Array.isArray(it?.tags) ? it.tags.join(' ') : (it?.tags || '');
+    const freqs = Array.isArray(it?.frekvencije)
+      ? it.frekvencije.map(f => `${f?.value ?? f?.hz ?? ''} ${f?.naziv || ''} ${f?.svrha || f?.opis || ''}`).join(' ')
+      : '';
+    const hol = [
+      it?.holisticki?.psihosomatika?.uzrok || '',
+      it?.holisticki?.psihosomatika?.tekst || '',
+      it?.holisticki?.duhovnost?.tekst || '',
+      it?.holisticki?.afirmacija?.tekst || '',
+      it?.holisticki?.saveti?.narodno || '',
+      it?.holisticki?.narodni_lek?.opis || '',
+      it?.holisticki?.narodni_lek?.tekst || ''
+    ].join(' ');
+    return this._norm([
+      it?.simptom || '',
+      it?.oblast || '',
+      it?.podOblast || '',
+      it?.quickGroup || '',
+      it?.opis || it?.desc || '',
+      tags,
+      this.getMKB10Code(it?.mkb10) || '',
+      this.getMKB10Desc(it?.mkb10) || '',
+      hol,
+      freqs
+    ].join(' '));
+  }
+
+  _scoreCatalogItemForQuery(it, query) {
+    const nq = this._norm(query || '');
+    if (!nq) return { score: 0, tier: 'none', reason: '' };
+
+    const title = this._norm(it?.simptom || '');
+    const oblast = this._norm(it?.oblast || '');
+    const podOblast = this._norm(it?.podOblast || '');
+    const quickGroup = this._norm(it?.quickGroup || '');
+    const opis = this._norm(it?.opis || it?.desc || '');
+    const tags = this._norm(Array.isArray(it?.tags) ? it.tags.join(' ') : (it?.tags || ''));
+    const mkbCode = this._norm(this.getMKB10Code(it?.mkb10) || '');
+    const mkbDesc = this._norm(this.getMKB10Desc(it?.mkb10) || '');
+    const blob = this._catalogSearchBlob(it);
+    const terms = this._catalogSearchTerms(query);
+
+    let score = 0;
+    const reasons = [];
+    const addReason = (reason) => {
+      if (reason && !reasons.includes(reason) && reasons.length < 2) reasons.push(reason);
+    };
+
+    if (title === nq) { score += 140; addReason('tačan naziv'); }
+    else if (title.startsWith(nq)) { score += 95; addReason('poklapanje na početku naziva'); }
+    else if (title.includes(nq)) { score += 70; addReason('poklapanje u nazivu'); }
+
+    if (tags.includes(nq)) { score += 52; addReason('poklapanje u ključnim rečima'); }
+    if (mkbCode && (mkbCode === nq || mkbCode.includes(nq))) { score += 48; addReason('poklapanje u MKB-10 šifri'); }
+    if (mkbDesc.includes(nq)) { score += 42; addReason('poklapanje u MKB-10 opisu'); }
+    if (oblast.includes(nq) || podOblast.includes(nq) || quickGroup.includes(nq)) { score += 36; addReason('poklapanje u oblasti'); }
+    if (opis.includes(nq)) { score += 30; addReason('poklapanje u opisu'); }
+    if (!reasons.length && blob.includes(nq)) { score += 12; addReason('povezan sadržaj'); }
+
+    let termHits = 0;
+    let strongTermHits = 0;
+    for (const term of terms) {
+      if (!term || term.length < 2 || term === nq) continue;
+      if (title.includes(term)) { score += 11; termHits += 1; strongTermHits += 1; }
+      else if (tags.includes(term)) { score += 8; termHits += 1; strongTermHits += 1; }
+      else if (oblast.includes(term) || podOblast.includes(term) || quickGroup.includes(term)) { score += 6; termHits += 1; }
+      else if (opis.includes(term) || mkbDesc.includes(term) || blob.includes(term)) { score += 4; termHits += 1; }
+    }
+    if (termHits >= 2) addReason('više povezanih pojmova');
+
+    if (it?.seniorQuick === true) score += 3;
+    if (it?.favoritesDefault === true) score += 2;
+    if (!String(it?.id || '').startsWith('usr-')) score += 1;
+
+    let tier = 'related';
+    if (title === nq || title.startsWith(nq) || title.includes(nq) || strongTermHits >= 1 || tags.includes(nq) || mkbCode === nq) tier = 'main';
+    if (score < 20) tier = 'related';
+
+    return {
+      score,
+      tier,
+      reason: reasons.join(' • ') || 'povezano sa upitom'
+    };
+  }
+
   openOblast(oblast) {
     this.activeOblast = oblast;
+    this.lastCatalogSearchMeta = null;
+    this._setCatalogSearchStatus(`📌 Otvorena oblast: <b>${this.escapeHtml(oblast)}</b>`, 'ok');
     const inp = document.getElementById('search-input');
     if (inp) inp.value = "";
 
@@ -6249,13 +6774,16 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     this.renderCatalogList(filtered, `Oblast: ${oblast}`, true);
   }
 
-  renderCatalogList(items, title = "", showBack = false) {
+  renderCatalogList(items, title = "", showBack = false, options = {}) {
     const container = this.ui.catalogList || document.getElementById('catalog-list');
     if (!container) return;
 
     // Remember last rendered list (for TXT export)
     this.lastCatalogViewItems = Array.isArray(items) ? items.slice() : [];
     this.lastCatalogViewTitle = title || "";
+
+    const compact = !!options?.compact;
+    const compactMode = options?.compactMode || 'all';
 
     const grid = this.ui.catalogOblastGrid || document.getElementById('catalog-oblast-grid');
     if (grid) grid.style.display = showBack ? "none" : "grid";
@@ -6272,35 +6800,72 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     }
 
     if (!items || !items.length) {
-      container.innerHTML = backHtml + "<p style='text-align:center; padding:20px;'>Nema rezultata.</p>";
+      const q = this.escapeHtml(this.lastCatalogSearchMeta?.query || '');
+      const emptyHtml = this.lastCatalogSearchMeta?.query
+        ? `
+          <div style="background:#fff8e8; border:1px solid #f1d7a2; border-radius:12px; padding:16px; margin-top:10px; color:#6b4a00;">
+            <div style="font-weight:700; margin-bottom:8px;">Nema rezultata za: ${q}</div>
+            <div style="margin-bottom:8px;">Probajte širi pojam ili narodni naziv, na primer:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              ${['bolovi','reuma','štitna','stomak','koža','disanje'].map(tag => `<button type="button" class="cat-mini-btn" style="margin:0;" onclick="app.filterCatalog('${this.escapeJsString(tag)}'); const el=document.getElementById('search-input'); if(el){el.value='${this.escapeJsString(tag)}'; try{el.blur();}catch(_){}}">${tag}</button>`).join('')}
+            </div>
+            <div class="muted">Savet: probajte i bez dijakritike, npr. <b>stitna</b> umesto <b>štitna</b>.</div>
+          </div>`
+        : "<p style='text-align:center; padding:20px;'>Nema rezultata.</p>";
+      container.innerHTML = backHtml + emptyHtml;
       return;
     }
 
-    // Flat list cards
+    // Flat list cards / compact listing for full catalog modes
     const html = items.map(it => {
-      const short = (it.opis || it.desc || "").toString().trim().slice(0, 110);
+      const short = (it.opis || it.desc || "").toString().trim().replace(/\s+/g, ' ').slice(0, 110);
 
       const mkbCode = this.getMKB10Code(it.mkb10);
       const mkbDesc = this.getMKB10Desc(it.mkb10);
       const mkbInline = (mkbCode || mkbDesc)
-        ? `🏷️ MKB-10: ${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || "").slice(0, 80))}`
+        ? `🏷️ MKB-10: ${this.escapeHtml(mkbCode || "")}${(mkbCode && mkbDesc) ? " — " : ""}${this.escapeHtml((mkbDesc || ""))}`
         : `🏷️ MKB-10: <span class="muted">nije popunjeno</span>`;
 
       const mkbBadge = mkbCode
         ? `<span class="mkb-badge" style="background:#eef3ff; font-size:0.75rem; padding:2px 6px; border-radius:7px; margin-left:6px;">${this.escapeHtml(mkbCode)}</span>`
         : '';
 
+      const searchBadge = it.__searchReason
+        ? `<div class="cat-sub" style="margin-top:4px; color:${it.__searchTier === 'main' ? '#0f766e' : '#8a5a00'}; font-weight:600;">${it.__searchTier === 'main' ? '🎯 Glavni rezultat' : '🔎 Povezano'} • ${this.escapeHtml(it.__searchReason)}</div>`
+        : '';
+
       const isUser = String(it.id||"").startsWith("usr-");
       const isFav = this.isFavoriteId(it.id);
+
+      if (compact) {
+        const freqCount = Array.isArray(it?.frekvencije) ? it.frekvencije.filter(Boolean).length : 0;
+        const compactMetaParts = [];
+        if (compactMode === 'freq' && freqCount) compactMetaParts.push(`🎵 Frekvencije: ${freqCount}`);
+        if (compactMode === 'mkb' && (mkbCode || mkbDesc)) compactMetaParts.push(`🏷️ ${this.escapeHtml(mkbCode || mkbDesc || '')}`);
+        if (short) compactMetaParts.push(this.escapeHtml(short));
+        if (compactMode !== 'mkb' && (mkbCode || mkbDesc)) compactMetaParts.push(`MKB: ${this.escapeHtml(mkbCode || mkbDesc || '')}`);
+        const compactMeta = compactMetaParts.join(' • ') || 'Dodirni stavku za detalj i sve opcije.';
+        return `
+          <div class="cat-item cat-item-compact" onclick="app.openModal('${this.escapeJsString(it.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openModal('${this.escapeJsString(it.id)}');}">
+            <div class="cat-main">
+              <div class="cat-title">${isUser ? "🧩 " : ""}${this.escapeHtml(it.simptom)} ${mkbBadge}${isFav ? `<span class="mkb-badge" style="background:#fff8d6; color:#8a5a00;">⭐ favorit</span>` : ''}</div>
+              <div class="cat-sub cat-sub-compact">${compactMeta}</div>
+            </div>
+            <div class="cat-compact-arrow" aria-hidden="true">›</div>
+          </div>
+        `;
+      }
 
       return `
         <div class="cat-item">
           <div class="cat-main" onclick="app.openModal('${this.escapeJsString(it.id)}')">
             <div class="cat-title">${isUser ? "🧩 " : ""}${this.escapeHtml(it.simptom)} ${mkbBadge}</div>
+            ${searchBadge}
             <div class="cat-sub">${this.escapeHtml(short || "Klikni za detalje i frekvencije.")}</div>
             <div class="cat-sub" style="margin-top:3px;">${mkbInline}</div>
           </div>
           <div class="cat-actions">
+            <button class="cat-mini-btn" title="Otvori detalj" onclick="event.stopPropagation(); app.openModal('${this.escapeJsString(it.id)}')">📖 <span class="btn-label">Otvori</span></button>
             <button class="btn-add-playlist" title="Dodaj u listu" aria-label="Dodaj u listu" onclick="event.stopPropagation(); app.quickAddToPlaylist('${this.escapeJsString(it.id)}')">➕ <span class="btn-label">U listu</span></button>
             <button class="cat-mini-btn btn-fav" title="${isFav ? "Ukloni iz favorita" : "Dodaj u favorite"}" aria-label="Favorit" aria-pressed="${isFav ? "true" : "false"}" onclick="event.stopPropagation(); app.toggleFavoriteQuick('${this.escapeJsString(it.id)}', this)">${isFav ? "⭐" : "☆"} <span class="btn-label">Favorit</span></button>
             <button class="cat-mini-btn" title="Dodaj u Moje simptome" onclick="event.stopPropagation(); app.quickAddToMySymptoms('${this.escapeJsString(it.id)}')">🧬 <span class="btn-label">Moje</span></button>
@@ -6314,22 +6879,60 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     container.innerHTML = backHtml + html;
   }
 
+  performCatalogSearchFromInput() {
+    const inp = document.getElementById('search-input');
+    const q = (inp?.value || '').toString().trim();
+    try { inp && inp.blur(); } catch(_) {}
+    this.filterCatalog(q, { submitted: true });
+    const target = document.getElementById('catalog-search-status') || document.getElementById('catalog-list');
+    try { target && target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_) {}
+  }
 
-  filterCatalog(query = null) {
+  filterCatalog(query = null, opts = {}) {
     const q = (query !== null ? query : (document.getElementById('search-input')?.value || "")).toString().trim();
     const nq = this._norm(q);
 
     if (!nq) {
+      this.lastCatalogSearchMeta = null;
+      this._setCatalogSearchStatus('', 'info');
       if (this.activeOblast) return this.openOblast(this.activeOblast);
       return this.showCatalogHome();
     }
 
-    const items = (this.catalogItems || []).filter(it => {
-      const mkb = `${this.getMKB10Code(it.mkb10)} ${this.getMKB10Desc(it.mkb10)} ${this.getMKB10Url(it.mkb10)}`;
-      const hay = this._norm(`${it.simptom || ""} ${it.oblast || ""} ${it.opis || ""} ${mkb}`);
-      return hay.includes(nq);
+    const scored = (this.catalogItems || []).map(it => {
+      const meta = this._scoreCatalogItemForQuery(it, q);
+      if (!meta || meta.score <= 0) return null;
+      return Object.assign({}, it, {
+        __searchScore: meta.score,
+        __searchTier: meta.tier,
+        __searchReason: meta.reason
+      });
+    }).filter(Boolean).sort((a,b) => {
+      if ((b.__searchScore || 0) !== (a.__searchScore || 0)) return (b.__searchScore || 0) - (a.__searchScore || 0);
+      return String(a.simptom || '').localeCompare(String(b.simptom || ''), 'sr', { sensitivity:'base' });
     });
 
+    const main = scored.filter(it => it.__searchTier === 'main');
+    const related = scored.filter(it => it.__searchTier !== 'main');
+    const items = main.concat(related);
+
+    this.lastCatalogSearchMeta = {
+      query: q,
+      normalized: nq,
+      total: items.length,
+      main: main.length,
+      related: related.length,
+      submitted: !!opts.submitted
+    };
+
+    if (!items.length) {
+      this._setCatalogSearchStatus(`⚠️ Nema rezultata za <b>${this.escapeHtml(q)}</b>. Probajte širi pojam: <b>bolovi</b>, <b>reuma</b>, <b>štitna</b>, <b>stomak</b>, <b>koža</b>, <b>disanje</b>.`, 'warn');
+      return this.renderCatalogList([], `Rezultati: ${q}`, true);
+    }
+
+    const scrollHint = items.length > 6 ? ' • Skrolujte nadole — ima još rezultata.' : '';
+    const relatedHint = related.length ? ` • povezani: <b>${related.length}</b>` : '';
+    this._setCatalogSearchStatus(`🔎 Pronađeno: <b>${items.length}</b> rezultata • glavni: <b>${main.length}</b>${relatedHint}${scrollHint}`, 'info');
     this.renderCatalogList(items, `Rezultati: ${q}`, true);
   }
 
@@ -6509,10 +7112,121 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     URL.revokeObjectURL(a.href);
   }
 
+  exportCatalogPromptTxtFromUI() {
+    const mode = (document.getElementById('catalog-export-scope')?.value || 'all').toString();
+    const preset = (document.getElementById('catalog-export-preset')?.value || 'symptom_opis').toString();
+    return this.exportCatalogPromptTxt({ mode, preset });
+  }
 
+  exportCatalogPromptTxt({ mode = 'all', preset = 'symptom_opis' } = {}) {
+    try {
+      const items = this._getCatalogExportItems(mode);
+      if (!items || !items.length) return alert('Nema stavki za izvoz.');
 
+      const allowed = new Set(['symptom_opis', 'symptom_opis_id', 'symptom_opis_id_freq', 'symptom_only']);
+      const usePreset = allowed.has(preset) ? preset : 'symptom_opis';
+      const now = new Date();
+      const date = now.toISOString().slice(0, 10);
+      const scopeLabel = (mode === 'view')
+        ? (this.lastCatalogViewTitle || this.activeOblast ? ('PRIKAZ: ' + (this.lastCatalogViewTitle || this.activeOblast)) : 'PRIKAZ')
+        : 'CELOKUPAN KATALOG';
 
-  /* ===================== v15.4.7.4 — STL v1.1 JSON EXPORT ===================== */
+      const txt = this._formatCatalogPromptTxt(items, {
+        date,
+        scopeLabel,
+        preset: usePreset
+      });
+
+      const presetTokenMap = {
+        symptom_opis: 'SIMPTOM_OPIS',
+        symptom_opis_id: 'SIMPTOM_OPIS_ID',
+        symptom_opis_id_freq: 'SIMPTOM_OPIS_ID_FREQ',
+        symptom_only: 'SIMPTOM_ONLY'
+      };
+      const filename = `SINET_PROMPT_EXPORT_${presetTokenMap[usePreset] || 'SIMPTOM_OPIS'}_${mode === 'view' ? 'PRIKAZ' : 'SVE'}_${date}.txt`;
+      this._downloadText(txt, filename);
+      this.log('USER', 'Catalog Prompt TXT Export', `${mode} • ${usePreset} • ${items.length}`);
+      try {
+        this.db?.logAction?.('CATALOG', 'CATALOG_PROMPT_TXT_EXPORT', `${mode} • ${usePreset} • ${items.length}`, {
+          entityType: 'catalog_prompt_export',
+          entityId: mode,
+          meta: { preset: usePreset, count: items.length }
+        });
+      } catch(_) {}
+    } catch (e) {
+      alert('Export kataloga za Prompt nije uspeo: ' + (e?.message || e));
+      this.log('ERROR', 'Catalog Prompt TXT Export Failed', e?.message || 'unknown');
+    }
+  }
+
+  _formatCatalogPromptTxt(items, ctx = {}) {
+    const date = ctx.date || new Date().toISOString().slice(0, 10);
+    const scopeLabel = ctx.scopeLabel || 'KATALOG';
+    const preset = (ctx.preset || 'symptom_opis').toString();
+    const presetLabels = {
+      symptom_opis: 'Simptom + opis',
+      symptom_opis_id: 'Simptom + opis + ID',
+      symptom_opis_id_freq: 'Simptom + opis + ID + frekvencije',
+      symptom_only: 'Samo naziv simptoma'
+    };
+    const includeOpis = preset !== 'symptom_only';
+    const includeId = preset === 'symptom_opis_id' || preset === 'symptom_opis_id_freq';
+    const includeFreq = preset === 'symptom_opis_id_freq';
+
+    const groups = new Map();
+    for (const it of items) {
+      const oblast = (it?.oblast || 'Ostalo').toString();
+      if (!groups.has(oblast)) groups.set(oblast, []);
+      groups.get(oblast).push(it);
+    }
+    const oblastNames = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, 'sr', { sensitivity: 'base' }));
+
+    let out = '';
+    out += '==================================================\n';
+    out += 'SINET AUDIO LEKAR - EXPORT KATALOGA ZA PROMPT\n';
+    out += '==================================================\n';
+    out += `Datum: ${date}\n`;
+    out += `Opseg: ${scopeLabel}\n`;
+    out += `Format: ${presetLabels[preset] || presetLabels.symptom_opis}\n`;
+    out += `Stavki: ${items.length}\n`;
+    out += '==================================================\n\n';
+
+    for (const oblast of oblastNames) {
+      const arr = groups.get(oblast) || [];
+      arr.sort((a, b) => (a?.simptom || a?.naziv || '').localeCompare(b?.simptom || b?.naziv || '', 'sr', { sensitivity: 'base' }));
+
+      out += '##################################################\n';
+      out += `OBLAST: ${oblast}\n`;
+      out += '##################################################\n\n';
+
+      let n = 1;
+      for (const it of arr) {
+        const naziv = (it?.simptom || it?.naziv || '').toString().trim();
+        if (!naziv) continue;
+        const opis = (it?.opis || it?.desc || '').toString().replace(/\s+/g, ' ').trim();
+        const id = (it?.id || '').toString().trim();
+        const freqs = (Array.isArray(it?.frekvencije) ? it.frekvencije : [])
+          .map(f => {
+            const raw = f?.hz ?? f?.value ?? f;
+            const num = Number(raw);
+            return Number.isFinite(num) && num > 0 ? `${String(num).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')}Hz` : null;
+          })
+          .filter(Boolean);
+
+        out += `${n}. ${naziv}\n`;
+        out += '   ----------------------------------------------\n';
+        if (includeId) out += `   ID: ${id}\n`;
+        if (includeOpis) out += `   OPIS: ${opis}\n`;
+        if (includeFreq) out += `   FREKVENCIJE: ${freqs.join(', ')}\n`;
+        out += '   ----------------------------------------------\n\n';
+        n++;
+      }
+
+      out += '\n';
+    }
+
+    return out;
+  }
 
   exportCatalogSTL(mode = "view") {
     try {
@@ -7002,7 +7716,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     const normalizedExisting = window.SINET_FrequencySchema?.normalizeItem(existing || {}) || existing || {};
 
     const oblasts = Array.from(new Set((this.catalogItems || []).map(i => i.oblast).filter(Boolean))).sort();
-    const oblastOptions = ['MOJI SIMPTOMI', ...oblasts].slice(0, 80)
+    const oblastOptions = ['MOJI SIMPTOMI', ...oblasts]
       .map(o => `<option value="${this.escapeAttr(o)}"${(normalizedExisting?.oblast||"MOJI SIMPTOMI")===o ? " selected":""}>${this.escapeHtml(o)}</option>`).join("");
 
     const freqs = Array.isArray(normalizedExisting?.frekvencije) && normalizedExisting.frekvencije.length ? normalizedExisting.frekvencije : [{}];
@@ -9515,7 +10229,7 @@ function setupMobileHeaderCompact(){
   App.prototype.renderMkbPickerList = function(query='') {
     const box = document.getElementById('mkb-picker-list');
     if (!box) return;
-    const hits = query ? this._mkbSuggestionForText(query, 80) : (this._mkbSearch || []).slice(0, 80);
+    const hits = query ? this._mkbSuggestionForText(query, 80) : (this._mkbSearch || []);
     box.innerHTML = hits.length ? hits.map(h => `<button type="button" class="sinet-picker-item" onclick="app.applyMkbToWorkbench('${this.escapeJsString(h.code)}')"><div class="sinet-picker-item-title">${this.escapeHtml(h.code)} — ${this.escapeHtml(h.title)}</div></button>`).join('') : '<div class="sinet-picker-empty">Nema rezultata.</div>';
   };
 
@@ -9996,6 +10710,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   setupMobileHeaderCompact();
   try { await __importDsBridgeIfAny(); } catch(e) { console.warn('DS import call failed', e); }
   try { await __importUserSymptomBridgeIfAny(); } catch(e) { console.warn('User symptom import call failed', e); }
+  try { await __consumeAtlasBridgeIfAny(); } catch(e) { console.warn('Atlas bridge failed', e); }
 });
 window.app = app;
 window.nav = (id) => app.nav(id);
@@ -10005,6 +10720,79 @@ function getApp(){
   return window.app || window.__app || null;
 }
 window.getApp = getApp;
+
+
+async function __consumeAtlasBridgeIfAny(){
+  const raw = localStorage.getItem('sinet_atlas_bridge');
+  if (!raw) return;
+  localStorage.removeItem('sinet_atlas_bridge');
+  let payload = null;
+  try { payload = JSON.parse(raw); } catch(_) { return; }
+  const a = getApp();
+  if (!a || typeof a.nav !== 'function') return;
+  const id = String(payload?.id || '');
+  const symptom = String(payload?.symptom || payload?.query || '');
+  const action = String(payload?.action || 'catalog');
+
+  const goCatalog = async () => {
+    a.nav('catalog');
+    await new Promise(r => setTimeout(r, 120));
+    const input = document.getElementById('search-input');
+    if (input && symptom) input.value = symptom;
+    try {
+      if (typeof a.filterCatalog === 'function') a.filterCatalog(symptom || null, { submitted:true, source:'atlas' });
+    } catch(_) {}
+    await new Promise(r => setTimeout(r, 80));
+  };
+
+  if (action === 'catalog') {
+    await goCatalog();
+    if (id && typeof a.openModal === 'function') {
+      try { a.openModal(id); } catch(_) {}
+    }
+    return;
+  }
+
+  if (action === 'playlist') {
+    await goCatalog();
+    if (id && typeof a.quickAddToPlaylist === 'function') await a.quickAddToPlaylist(id);
+    if (typeof a.showToast === 'function') a.showToast('✅ Dodato u Listu iz Atlasa.');
+    return;
+  }
+
+  if (action === 'favorite') {
+    await goCatalog();
+    try {
+      if (id && typeof a.isFavoriteId === 'function' && !a.isFavoriteId(id) && typeof a.toggleFavoriteQuick === 'function') {
+        await a.toggleFavoriteQuick(id);
+      }
+      if (typeof a.showToast === 'function') a.showToast('⭐ Sačuvano u Favorite iz Atlasa.');
+    } catch(_) {}
+    return;
+  }
+
+  if (action === 'mysymptoms') {
+    await goCatalog();
+    if (id && typeof a.quickAddToMySymptoms === 'function') await a.quickAddToMySymptoms(id);
+    return;
+  }
+
+  if (action === 'protocol') {
+    await goCatalog();
+    if (id && typeof a.quickCreateProtocolFromItem === 'function') await a.quickCreateProtocolFromItem(id);
+    return;
+  }
+
+  if (action === 'ai') {
+    await goCatalog();
+    try {
+      if (symptom && typeof a.prefillAI === 'function') a.prefillAI(symptom, '');
+      a.nav('ai');
+      if (typeof a.showToast === 'function') a.showToast('🤖 AI upitnik je popunjen iz Atlasa.');
+    } catch(_) {}
+    return;
+  }
+}
 
 window.resumeSession = function(id){
   const a = getApp();
@@ -10032,6 +10820,16 @@ window.studioGenerate1000 = function(){
 window.studioValidate = function(){
   const a = getApp();
   if (a && typeof a.studioValidate === 'function') return a.studioValidate();
+  alert("Studio nije spreman.");
+};
+window.studioPreview = function(){
+  const a = getApp();
+  if (a && typeof a.studioPreview === 'function') return a.studioPreview();
+  alert("Studio nije spreman.");
+};
+window.studioQuickImport = function(){
+  const a = getApp();
+  if (a && typeof a.studioQuickImport === 'function') return a.studioQuickImport();
   alert("Studio nije spreman.");
 };
 window.studioCommit = function(){
@@ -10127,7 +10925,7 @@ window.toggleNowList = () => window.app && window.app.toggleNowList();
 window.toggleDockLoopPanel = () => window.app && window.app.toggleDockLoopPanel();
 window.onDockRepeatChange = () => window.app && window.app.onDockRepeatChange();
 window.clearPlaylist = () => window.app && window.app.clearPlaylist();
-window.doSearch = (v) => window.app && window.app.filterCatalog(v);
+window.doSearch = (v) => window.app && window.app.filterCatalog(v, { source: 'input' });
 window.generateAIPrompt = () => window.app && window.app.generateAIPrompt();
 window.copyAIPrompt = () => window.app && window.app.copyAIPrompt();
 window.exportCatalogTxt = (mode) => window.app && window.app.exportCatalogTxt(mode);
@@ -12987,10 +13785,10 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     if (!raw) return raw;
     if (/^https?:/i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
     const clean = raw.replace(/^\.\//,'');
-    if (clean.startsWith('docs/')) return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
-    if (clean.startsWith('tools/')) return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (clean.startsWith('docs/')) return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (clean.startsWith('tools/')) return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
     if (/\.(md|txt|html)$/i.test(clean) && !clean.startsWith('pages/') && !clean.startsWith('data/') && !clean.startsWith('js/') && !clean.startsWith('css/')) {
-      return '../SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+      return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
     }
     return raw;
   }
@@ -13287,6 +14085,645 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
   App.prototype.nav = function(pageId, opts={}){
     const r = origNav73.apply(this, arguments);
     try { this._ensureDualMenuModel73(); } catch(_) {}
+    return r;
+  };
+})();
+
+
+
+/* ===================== v16.0.0.77 — Help Recovery + Docs Wiring ===================== */
+(function(){
+  const V = '16.0.0.77';
+  const DOCS_INDEX = './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_DOKUMENTACIJA_INDEX_v16.0.0.77.html';
+  const ROOT_MAP = {
+    'SINET_User_Manual_v1.1_SR.html': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_User_Manual_v1.1_SR.html',
+    'SINET_User_Manual_v1.1_SR.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_User_Manual_v1.1_SR.md',
+    'SINET_User_Manual_v1.0_SR.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_User_Manual_v1.1_SR.md',
+    'README_BILINGUAL_v16.0.0.77.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.77.md',
+    'PATCH_MANIFEST_v16.0.0.77.md': './SINET_Audio_Lekar_DOCS_SUPPORT/PATCH_MANIFEST_v16.0.0.77.md',
+    'VALIDATION_REPORT_v16.0.0.77.md': './SINET_Audio_Lekar_DOCS_SUPPORT/VALIDATION_REPORT_v16.0.0.77.md',
+    'SINET_NOVI_CHAT_HANDOFF_v16.0.0.77.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_NOVI_CHAT_HANDOFF_v16.0.0.77.md'
+  };
+  const ALIAS_MAP = {
+    './tools/control-center/README_SINET_CONTROL_CENTER_v1.md': './SINET_Audio_Lekar_DOCS_SUPPORT/tools/control-center/README_SINET_CONTROL_CENTER_v1.md',
+    'tools/control-center/README_SINET_CONTROL_CENTER_v1.md': './SINET_Audio_Lekar_DOCS_SUPPORT/tools/control-center/README_SINET_CONTROL_CENTER_v1.md',
+    './docs/control-center/SINET_Control_Center_v1.html': './SINET_Audio_Lekar_DOCS_SUPPORT/docs/control-center/SINET_Control_Center_v1.html',
+    'docs/control-center/SINET_Control_Center_v1.html': './SINET_Audio_Lekar_DOCS_SUPPORT/docs/control-center/SINET_Control_Center_v1.html',
+    './docs/control-center/SINET_One_Click_Install_v2.html': './SINET_Audio_Lekar_DOCS_SUPPORT/docs/control-center/SINET_One_Click_Install_v2.html',
+    'docs/control-center/SINET_One_Click_Install_v2.html': './SINET_Audio_Lekar_DOCS_SUPPORT/docs/control-center/SINET_One_Click_Install_v2.html',
+    './SINET_DOKUMENTACIJA_INDEX_v16.0.0.77.html': DOCS_INDEX,
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.77.html': DOCS_INDEX,
+    './SINET_DOKUMENTACIJA_INDEX_v16.0.0.75.html': DOCS_INDEX,
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.75.html': DOCS_INDEX,
+    './README_BILINGUAL_v16.0.0.75.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.77.md',
+    'README_BILINGUAL_v16.0.0.75.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.77.md'
+  };
+
+  function remapDocHref77(href){
+    const raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    if (/^https?:/i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+    if (ALIAS_MAP[raw]) return ALIAS_MAP[raw];
+    const clean = raw.replace(/^\.\//,'');
+    if (ROOT_MAP[clean]) return ROOT_MAP[clean];
+    if (clean.startsWith('docs/')) return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (clean.startsWith('tools/')) return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    if (/\.(md|txt|html)$/i.test(clean) && !clean.startsWith('pages/') && !clean.startsWith('data/') && !clean.startsWith('js/') && !clean.startsWith('css/')) {
+      return './SINET_Audio_Lekar_DOCS_SUPPORT/' + clean;
+    }
+    return raw;
+  }
+
+  function detectMissingDoc77(frame){
+    try {
+      const doc = frame && frame.contentDocument;
+      if (!doc) return false;
+      const title = String(doc.title || '').toLowerCase();
+      const body = String((doc.body && (doc.body.innerText || doc.body.textContent)) || '').slice(0, 1200).toLowerCase();
+      const hay = title + '\n' + body;
+      return /404|file not found|error response|not found|cannot get|does not exist/.test(hay);
+    } catch(_) {
+      return false;
+    }
+  }
+
+  App.prototype.openDocsIndex77 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+
+  const origOpenDoc77 = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title = 'Dokument'){
+    const mapped = remapDocHref77(href);
+    const result = origOpenDoc77.call(this, mapped, title);
+    try {
+      const frame = document.getElementById('doc-modal-frame');
+      const tt = document.getElementById('doc-modal-title');
+      const expected = new URL(String(mapped || ''), window.location.href).toString();
+      const fallback = new URL(DOCS_INDEX, window.location.href).toString();
+      if (frame && /^https?:/i.test(expected) === false) {
+        frame.onload = () => {
+          setTimeout(() => {
+            try {
+              if (String(frame.src || '') !== expected) return;
+              if (detectMissingDoc77(frame)) {
+                frame.onload = null;
+                if (tt) tt.textContent = (title || 'Dokument') + ' — otvoren indeks dokumentacije';
+                frame.src = fallback;
+                try { this.showToast('Dokument nije pronađen — otvoren je indeks dokumentacije.'); } catch(_) {}
+              }
+            } catch(_) {}
+          }, 40);
+        };
+      }
+      this._lastDocUrl = expected;
+    } catch(_) {}
+    return result;
+  };
+
+  App.prototype.openDocInNewTab = function(){
+    const url = this._lastDocUrl || new URL(DOCS_INDEX, window.location.href).toString();
+    try { window.open(url, '_blank', 'noopener'); } catch(_) {}
+  };
+})();
+
+
+
+/* ===================== v16.0.0.78 — Master Step-by-Step + Docs Index Upgrade ===================== */
+(function(){
+  const DOCS_INDEX = './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_DOKUMENTACIJA_INDEX_v16.0.0.78.html';
+  const ROOT_MAP = {
+    'README_BILINGUAL_v16.0.0.78.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.78.md',
+    'PATCH_MANIFEST_v16.0.0.78.md': './SINET_Audio_Lekar_DOCS_SUPPORT/PATCH_MANIFEST_v16.0.0.78.md',
+    'VALIDATION_REPORT_v16.0.0.78.md': './SINET_Audio_Lekar_DOCS_SUPPORT/VALIDATION_REPORT_v16.0.0.78.md',
+    'SINET_NOVI_CHAT_HANDOFF_v16.0.0.78.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_NOVI_CHAT_HANDOFF_v16.0.0.78.md'
+  };
+  const ALIAS_MAP = {
+    './SINET_DOKUMENTACIJA_INDEX_v16.0.0.78.html': DOCS_INDEX,
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.78.html': DOCS_INDEX,
+    './SINET_DOKUMENTACIJA_INDEX_v16.0.0.77.html': DOCS_INDEX,
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.77.html': DOCS_INDEX
+  };
+  function remapDocHref78(href){
+    const raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    if (/^https?:/i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+    if (ALIAS_MAP[raw]) return ALIAS_MAP[raw];
+    const clean = raw.replace(/^\.\//,'');
+    if (ROOT_MAP[clean]) return ROOT_MAP[clean];
+    return raw;
+  }
+  App.prototype.openDocsIndex78 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+  App.prototype.openDocsIndex77 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+  const prevOpenDoc78 = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title = 'Dokument'){
+    return prevOpenDoc78.call(this, remapDocHref78(href), title);
+  };
+})();
+
+
+/* ===================== v16.0.0.79 — Medical Workflow Normalization ===================== */
+(function(){
+  const DOCS_INDEX = './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_DOKUMENTACIJA_INDEX_v16.0.0.79.html';
+  const WORKFLOW_DOC = './docs/protokoli/40_MEDICAL_WORKFLOW_ANAMNEZA_KARTON_LAB_v1.0_SR.html';
+  const ROOT_MAP = {
+    'README_BILINGUAL_v16.0.0.79.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.79.md',
+    'PATCH_MANIFEST_v16.0.0.79.md': './SINET_Audio_Lekar_DOCS_SUPPORT/PATCH_MANIFEST_v16.0.0.79.md',
+    'VALIDATION_REPORT_v16.0.0.79.md': './SINET_Audio_Lekar_DOCS_SUPPORT/VALIDATION_REPORT_v16.0.0.79.md',
+    'SINET_NOVI_CHAT_HANDOFF_v16.0.0.79.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_NOVI_CHAT_HANDOFF_v16.0.0.79.md',
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.79.html': DOCS_INDEX
+  };
+  function remapDocHref79(href){
+    const raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    const clean = raw.replace(/^\.\//,'');
+    return ROOT_MAP[clean] || raw;
+  }
+  const prevOpenDoc79 = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title = 'Dokument'){
+    return prevOpenDoc79.call(this, remapDocHref79(href), title);
+  };
+  App.prototype.openDocsIndex79 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+
+  function topDocButton(label){
+    return `<button class="lab-btn ghost" type="button" onclick="app.openDoc('${WORKFLOW_DOC}','🧭 Medical workflow')">${label}</button>`;
+  }
+
+  function profileDisplayName(active){
+    const full = [active?.displayName, active?.ime_prezime, [active?.osobni?.ime, active?.osobni?.prezime].filter(Boolean).join(' ').trim(), active?.ime].find(Boolean);
+    return String(full || '').trim();
+  }
+
+  function coalesce(){
+    for (const v of arguments){
+      if (v !== undefined && v !== null && String(v).trim()) return String(v).trim();
+    }
+    return '';
+  }
+
+  function mergeLine(base, add){
+    const b = String(base || '').trim();
+    const a = String(add || '').trim();
+    if (!a) return b;
+    if (!b) return a;
+    const bl = b.toLowerCase();
+    if (bl.includes(a.toLowerCase())) return b;
+    return b + '\n' + a;
+  }
+
+  function summarizeActive(active){
+    if (!active) return null;
+    const name = profileDisplayName(active) || 'Aktivni profil';
+    const age = coalesce(active?.age, active?.starost, active?.osobni?.godina);
+    const sex = coalesce(active?.sex, active?.pol, active?.osobni?.pol);
+    const symptoms = coalesce(active?.razlog, active?.primaryDiagnosis, active?.diagnoza, active?.noteSummary);
+    const anam = [
+      coalesce(active?.noteSummary, active?.licna_anamneza),
+      coalesce(active?.obiteljska, active?.porodicna_anamneza),
+      coalesce(active?.osobna?.sadasnja),
+      coalesce(active?.osobna?.dosadasnje),
+      coalesce(active?.alergije)
+    ].filter(Boolean).join(' • ');
+    const therapy = coalesce(active?.lijekovi, active?.lekovi, active?.terapija, active?.therapy);
+    return { name, age, sex, symptoms, anam, therapy };
+  }
+
+  App.prototype.importActiveAnamnezaIntoLabBridge = function(){
+    const active = this._getActiveAnamnezaForHealthRecord ? this._getActiveAnamnezaForHealthRecord() : null;
+    const sum = summarizeActive(active);
+    if (!sum) return alert('Nema aktivne Anamneze / profila. U Anamnezi prvo označi AKTIVNA ANAMNEZA.');
+    const setIfEmpty = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el || !String(value || '').trim()) return;
+      if (!String(el.value || '').trim()) el.value = String(value).trim();
+    };
+    const mergeText = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el || !String(value || '').trim()) return;
+      el.value = mergeLine(el.value, value);
+    };
+    setIfEmpty('lab_patient_name', sum.name);
+    setIfEmpty('lab_age', sum.age);
+    setIfEmpty('lab_sex', sum.sex.toLowerCase());
+    mergeText('lab_symptoms', sum.symptoms);
+    mergeText('lab_anamnesis', sum.anam || sum.symptoms);
+    mergeText('lab_therapy', sum.therapy);
+    const goal = document.getElementById('lab_goal');
+    if (goal && !String(goal.value || '').trim()) {
+      goal.value = 'Povezati laboratorijski nalaz sa aktivnom anamnezom i preneti sažetak u Zdravstveni Karton.';
+    }
+    this.showToast('Aktivna Anamneza preneta u LAB Bridge ✅');
+  };
+
+  const prevImportAnam79 = App.prototype.importActiveAnamnezaIntoHealthRecord;
+  App.prototype.importActiveAnamnezaIntoHealthRecord = function(){
+    const res = prevImportAnam79 ? prevImportAnam79.apply(this, arguments) : undefined;
+    try {
+      const hr = this._getHealthRecord();
+      hr.workflow = hr.workflow || {};
+      hr.workflow.last_anamneza_import_at = new Date().toISOString();
+      hr.workflow.recommended_order = ['anamneza','health-record','labs'];
+      this._saveHealthRecord(hr);
+      this.renderHealthRecord && this.renderHealthRecord();
+    } catch(_) {}
+    return res;
+  };
+
+  const prevEnsureLab79 = App.prototype._ensureLabBridgePage;
+  App.prototype._ensureLabBridgePage = function(){
+    const page = prevEnsureLab79.apply(this, arguments);
+    if (!page || document.getElementById('lab-workflow-card')) return page;
+    const card = document.createElement('div');
+    card.id = 'lab-workflow-card';
+    card.className = 'welcome-card';
+    card.style.textAlign = 'left';
+    card.innerHTML = `
+      <h4 style="margin-top:0;">🧭 Medical workflow — gde ide LAB Bridge?</h4>
+      <p style="color:#666; margin-top:6px;">Redosled rada je sada jasan: <b>1) Anamneza</b> = istorija i glavni zdravstveni okvir, <b>2) Zdravstveni Karton</b> = vremenska linija događaja, terapija i snapshot-a, <b>3) LAB Bridge</b> = unos novog nalaza i njegovo povezivanje sa kartonom.</p>
+      <div class="lab-actions">
+        <button class="lab-btn secondary" type="button" onclick="app.importActiveAnamnezaIntoLabBridge()">🩺 Uvezi aktivnu Anamnezu</button>
+        <button class="lab-btn ghost" type="button" onclick="nav('health-record')">🗂 Otvori Zdravstveni Karton</button>
+        ${topDocButton('📘 Medical workflow vodič')}
+      </div>
+      <div class="lab-inline-note">Ovde unosiš <b>novi laboratorijski nalaz</b>. Kada napraviš Lab Snapshot, sledeći korak je <b>uvoz u Zdravstveni Karton</b>.</div>`;
+    const firstCard = page.querySelector('.welcome-card');
+    if (firstCard && firstCard.parentElement) page.insertBefore(card, firstCard);
+    else page.appendChild(card);
+    return page;
+  };
+
+  const prevEnsureHr79 = App.prototype._ensureHealthRecordPage;
+  App.prototype._ensureHealthRecordPage = function(){
+    const page = prevEnsureHr79.apply(this, arguments);
+    if (!page || document.getElementById('hr-workflow-card')) return page;
+    const card = document.createElement('div');
+    card.id = 'hr-workflow-card';
+    card.className = 'welcome-card';
+    card.style.textAlign = 'left';
+    card.innerHTML = `
+      <h4 style="margin-top:0;">🧭 Medical workflow — centar između Anamneze i LAB-a</h4>
+      <p style="color:#666; margin-top:6px;">U <b>Zdravstvenom Kartonu</b> držiš pregled po vremenu: događaji, terapije, Lab Snapshot-i, prilozi i specialist sažeci. Glavni redosled: <b>Anamneza → Zdravstveni Karton → LAB Bridge</b>.</p>
+      <div class="lab-actions">
+        <button class="lab-btn secondary" type="button" onclick="app.importActiveAnamnezaIntoHealthRecord()">🩺 Uvezi aktivnu Anamnezu</button>
+        <button class="lab-btn dark" type="button" onclick="nav('labs')">🧪 Idi na LAB Bridge</button>
+        ${topDocButton('📘 Medical workflow vodič')}
+      </div>
+      <div class="lab-inline-note">Ako imaš novi nalaz, idi na <b>LAB Bridge</b>. Ako imaš novu kontrolu, specijalistički izveštaj ili promenu terapije, upiši je ovde kao događaj ili terapijski zapis.</div>`;
+    const firstCard = page.querySelector('.welcome-card');
+    if (firstCard && firstCard.parentElement) page.insertBefore(card, firstCard);
+    else page.appendChild(card);
+    return page;
+  };
+
+  const prevRenderHR79 = App.prototype.renderHealthRecord;
+  App.prototype.renderHealthRecord = function(){
+    const out = prevRenderHR79.apply(this, arguments);
+    try {
+      const hr = this._getHealthRecord();
+      const host = document.getElementById('health-record-summary');
+      const active = summarizeActive(this._getActiveAnamnezaForHealthRecord ? this._getActiveAnamnezaForHealthRecord() : null);
+      if (host) {
+        let box = document.getElementById('hr-workflow-status');
+        if (!box) {
+          box = document.createElement('div');
+          box.id = 'hr-workflow-status';
+          box.className = 'lab-empty';
+          box.style.marginTop = '12px';
+          host.appendChild(box);
+        }
+        box.innerHTML = `
+          <b>Workflow status</b><br>
+          Aktivna Anamneza: <b>${this.escapeHtml(active ? active.name : 'nije uvezena')}</b><br>
+          Poslednji Lab Snapshot: <b>${this.escapeHtml(hr.current_snapshot?.last_report_date || 'nema')}</b><br>
+          Sledeći korak: ${this.escapeHtml(hr.lab_snapshots?.length ? 'ažuriraj događaje/terapije ili uporedi snapshot-e' : 'u LAB Bridge unesi prvi nalaz i napravi Snapshot')}`;
+      }
+      const aiStatus = document.getElementById('hr-ai-anam-status');
+      if (aiStatus) aiStatus.textContent = active ? `${active.name}${active.age ? ' • ' + active.age : ''}${active.sex ? ' • ' + active.sex : ''}` : 'Nije učitana.';
+    } catch(_) {}
+    return out;
+  };
+
+  const prevHomeEntry79 = App.prototype._ensureHealthHomeEntryPoints37;
+  App.prototype._ensureHealthHomeEntryPoints37 = function(){
+    const out = prevHomeEntry79.apply(this, arguments);
+    try {
+      const card = document.getElementById('sinet-health-home-card');
+      if (card) {
+        const p = card.querySelector('p');
+        if (p) p.innerHTML = 'Glavni tok: <b>Anamneza → Zdravstveni Karton → LAB Bridge</b>. Prvo istorija i glavni slučaj, zatim karton/timeline, pa novi laboratorijski nalaz.';
+      }
+    } catch(_) {}
+    return out;
+  };
+})();
+
+
+/* ===================== v16.0.0.81 — Search Hardening ===================== */
+(function(){
+  const DOCS_INDEX = './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_DOKUMENTACIJA_INDEX_v16.0.0.81.html';
+  const ROOT_MAP = {
+    'README_BILINGUAL_v16.0.0.81.md': './SINET_Audio_Lekar_DOCS_SUPPORT/README_BILINGUAL_v16.0.0.81.md',
+    'PATCH_MANIFEST_v16.0.0.81.md': './SINET_Audio_Lekar_DOCS_SUPPORT/PATCH_MANIFEST_v16.0.0.81.md',
+    'VALIDATION_REPORT_v16.0.0.81.md': './SINET_Audio_Lekar_DOCS_SUPPORT/VALIDATION_REPORT_v16.0.0.81.md',
+    'SINET_NOVI_CHAT_HANDOFF_v16.0.0.81.md': './SINET_Audio_Lekar_DOCS_SUPPORT/SINET_NOVI_CHAT_HANDOFF_v16.0.0.81.md',
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.81.html': DOCS_INDEX
+  };
+  function remapDocHref81(href){
+    const raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    const clean = raw.replace(/^\.\//,'');
+    return ROOT_MAP[clean] || raw;
+  }
+  const prevOpenDoc81 = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title = 'Dokument'){
+    return prevOpenDoc81.call(this, remapDocHref81(href), title);
+  };
+  App.prototype.openDocsIndex81 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+  App.prototype.openDocsIndex79 = function(){
+    return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije');
+  };
+})();
+
+
+/* ===================== v16.0.0.81.1 — Docs path hotfix ===================== */
+(function(){
+  const DOCS_PREFIX = './SINET_Audio_Lekar_DOCS_SUPPORT/';
+  const DOCS_INDEX = DOCS_PREFIX + 'SINET_DOKUMENTACIJA_INDEX_v16.0.0.81.html';
+  function normalizeHotfixDocHref(href){
+    const raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    if (/^(https?:|data:|blob:|about:)/i.test(raw)) return raw;
+    const clean = raw.replace(/^\.\//,'');
+    if (clean.startsWith('SINET_Audio_Lekar_DOCS_SUPPORT/')) return './' + clean;
+    if (clean.startsWith('docs/')) return DOCS_PREFIX + clean;
+    if (clean.startsWith('tools/')) return DOCS_PREFIX + clean;
+    if (/^(README_BILINGUAL_|PATCH_MANIFEST_|VALIDATION_REPORT_|SINET_NOVI_CHAT_HANDOFF_|SINET_DOKUMENTACIJA_INDEX_|SINET_User_Manual_)/.test(clean)) {
+      return DOCS_PREFIX + clean;
+    }
+    return raw;
+  }
+  const prevOpenDoc = App.prototype.openDoc;
+  App.prototype.openDoc = function(href, title='Dokument'){
+    return prevOpenDoc.call(this, normalizeHotfixDocHref(href), title);
+  };
+  App.prototype.openDocsIndex = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex77 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex78 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex79 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex81 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+})();
+
+
+/* ===================== v16.0.0.81.2 — Clean docs resolver hotfix ===================== */
+(function(){
+  const DOCS_PREFIX = './SINET_Audio_Lekar_DOCS_SUPPORT/';
+  const DOCS_INDEX = DOCS_PREFIX + 'SINET_DOKUMENTACIJA_INDEX_v16.0.0.81.html';
+  const ROOT_FILES = new Set([
+    'SINET_DOKUMENTACIJA_INDEX_v16.0.0.81.html',
+    'README_BILINGUAL_v16.0.0.81.md',
+    'PATCH_MANIFEST_v16.0.0.81.md',
+    'VALIDATION_REPORT_v16.0.0.81.md',
+    'SINET_NOVI_CHAT_HANDOFF_v16.0.0.81.md',
+    'SINET_User_Manual_v1.1_SR_v16.0.0.81.html',
+    'SINET_User_Manual_v1.1_SR_v16.0.0.81.md',
+    'SINET_User_Manual_v1.1_SR.html',
+    'SINET_User_Manual_v1.1_SR.md',
+    'SINET_User_Manual_v1.0_SR.md'
+  ]);
+  function normalizeDocHrefFinal(href){
+    let raw = String(href || '').trim();
+    if (!raw) return DOCS_INDEX;
+    if (/^(data:|blob:|about:)/i.test(raw)) return raw;
+    try {
+      if (/^https?:/i.test(raw)) {
+        const u = new URL(raw, window.location.href);
+        const marker = 'SINET_Audio_Lekar_DOCS_SUPPORT/';
+        const idx = u.pathname.lastIndexOf(marker);
+        if (idx >= 0) {
+          raw = './' + marker + u.pathname.slice(idx + marker.length);
+        } else {
+          return raw;
+        }
+      }
+    } catch(_) {}
+    raw = raw.replace(/^\.?\//, '');
+    const marker = 'SINET_Audio_Lekar_DOCS_SUPPORT/';
+    const idx = raw.lastIndexOf(marker);
+    if (idx >= 0) {
+      raw = marker + raw.slice(idx + marker.length);
+    }
+    if (raw.startsWith(marker)) return './' + raw;
+    if (raw.startsWith('docs/')) return DOCS_PREFIX + raw;
+    if (raw.startsWith('tools/')) return DOCS_PREFIX + raw;
+    if (ROOT_FILES.has(raw)) return DOCS_PREFIX + raw;
+    if (/^(README_BILINGUAL_|PATCH_MANIFEST_|VALIDATION_REPORT_|SINET_NOVI_CHAT_HANDOFF_|SINET_DOKUMENTACIJA_INDEX_|SINET_User_Manual_)/.test(raw)) {
+      return DOCS_PREFIX + raw;
+    }
+    return './' + raw;
+  }
+  App.prototype.openDoc = function(href, title = 'Dokument') {
+    const normalized = normalizeDocHrefFinal(href);
+    try {
+      const url = new URL(String(normalized || ''), window.location.href).toString();
+      const ov = document.getElementById('doc-modal');
+      const fr = document.getElementById('doc-modal-frame');
+      const tt = document.getElementById('doc-modal-title');
+      if (!ov || !fr) {
+        window.open(url, '_blank', 'noopener');
+        return false;
+      }
+      this._lastDocUrl = url;
+      if (tt) tt.textContent = String(title || 'Dokument');
+      ov.style.display = 'flex';
+      fr.src = url;
+      try {
+        if (this._isIOS) {
+          const el = this._iosRenderedEl;
+          if (this._rendered && this._rendered.active && el && el.paused && !el.ended) {
+            const pr = el.play();
+            if (pr && pr.catch) pr.catch(() => {});
+          } else if (this.audio && this.audio.isPlaying && this.audio.audioContext && this.audio.audioContext.resume) {
+            this.audio.audioContext.resume().catch(() => {});
+          }
+        }
+      } catch(_) {}
+      return false;
+    } catch (e) {
+      try {
+        const fb = new URL(DOCS_INDEX, window.location.href).toString();
+        this._lastDocUrl = fb;
+        window.open(fb, '_blank', 'noopener');
+      } catch(_) {}
+      return false;
+    }
+  };
+  App.prototype.openDocInNewTab = function(){
+    const url = this._lastDocUrl || new URL(DOCS_INDEX, window.location.href).toString();
+    try { window.open(url, '_blank', 'noopener'); } catch(_) {}
+  };
+  App.prototype.openDocsIndex = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex77 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex78 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex79 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+  App.prototype.openDocsIndex81 = function(){ return this.openDoc(DOCS_INDEX, '📚 Indeks dokumentacije'); };
+})();
+
+
+/* ===================== v16.0.0.81.4 — Docs assets + explicit home nav hotfix ===================== */
+(function(){
+  try {
+    window.SINET_DOCS_ASSET_PREFIX = './SINET_Audio_Lekar_DOCS_SUPPORT/';
+  } catch(_) {}
+})();
+
+
+/* ===================== v16.0.0.81.5 HOTFIX — quick page nav buttons live only inside opened quick pages ===================== */
+(function(){
+  const origOpenDoc815 = App.prototype.openDoc;
+  const origCloseDoc815 = App.prototype.closeDocModal;
+  const origInit815 = App.prototype.init;
+
+  App.prototype.setDocModalNavMode = function(mode, opts = {}) {
+    try {
+      this._docModalNavMode = mode || 'doc';
+      this._docModalNavHomeEntryMode = (opts && Object.prototype.hasOwnProperty.call(opts, 'homeEntryMode')) ? opts.homeEntryMode : null;
+      const nav = document.getElementById('doc-modal-quick-nav');
+      if (nav) nav.style.display = (this._docModalNavMode === 'quickpage') ? 'flex' : 'none';
+    } catch(_) {}
+  };
+
+  App.prototype.openDoc = function(href, title = 'Dokument') {
+    const r = origOpenDoc815.apply(this, arguments);
+    try { this.setDocModalNavMode('doc'); } catch(_) {}
+    return r;
+  };
+
+  App.prototype.closeDocModal = function() {
+    try { this.setDocModalNavMode('doc'); } catch(_) {}
+    return origCloseDoc815.apply(this, arguments);
+  };
+
+  App.prototype.docModalBack = function() {
+    try { this.closeDocModal(); } catch(_) {}
+  };
+
+  App.prototype.docModalHome = function() {
+    const homeEntryMode = this._docModalNavHomeEntryMode || null;
+    try { this.closeDocModal(); } catch(_) {}
+    try { this.nav('home'); } catch(_) {}
+    if (homeEntryMode) {
+      setTimeout(() => {
+        try { this.setHomeEntryMode(homeEntryMode); } catch(_) {}
+      }, 60);
+    }
+  };
+
+  App.prototype.init = async function(){
+    const r = await origInit815.apply(this, arguments);
+    try { this.setDocModalNavMode('doc'); } catch(_) {}
+    return r;
+  };
+})();
+
+
+/* ===================== v16.0.0.81.6 HOTFIX — remove extra nav from Home; show it only inside PRVA POMOĆ ===================== */
+(function(){
+  const origSetHomeEntryMode816 = App.prototype.setHomeEntryMode;
+  const origApplyHomeEntryMode816 = App.prototype.applyHomeEntryMode;
+  const origNav816 = App.prototype.nav;
+  const origInit816 = App.prototype.init;
+
+  App.prototype.homeFirstAidBack816 = function(){
+    try {
+      if (this.currentPageId === 'home' && this.homeEntryMode === 'firstaid') {
+        this.setHomeEntryMode(null);
+        try { if (typeof window.scrollTo === 'function') window.scrollTo({ top: 0, behavior: 'auto' }); } catch(_) {}
+        return;
+      }
+    } catch(_) {}
+    try { this.goBack(); } catch(_) {}
+  };
+
+  App.prototype.homeFirstAidHome816 = function(){
+    try { this.nav('home'); } catch(_) {}
+    setTimeout(() => {
+      try { this.setHomeEntryMode(null); } catch(_) {}
+      try { if (typeof window.scrollTo === 'function') window.scrollTo({ top: 0, behavior: 'auto' }); } catch(_) {}
+    }, 0);
+  };
+
+  App.prototype._syncHomeFirstAidNav816 = function(){
+    try {
+      const home = document.getElementById('page-home');
+      const firstaidBox = document.getElementById('home-firstaid-only');
+      if (!home || !firstaidBox) return;
+
+      Array.from(home.querySelectorAll('[data-sinet-spa-nav="1"], .sinet-spa-nav')).forEach((el) => {
+        if (el && el.id !== 'home-firstaid-nav-816') el.remove();
+      });
+
+      if (!document.getElementById('home-firstaid-nav-style-816')) {
+        const st = document.createElement('style');
+        st.id = 'home-firstaid-nav-style-816';
+        st.textContent = [
+          '#home-firstaid-nav-816{display:none;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px 0;padding:10px 12px;border:1px solid rgba(15,118,110,.18);border-radius:14px;background:linear-gradient(180deg,#ffffff 0%,#f8fffd 100%);box-shadow:0 6px 18px rgba(15,23,42,.05);}',
+          '#home-firstaid-nav-816 .btn-mini{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 14px;border-radius:12px;font-weight:900;border:1px solid #cbd5e1;background:#fff;color:#0f172a;cursor:pointer;}',
+          '#home-firstaid-nav-816 .btn-mini.primary{background:#0f766e;border-color:#0f766e;color:#fff;}',
+          '#home-firstaid-nav-816 .sinet-spa-note{margin-left:auto;font-size:.9rem;color:#475569;}',
+          '@media (max-width:640px){#home-firstaid-nav-816 .btn-mini{flex:1 1 calc(50% - 8px)} #home-firstaid-nav-816 .sinet-spa-note{width:100%;margin-left:0;}}'
+        ].join('');
+        document.head.appendChild(st);
+      }
+
+      let bar = document.getElementById('home-firstaid-nav-816');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'home-firstaid-nav-816';
+        bar.innerHTML = [
+          '<button type="button" class="btn-mini" data-role="back">⬅ Nazad</button>',
+          '<button type="button" class="btn-mini primary" data-role="home">🏠 Početak</button>',
+          '<div class="sinet-spa-note">Prikazuje se samo kada je otvorena PRVA POMOĆ.</div>'
+        ].join('');
+        const back = bar.querySelector('[data-role="back"]');
+        const homeBtn = bar.querySelector('[data-role="home"]');
+        if (back) back.addEventListener('click', () => this.homeFirstAidBack816());
+        if (homeBtn) homeBtn.addEventListener('click', () => this.homeFirstAidHome816());
+        firstaidBox.insertAdjacentElement('afterbegin', bar);
+      }
+
+      const active = (this.currentPageId === 'home' && this.homeEntryMode === 'firstaid');
+      bar.style.display = active ? 'flex' : 'none';
+    } catch(_) {}
+  };
+
+  App.prototype.setHomeEntryMode = function(mode){
+    const r = origSetHomeEntryMode816.apply(this, arguments);
+    try { this._syncHomeFirstAidNav816(); } catch(_) {}
+    return r;
+  };
+
+  App.prototype.applyHomeEntryMode = function(){
+    const r = origApplyHomeEntryMode816.apply(this, arguments);
+    try { this._syncHomeFirstAidNav816(); } catch(_) {}
+    return r;
+  };
+
+  App.prototype.nav = function(pageId, opts={}){
+    const r = origNav816.apply(this, arguments);
+    try { this._syncHomeFirstAidNav816(); } catch(_) {}
+    return r;
+  };
+
+  App.prototype.init = async function(){
+    const r = await origInit816.apply(this, arguments);
+    try { this._syncHomeFirstAidNav816(); } catch(_) {}
     return r;
   };
 })();

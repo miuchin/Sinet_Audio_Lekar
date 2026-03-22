@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "projects": [
+    {
+      "id": "sinet",
+      "name": "SINET Audio Lekar",
+      "path": "/home/miuchins/Desktop/SINET/Koder/GAUDIO/4.0/GitHubPublish/Sinet_Audio_Lekar_(Public Demo)",
+      "start_local_cmd": "cd '/home/miuchins/Desktop/SINET/Koder/GAUDIO/4.0/GitHubPublish/Sinet_Audio_Lekar_(Public Demo)' && python3 -m http.server 8000",
+      "backup_name_prefix": "SINET_Audio_Lekar",
+      "github_url": "https://github.com/miuchin/Sinet_Audio_Lekar_-Public-Demo-/tree/main",
+      "netlify_url": "https://sinet-audio-lekar-nutri-pro-demo.netlify.app/",
+      "git_init_script": "./sinet_github_init_manjaro.sh",
+      "git_publish_script": "./sinet_github_publish_manjaro.sh"
+    },
+    {
+      "id": "paprikas",
+      "name": "Paprikas Hub",
+      "path": "/home/miuchins/Desktop/SINET/paprikas-Hub",
+      "start_local_cmd": "cd '/home/miuchins/Desktop/SINET/paprikas-Hub' && python3 server/paprikas_server.py --port 8015",
+      "backup_name_prefix": "Paprikas_Hub",
+      "github_url": "",
+      "netlify_url": "",
+      "git_init_script": "./paprikas_github_init_manjaro.sh",
+      "git_publish_script": "./paprikas_github_publish_manjaro.sh"
+    }
+  ]
+}

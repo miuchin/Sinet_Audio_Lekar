@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=SINET Control Center
+Comment=Centralni panel za SINET i Paprikas projekte
+Exec=bash -lc 'SCRIPT_DIR="$(dirname "%k")"; "$SCRIPT_DIR/sinet_control_center_manjaro.sh"'
+Terminal=false
+Categories=Utility;Development;
