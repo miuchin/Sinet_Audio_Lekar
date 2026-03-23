@@ -1,0 +1,12 @@
+{
+  "project_name": "NutriTable",
+  "host": "127.0.0.1",
+  "server_port": 8120,
+  "bridge_port": 8121,
+  "port_range_start": 8120,
+  "port_range_end": 8180,
+  "auto_open_browser": true,
+  "preferred_start_page": "NutriTable_Pro_v5.8.57_family_navigation_fullprep_hotfix.html",
+  "profile_version": "1.0",
+  "notes": "Legacy runtime profile for NutriTable and similar single-file SINET apps."
+}

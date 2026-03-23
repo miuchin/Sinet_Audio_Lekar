@@ -1,0 +1,14 @@
+{
+  "project_name": "Sinet_Audio_Lekar",
+  "app_entry": "index.html",
+  "runtime_mode": "hybrid",
+  "server_center": "server/index.html",
+  "embed_runtime_button": true,
+  "default_server_port": 8130,
+  "default_bridge_port": 8131,
+  "port_range_start": 8130,
+  "port_range_end": 8180,
+  "requires_bridge": true,
+  "netlify_compatible": true,
+  "legacy_project": true
+}

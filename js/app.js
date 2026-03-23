@@ -1,16 +1,16 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.0 (SEARCH SUBMIT + SESSION FALLBACK + NETLIFY PATCH)
+  Version: 16.0.0.118.5.3 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
   Author: miuchins | Co-author: SINET AI
 */
 
 // Cache-bust audio engine updates (NO-SW mode relies on browser cache)
-import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.0';
-import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.0';
-import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.0';
+import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
+import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
+import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.0";
+const SINET_APP_VERSION = "16.0.0.118.5.3";
 
 
 
@@ -268,7 +268,7 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.118.0 SEARCH SUBMIT + SESSION FALLBACK + NETLIFY PATCH');
+    console.log('SINET v16.0.0.118.5.3 STICKY MY SYMPTOMS IMPORT + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK');
     this.cacheUI();
     try { this._ensureSpaPageTools(); } catch(_) {}
     try { this._ensureMenuPriorityOrder(); } catch(_) {}
@@ -7705,6 +7705,415 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     }).join("");
 
     this._renderUserSymptomsSelectionHint();
+  }
+
+
+  showUserSymptomImportPanel() {
+    const host = document.getElementById('user-symptom-import');
+    if (!host) return;
+    try { this.cancelUserSymptomForm(); } catch (_) {}
+    host.style.display = 'block';
+    host.innerHTML = `
+      <div style="background:#fff; border:1px solid #eee; border-radius:12px; padding:12px; margin-top:10px;">
+        <div style="font-weight:900; margin-bottom:8px;">📥 Import simptoma (JSON)</div>
+        <p style="margin:0 0 10px 0; color:#667; line-height:1.55;">Uvezi <b>jedan simptom</b>, <b>više simptoma</b> ili ceo <b>SINET STL JSON</b>. Podrazumevano ide u <b>Moje simptome</b>, a može odmah i u <b>Favorite</b> ili <b>Listu</b>.</p>
+
+        <label style="font-weight:900; display:block; margin-bottom:6px;">Cilj importa</label>
+        <select id="us_import_target" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+          <option value="mysymptoms" selected>🧬 Moji simptomi</option>
+          <option value="favorites">⭐ Favoriti (+ čuva u Moje simptome)</option>
+          <option value="playlist">🎵 Lista (+ čuva u Moje simptome)</option>
+        </select>
+
+        <label style="font-weight:900; display:block; margin-bottom:6px;">JSON fajl(ovi)</label>
+        <input id="us_import_file" type="file" accept=".json,.txt,application/json,text/plain" multiple style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:#fafafa;">
+        <div style="color:#667; font-size:0.82rem; margin:6px 0 12px 0;">Možeš izabrati jedan ili više fajlova sa drugog telefona.</div>
+
+        <label style="font-weight:900; display:block; margin-bottom:6px;">Ili nalepi JSON ručno</label>
+        <textarea id="us_import_json" rows="8" placeholder='Primer: {"simptom":"Glavobolja","frekvencije":[{"hz":432}] } ili {"simptomi":[...]} ' style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-family:monospace; font-size:0.92rem;"></textarea>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+          <button class="btn-full" style="flex:1; min-width:180px; margin-top:0; background:#8e44ad;" onclick="window.app && window.app.runUserSymptomImport && window.app.runUserSymptomImport()">📥 UVEZI</button>
+          <button class="btn-full" style="flex:1; min-width:180px; margin-top:0; background:#95a5a6;" onclick="window.app && window.app.clearUserSymptomImportInput && window.app.clearUserSymptomImportInput()">🧹 OČISTI</button>
+          <button class="btn-full" style="flex:1; min-width:180px; margin-top:0; background:#eee; color:#333;" onclick="window.app && window.app.cancelUserSymptomImportPanel && window.app.cancelUserSymptomImportPanel()">ZATVORI</button>
+        </div>
+      </div>
+    `;
+  }
+
+  cancelUserSymptomImportPanel() {
+    const host = document.getElementById('user-symptom-import');
+    if (host) {
+      host.style.display = 'none';
+      host.innerHTML = '';
+    }
+  }
+
+  clearUserSymptomImportInput() {
+    const fileEl = document.getElementById('us_import_file');
+    const ta = document.getElementById('us_import_json');
+    if (fileEl) fileEl.value = '';
+    if (ta) ta.value = '';
+  }
+
+  _looksLikeImportedSymptomObject(node) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return false;
+    if (node.simptom && typeof node.simptom === 'object') return true;
+    const hasName = [node.simptom, node.naziv, node.name, node.title].some(v => typeof v === 'string' && v.trim());
+    const hasFreqs = Array.isArray(node.frekvencije) || Array.isArray(node.frequencies) || Array.isArray(node.freqs);
+    const hasMeta = !!(node.mkb10 || node.oblast || node.opis || node.description || node.izvor || node.source);
+    return !!(hasName || (hasFreqs && hasMeta));
+  }
+
+  _extractImportedSymptomCandidates(payload, sourceLabel = 'JSON') {
+    const found = [];
+    const walk = (node, trail = 'root') => {
+      if (node == null) return;
+      if (Array.isArray(node)) {
+        node.forEach((it, idx) => walk(it, `${trail}[${idx}]`));
+        return;
+      }
+      if (typeof node !== 'object') return;
+
+      if (Array.isArray(node.simptomi)) {
+        walk(node.simptomi, `${trail}.simptomi`);
+        return;
+      }
+      if (Array.isArray(node.items)) {
+        walk(node.items, `${trail}.items`);
+        return;
+      }
+      if (Array.isArray(node.symptoms)) {
+        walk(node.symptoms, `${trail}.symptoms`);
+        return;
+      }
+      if (node.item && typeof node.item === 'object') {
+        walk(node.item, `${trail}.item`);
+        return;
+      }
+
+      if (this._looksLikeImportedSymptomObject(node)) {
+        found.push({ raw: node, sourceLabel, trail });
+      }
+    };
+    walk(payload);
+    return found;
+  }
+
+  _normalizeImportedSymptomCandidate(raw) {
+    const src = raw && typeof raw === 'object' ? raw : {};
+    const base = (src.simptom && typeof src.simptom === 'object') ? src.simptom : src;
+    const naziv = this._cleanupAiJsonText(base.simptom || base.naziv || base.name || base.title || src.naziv || src.name || '');
+    if (!naziv) return { ok:false, reason:'Nedostaje naziv simptoma.' };
+
+    const opis = this._cleanupAiJsonText(base.opis || base.description || base.desc || src.opis || src.description || '');
+    const oblast = this._cleanupAiJsonText(base.oblast || base.category || src.oblast || src.category || 'MOJI SIMPTOMI') || 'MOJI SIMPTOMI';
+    const mkb10 = this._mkbToText(base.mkb10 || src.mkb10 || '');
+    const izvor = this._srcToText(base.izvor || base.source || src.izvor || src.source || 'Import JSON');
+
+    const freqsRaw = Array.isArray(base.frekvencije) ? base.frekvencije : (Array.isArray(base.frequencies) ? base.frequencies : (Array.isArray(base.freqs) ? base.freqs : []));
+    const mappedFreqs = (Array.isArray(freqsRaw) ? freqsRaw : []).map((f, idx) => {
+      if (f == null) return null;
+      if (typeof f === 'number' || typeof f === 'string') {
+        const hz = Number(f);
+        if (!Number.isFinite(hz) || hz <= 0) return null;
+        return { hz, naziv:'', opis:'', funkcija:'', izvor, enabled:true, order: idx };
+      }
+      const hz = Number(f.hz ?? f.value ?? f.freq ?? '');
+      const nazivF = this._cleanupAiJsonText(f.naziv || f.name || '');
+      const opisF = this._cleanupAiJsonText(f.opis || f.description || f.desc || '');
+      const funkcija = this._cleanupAiJsonText(f.funkcija || f.svrha || f.purpose || f.note || nazivF || opisF || '');
+      const izvorF = this._srcToText(f.izvor || f.source || izvor);
+      if ((!Number.isFinite(hz) || hz <= 0) && !nazivF && !opisF && !funkcija) return null;
+      return { hz: Number.isFinite(hz) && hz > 0 ? hz : '', naziv:nazivF, opis:opisF, funkcija, izvor:izvorF, enabled: f.enabled !== false, order: idx };
+    }).filter(Boolean);
+
+    let akup = base.akupresura || src.akupresura || [];
+    if (akup && !Array.isArray(akup) && typeof akup === 'object') akup = [akup];
+    if (!Array.isArray(akup)) akup = [];
+    akup = akup.map((p) => ({
+      tacka: p.tacka || p.point || '',
+      naziv: p.naziv || p.name || '',
+      lokacija: p.lokacija || p.location || '',
+      uputstvo: p.uputstvo || p.how || '',
+      slika: p.slika,
+      marker: p.marker,
+      izvor: this._srcToText(p.izvor || p.source || '')
+    })).filter((p) => p.tacka || p.naziv || p.lokacija || p.uputstvo);
+
+    const holisticki = base.holisticki || src.holisticki || {
+      psihosomatika: base.psihosomatika || src.psihosomatika || null,
+      afirmacija: base.afirmacija || src.afirmacija || null,
+      molitva: base.molitva || src.molitva || null,
+      narodni_lek: base.narodni_lek || src.narodni_lek || null
+    };
+
+    const item = window.SINET_FrequencySchema?.normalizeItem ? window.SINET_FrequencySchema.normalizeItem({
+      id: String(base.id || src.id || ''),
+      simptom: naziv,
+      naziv,
+      oblast,
+      opis,
+      mkb10,
+      izvor,
+      frekvencije: mappedFreqs
+    }) : { id:String(base.id || src.id || ''), simptom:naziv, naziv, oblast, opis, mkb10, izvor, frekvencije:mappedFreqs };
+
+    if (holisticki && typeof holisticki === 'object') item.holisticki = holisticki;
+    if (akup.length) item.akupresura = akup;
+
+    return {
+      ok: true,
+      item,
+      naziv,
+      dedupeKey: this._normalizeSymptomNameForDedupe(naziv),
+      originalId: String(base.id || src.id || '').trim()
+    };
+  }
+
+  _collectCatalogLookupMaps() {
+    const core = Array.isArray(this.catalogCoreItems) && this.catalogCoreItems.length
+      ? this.catalogCoreItems.slice()
+      : (Array.isArray(this.catalogItems) ? this.catalogItems.filter(it => !String(it?.id || '').startsWith('usr-')) : []);
+    const user = Array.isArray(this.userSymptoms) ? this.userSymptoms.slice() : [];
+    const byName = new Map();
+    const byId = new Map();
+    const add = (item, source) => {
+      if (!item || !item.id) return;
+      const id = String(item.id);
+      if (!byId.has(id)) byId.set(id, { item, source });
+      const key = this._normalizeSymptomNameForDedupe(item.simptom || item.naziv || '');
+      if (key && !byName.has(key)) byName.set(key, { item, source });
+    };
+    core.forEach(it => add(it, 'catalog'));
+    user.forEach(it => add(it, 'user'));
+    return { byName, byId };
+  }
+
+  async _addIdsToFavorites(ids) {
+    const uniq = Array.from(new Set((Array.isArray(ids) ? ids : []).map(id => String(id || '')).filter(Boolean)));
+    if (!uniq.length || !this.db) return { added: 0, total: 0 };
+    try { await this.refreshFavoritesSet(); } catch (_) {}
+    let added = 0;
+    for (const id of uniq) {
+      if (this.isFavoriteId && this.isFavoriteId(id)) continue;
+      try {
+        const nowFav = await this.db.toggleFavorite(id);
+        if (nowFav) {
+          this._favSet = this._favSet || new Set();
+          this._favSet.add(id);
+          added++;
+        }
+      } catch (_) {}
+    }
+    try { if (this.currentPageId === 'favorites') this.updateFavorites(); } catch (_) {}
+    return { added, total: uniq.length };
+  }
+
+  async _addIdsToPlaylist(ids) {
+    const uniq = Array.from(new Set((Array.isArray(ids) ? ids : []).map(id => String(id || '')).filter(Boolean)));
+    if (!uniq.length) return { added: 0, total: 0 };
+    const existing = new Set((Array.isArray(this.playlist) ? this.playlist : []).map(it => String(it?.id || '')).filter(Boolean));
+    let added = 0;
+    for (const id of uniq) {
+      if (existing.has(id)) continue;
+      const item = (this.catalogItems || []).find(it => String(it?.id || '') === id);
+      if (!item) continue;
+      const entry = this._makePlaylistEntry(item);
+      if (!entry) continue;
+      this.playlist.push(entry);
+      existing.add(id);
+      added++;
+    }
+    if (added) {
+      await this.savePlaylistToDB();
+      try { this.renderPlaylistUI(); } catch (_) {}
+    }
+    return { added, total: uniq.length };
+  }
+
+  async addLastImportedSymptomsToFavorites() {
+    const ids = Array.isArray(this._lastImportedSymptomBatch?.actionIds) ? this._lastImportedSymptomBatch.actionIds : [];
+    const res = await this._addIdsToFavorites(ids);
+    this.showToast(`⭐ Dodato u favorite: ${res.added}/${res.total}`, { actionLabel:'Favoriti', actionNav:'favorites', timeoutMs: 4500 });
+  }
+
+  async addLastImportedSymptomsToPlaylist() {
+    const ids = Array.isArray(this._lastImportedSymptomBatch?.actionIds) ? this._lastImportedSymptomBatch.actionIds : [];
+    const res = await this._addIdsToPlaylist(ids);
+    this.showToast(`🎵 Dodato u listu: ${res.added}/${res.total}`, { actionLabel:'Lista', actionNav:'playlist', timeoutMs: 4500 });
+  }
+
+  async _readImportedSymptomsFromFiles(fileInput) {
+    const files = Array.from(fileInput?.files || []);
+    const texts = [];
+    for (const file of files) {
+      try {
+        const text = await file.text();
+        texts.push({ name: file.name || 'JSON', text: String(text || '') });
+      } catch (e) {
+        texts.push({ name: file?.name || 'JSON', error: e?.message || 'read_failed', text: '' });
+      }
+    }
+    return texts;
+  }
+
+  async runUserSymptomImport() {
+    const fileEl = document.getElementById('us_import_file');
+    const ta = document.getElementById('us_import_json');
+    const targetEl = document.getElementById('us_import_target');
+    const target = String(targetEl?.value || 'mysymptoms');
+
+    const fileTexts = await this._readImportedSymptomsFromFiles(fileEl);
+    const pasted = String(ta?.value || '').trim();
+    if (!fileTexts.length && !pasted) {
+      alert('Izaberi JSON fajl ili nalepi JSON tekst.');
+      return;
+    }
+
+    const invalidInputs = [];
+    const normalizedRows = [];
+    const parsedSources = [];
+
+    const allInputs = fileTexts.slice();
+    if (pasted) allInputs.push({ name: 'Ručno nalepljen JSON', text: pasted });
+
+    for (const src of allInputs) {
+      if (src.error) {
+        invalidInputs.push(`• ${src.name}: ${src.error}`);
+        continue;
+      }
+      try {
+        const parsed = this._parseAiJsonLoose(src.text || '');
+        if (!parsed || !parsed.obj) {
+          invalidInputs.push(`• ${src.name}: JSON nije prepoznat.`);
+          continue;
+        }
+        const candidates = this._extractImportedSymptomCandidates(parsed.obj, src.name);
+        if (!candidates.length) {
+          invalidInputs.push(`• ${src.name}: nema prepoznatih simptoma / STL stavki.`);
+          continue;
+        }
+        candidates.forEach((c) => parsedSources.push(c));
+      } catch (e) {
+        invalidInputs.push(`• ${src.name}: ${e?.message || e}`);
+      }
+    }
+
+    if (!parsedSources.length) {
+      this.openTextModal('📥 Import simptoma — nema prepoznatih stavki', (invalidInputs.length ? invalidInputs.join('\n') : 'JSON je učitan, ali nijedna stavka nije prepoznata kao simptom ili STL zapis.') + "\n\nDozvoljeni oblici: 1 simptom, niz simptoma ili SINET STL sa poljem 'simptomi'.");
+      return;
+    }
+
+    const lookup = this._collectCatalogLookupMaps();
+    const batchKeys = new Set();
+    const usedIds = new Set((this.userSymptoms || []).map(it => String(it?.id || '')).filter(Boolean));
+    const newItems = [];
+    const importedIds = [];
+    const linkedIds = [];
+    const duplicates = [];
+    const invalid = [];
+
+    for (const row of parsedSources) {
+      const normalized = this._normalizeImportedSymptomCandidate(row.raw);
+      if (!normalized.ok || !normalized.dedupeKey) {
+        invalid.push(`${row.sourceLabel}: ${normalized.reason || 'stavka nije validna'}`);
+        continue;
+      }
+
+      if (batchKeys.has(normalized.dedupeKey)) {
+        duplicates.push({ naziv: normalized.naziv, reason: 'duplikat u istom importu', sourceLabel: row.sourceLabel, linkedId: null });
+        continue;
+      }
+
+      const existingById = normalized.originalId ? lookup.byId.get(normalized.originalId) : null;
+      const existingByName = lookup.byName.get(normalized.dedupeKey);
+      const existing = existingById || existingByName;
+      if (existing && existing.item?.id && existing.source === 'user') {
+        linkedIds.push(String(existing.item.id));
+        duplicates.push({ naziv: normalized.naziv, reason: 'već postoji u Mojim simptomima', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
+        batchKeys.add(normalized.dedupeKey);
+        continue;
+      }
+
+      if (existing && existing.item?.id && existing.source === 'catalog') {
+        duplicates.push({ naziv: normalized.naziv, reason: 'nađen u katalogu — kloniran u Moje simptome', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
+      }
+
+      let baseId = String(('usr-' + this._slugify(normalized.naziv))).trim();
+      if (!baseId) baseId = 'usr-' + this._slugify(normalized.naziv || 'simptom');
+      if (!baseId.startsWith('usr-')) baseId = 'usr-' + baseId.replace(/^usr-/, '');
+      let id = baseId;
+      if (usedIds.has(id)) {
+        let k = 2;
+        while (usedIds.has(`${baseId}-${k}`)) k++;
+        id = `${baseId}-${k}`;
+      }
+      usedIds.add(id);
+      batchKeys.add(normalized.dedupeKey);
+      lookup.byId.set(id, { item: { ...normalized.item, id }, source: 'user' });
+      lookup.byName.set(normalized.dedupeKey, { item: { ...normalized.item, id }, source: 'user' });
+
+      newItems.push({ ...normalized.item, id });
+      importedIds.push(id);
+    }
+
+    if (newItems.length) {
+      this.userSymptoms = [...newItems, ...(Array.isArray(this.userSymptoms) ? this.userSymptoms : [])];
+      await this.saveUserSymptoms();
+      this.applyUserDataToCatalog();
+      try { this.renderUserSymptomsList(); } catch (_) {}
+      try { this.renderSystemPresets(); } catch (_) {}
+      try { if (document.getElementById('page-catalog')?.classList?.contains('active')) this.showCatalogHome(); } catch (_) {}
+    }
+
+    const actionIds = Array.from(new Set([ ...importedIds, ...linkedIds ]));
+    let autoAdded = null;
+    if (target === 'favorites') autoAdded = await this._addIdsToFavorites(actionIds);
+    if (target === 'playlist') autoAdded = await this._addIdsToPlaylist(actionIds);
+
+    this._lastImportedSymptomBatch = {
+      actionIds,
+      importedIds,
+      linkedIds: Array.from(new Set(linkedIds)),
+      target,
+      createdAt: new Date().toISOString()
+    };
+
+    const lines = [];
+    lines.push('📥 Import simptoma — izveštaj');
+    lines.push('');
+    lines.push(`Ukupno prepoznatih stavki: ${parsedSources.length}`);
+    lines.push(`Novo uvezeno u Moje simptome: ${importedIds.length}`);
+    lines.push(`Već postojećih / povezanih: ${Array.from(new Set(linkedIds)).length}`);
+    lines.push(`Preskočeno duplikata u batch-u: ${duplicates.filter(x => x.reason === 'duplikat u istom importu').length}`);
+    if (autoAdded) lines.push(target === 'favorites' ? `Automatski dodato u Favorite: ${autoAdded.added}/${autoAdded.total}` : `Automatski dodato u Listu: ${autoAdded.added}/${autoAdded.total}`);
+    if (invalidInputs.length || invalid.length) lines.push(`Nevažećih unosa: ${invalidInputs.length + invalid.length}`);
+
+    const pushList = (title, arr, mapper, max = 30) => {
+      if (!arr || !arr.length) return;
+      lines.push('');
+      lines.push(title);
+      arr.slice(0, max).forEach((it, idx) => lines.push(`${idx + 1}. ${mapper(it)}`));
+      if (arr.length > max) lines.push(`... i još ${arr.length - max}`);
+    };
+
+    pushList('Novo uvezeni simptomi:', newItems, (it) => `${it.simptom || it.naziv} → ${it.id}`);
+    pushList('Već postojeći / povezani:', duplicates.filter(x => x.linkedId), (it) => `${it.naziv} — ${it.reason}${it.linkedId ? ` (${it.linkedId})` : ''}`);
+    pushList('Nevažeći / odbačeni unosi:', invalidInputs.concat(invalid), (it) => String(it));
+
+    const footer = `
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <button class="btn-full" style="margin-top:0; padding:10px; background:#8e44ad;" onclick="window.app && window.app.closeTextModal && window.app.closeTextModal(); window.app && window.app.nav && window.app.nav('mysymptoms');">🧬 Otvori Moje simptome</button>
+        <button class="btn-full" style="margin-top:0; padding:10px; background:#f1c40f; color:#2c3e50;" onclick="window.app && window.app.addLastImportedSymptomsToFavorites && window.app.addLastImportedSymptomsToFavorites()">⭐ Dodaj sve u Favorite</button>
+        <button class="btn-full" style="margin-top:0; padding:10px; background:#27ae60;" onclick="window.app && window.app.addLastImportedSymptomsToPlaylist && window.app.addLastImportedSymptomsToPlaylist()">🎵 Dodaj sve u Listu</button>
+      </div>
+    `;
+
+    this.openTextModal('📥 Import simptoma — report', lines.join('\n'), footer);
+    this.nav('mysymptoms');
+    this.cancelUserSymptomImportPanel();
+    this.showToast(`✅ Import završen: ${importedIds.length} novo / ${Array.from(new Set(linkedIds)).length} povezano`, { actionLabel:'Moji simptomi', actionNav:'mysymptoms', timeoutMs: 5000 });
   }
 
   showUserSymptomForm(editId = null) {

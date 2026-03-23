@@ -1,0 +1,33 @@
+Traceback (most recent call last):
+  File "/home/miuchins/Desktop/SINET/NutriTable/NutriTable/server/runtime_control_bridge.py", line 201, in <module>
+    main()
+    ~~~~^^
+  File "/home/miuchins/Desktop/SINET/NutriTable/NutriTable/server/runtime_control_bridge.py", line 195, in main
+    server = ThreadingHTTPServer((host, port), Handler)
+  File "/usr/lib/python3.14/socketserver.py", line 457, in __init__
+    self.server_bind()
+    ~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/http/server.py", line 148, in server_bind
+    socketserver.TCPServer.server_bind(self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 98] Address already in use
+[runtime-bridge] http://127.0.0.1:8131/health
+127.0.0.1 - - [22/Mar/2026 16:56:03] "POST /start-server HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 16:56:04] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 16:56:04] "GET /status HTTP/1.1" 200 -
+[runtime-bridge] http://127.0.0.1:8131/health
+127.0.0.1 - - [22/Mar/2026 18:25:49] "POST /start-server HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:28:54] "OPTIONS /health HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:28:54] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:28:54] "OPTIONS /status HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:28:54] "GET /status HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:28:54] "GET /status HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 18:29:13] "GET /suggest-ports HTTP/1.1" 200 -
+127.0.0.1 - - [22/Mar/2026 19:27:25] "GET /api/health HTTP/1.1" 404 -
+127.0.0.1 - - [22/Mar/2026 19:57:33] "GET /api/health HTTP/1.1" 404 -
+127.0.0.1 - - [22/Mar/2026 19:57:56] "GET /api/health HTTP/1.1" 404 -
+127.0.0.1 - - [22/Mar/2026 19:58:23] "GET /api/health HTTP/1.1" 404 -
+127.0.0.1 - - [22/Mar/2026 19:59:20] "GET /api/health HTTP/1.1" 404 -

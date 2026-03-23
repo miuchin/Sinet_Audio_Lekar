@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SINET Server centar</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--line:#d8dfeb;--text:#142338;--muted:#60708a;--brand:#0ea472;--dark:#0d1730;--danger:#df3c3c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+.wrap{max-width:980px;margin:0 auto;padding:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pill{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid #bde8d8;background:#eefaf5;font-weight:700;font-size:14px;margin:0 8px 8px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;background:var(--dark);color:#fff}.btn.alt{background:#e9eef7;color:var(--text)}.btn.good{background:var(--brand)}.btn.bad{background:var(--danger)}
+.field{display:grid;gap:6px}.field input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px}pre{background:#0a1635;color:#e8f0ff;padding:12px;border-radius:14px;min-height:120px;overflow:auto;white-space:pre-wrap}a{color:#1946d5;font-weight:700;word-break:break-all}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card"><h1>SINET Server centar</h1><p>Kontrola lokalnog servera i bridge sloja za Audio Lekar.</p><div><span class="pill" id="modePill">učitavanje…</span><span class="pill" id="serverPill">server ?</span><span class="pill" id="bridgePill">bridge ?</span></div><div class="grid"><div class="card"><strong>Aktivni profil</strong><div id="profile"></div></div><div class="card"><div class="field"><label>Server port</label><input id="serverPort" type="number" /></div><div class="field"><label>Bridge port</label><input id="bridgePort" type="number" /></div><div class="row" style="margin-top:12px"><button class="btn good" onclick="saveConfig()">Sačuvaj config</button><button class="btn" onclick="startServer()">Start server</button><button class="btn alt" onclick="restartServer()">Restart</button><button class="btn bad" onclick="stopServer()">Stop</button><button class="btn alt" onclick="suggestPorts()">Predloži portove</button><button class="btn alt" onclick="refreshAll()">Refresh</button><button class="btn alt" onclick="openApp()">Open App</button></div></div></div><pre id="log"></pre></div></div>
+<script>
+const host=location.hostname||'127.0.0.1';
+async function jget(url,opt){const r=await fetch(url,opt);const t=await r.text();try{return JSON.parse(t)}catch{return {ok:false,raw:t,status:r.status}}}
+function log(msg){const el=document.getElementById('log');const now=new Date().toLocaleTimeString();el.textContent=`[${now}] ${msg}\n`+el.textContent}
+function setPill(id,text,good=true){const el=document.getElementById(id);el.textContent=text;el.style.background=good?'#eefaf5':'#fff2f2';el.style.borderColor=good?'#bde8d8':'#f0bcbc'}
+let currentCfg=null;
+async function refreshAll(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const cfg=await jget(`http://${host}:${bridgePort}/api/config`);if(!cfg.ok){setPill('bridgePill','bridge nedostupan',false);log('Bridge nije dostupan.');return;}currentCfg=cfg.config;document.getElementById('serverPort').value=currentCfg.server_port;document.getElementById('bridgePort').value=currentCfg.bridge_port;setPill('modePill','local runtime');setPill('bridgePill',`bridge ${currentCfg.bridge_port}`);const st=await jget(`http://${host}:${currentCfg.bridge_port}/api/status`);setPill('serverPill',st.server_running?`server ${currentCfg.server_port} RUN`:`server ${currentCfg.server_port} STOP`,!!st.server_running);document.getElementById('profile').innerHTML=`<div><strong>Projekat:</strong> ${currentCfg.project_name}</div><div><strong>App entry:</strong> ${currentCfg.app_entry}</div><div><strong>URL:</strong> <a href="http://${host}:${currentCfg.server_port}/${currentCfg.app_entry}" target="_blank">http://${host}:${currentCfg.server_port}/${currentCfg.app_entry}</a></div><div><strong>Opseg:</strong> ${currentCfg.port_range_start}-${currentCfg.port_range_end}</div>`;log(`Status osvežen: server ${currentCfg.server_port} · bridge ${currentCfg.bridge_port} · ${(st.server_running?'RUN':'STOP')}`)}
+async function saveConfig(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const body={server_port:Number(document.getElementById('serverPort').value),bridge_port:Number(document.getElementById('bridgePort').value)};const r=await jget(`http://${host}:${bridgePort}/api/config`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});log(r.ok?'Config sačuvan.':'Greška pri save config.');await refreshAll()}
+async function startServer(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const r=await jget(`http://${host}:${bridgePort}/api/start_server`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});log(r.ok?'Server start komanda poslata.':'Start server nije uspeo.');await refreshAll()}
+async function stopServer(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const r=await jget(`http://${host}:${bridgePort}/api/stop_server`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});log(r.ok?'Server stop komanda poslata.':'Stop server nije uspeo.');await refreshAll()}
+async function restartServer(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const r=await jget(`http://${host}:${bridgePort}/api/restart_server`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});log(r.ok?'Server restart komanda poslata.':'Restart nije uspeo.');await refreshAll()}
+async function suggestPorts(){const bridgePort=(document.getElementById('bridgePort').value||currentCfg?.bridge_port||8131);const r=await jget(`http://${host}:${bridgePort}/api/suggest_ports`);if(r.ok&&r.suggestions&&r.suggestions.length){document.getElementById('serverPort').value=r.suggestions[0].server_port;document.getElementById('bridgePort').value=r.suggestions[0].bridge_port;log(`Predlog portova: ${r.suggestions[0].server_port}/${r.suggestions[0].bridge_port}`)}else{log('Nema slobodnih predloga portova u opsegu.')}}
+function openApp(){const serverPort=(document.getElementById('serverPort').value||currentCfg?.server_port||8130);const appEntry=(currentCfg?.app_entry||'index.html');window.open(`http://${host}:${serverPort}/${appEntry}`,'_blank')}
+refreshAll();
+</script>
+</body>
+</html>
