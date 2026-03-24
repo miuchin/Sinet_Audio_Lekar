@@ -1,12 +1,3 @@
-{
-  "version": "16.0.0.118.21",
-  "module": "Book v5 modal parity",
-  "changes": [
-    "detail card visually aligned closer to SINET modal flow",
-    "premium summary hero with recommendation metrics",
-    "same-card app bridge block kept and strengthened",
-    "copy symptom shortcut added",
-    "responsive detail grid improved for tablet/mobile",
-    "visible app version bumped to 16.0.0.118.21"
-  ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:6c95147e3cbef36e2273a3d2ffef19eca4b2ceed37ae4ae35da03df547649729
+size 406

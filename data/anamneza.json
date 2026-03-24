@@ -1,26 +1,3 @@
-[
-  {
-    "id": "p1",
-    "osobni": {
-      "ime": "Marko",
-      "prezime": "Perić",
-      "godina": "1955",
-      "mjesto": "Split"
-    },
-    "razlog": "Hitni prijem – bol u prsima i otežano disanje",
-    "dx": {
-      "mkb10": [
-        {
-          "code": "I10",
-          "label": "hipertenzija"
-        }
-      ],
-      "sinet_refs": [
-        "kardiovaskularni-sistem-visok-krvni-pritisak"
-      ],
-      "napomena": "Primer: dijagnoza mapirana na SINET simptom/protokol."
-    },
-    "createdAt": 1771585360611,
-    "updatedAt": 1771585360611
-  }
-]
+version https://git-lfs.github.com/spec/v1
+oid sha256:af7e88d26da03e2fc4f3fcee4939367df36d1db885deffeed00b93a3f0df85cc
+size 560

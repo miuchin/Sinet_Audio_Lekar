@@ -1,25 +1,3 @@
-{
-  "meta": {
-    "schema": "SINET-Acupressure-Media-Registry",
-    "version": "1.0",
-    "generatedAt": "2026-02-10",
-    "notes": "Offline registry for acupressure images. Add only properly licensed/owned media. Keep paths relative to project root."
-  },
-  "points": {
-    "LI4": {
-      "name": "Hegu",
-      "default": "",
-      "files": []
-    },
-    "PC6": {
-      "name": "Neiguan",
-      "default": "",
-      "files": []
-    },
-    "ST36": {
-      "name": "Zusanli",
-      "default": "",
-      "files": []
-    }
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:fe8c11a8ec2cb2fb248c2c5d477e850cd85bc4f4e1fcdc62146b9f08400a9bd2
+size 526

@@ -1,12 +1,3 @@
-{
-  "project_name": "Sinet_Audio_Lekar",
-  "host": "127.0.0.1",
-  "server_port": 8130,
-  "bridge_port": 8131,
-  "port_range_start": 8130,
-  "port_range_end": 8180,
-  "app_entry": "index.html",
-  "server_center": "server/index.html",
-  "runtime_mode": "hybrid",
-  "auto_open_browser": false
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:a3fcbe34a6519297bf814a1b1fe619cc79ca26dc14eec3f2662a6009a9844570
+size 292
