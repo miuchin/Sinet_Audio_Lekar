@@ -11,6 +11,44 @@
   function base(){ return inPages() ? '../' : ''; }
 
   var LS_PREFS = 'SINET_QB_PREFS_V1';
+  var RETURN_STACK_KEY = 'sinet_return_stack_v1';
+  var RETURN_HINT_KEY = 'sinet_return_hint_v1';
+  function rememberCurrentPage(){
+    try{
+      var raw = sessionStorage.getItem(RETURN_STACK_KEY);
+      var stack = raw ? JSON.parse(raw) : [];
+      var entry = { url: currentUrl(), page: 'quickbar', ts: Date.now() };
+      var prev = stack[stack.length-1];
+      if (!prev || String(prev.url||'') !== entry.url){
+        stack.push(entry);
+        while (stack.length > 120) stack.shift();
+        sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+      }
+    }catch(_){ }
+  }
+  function getHintTarget(){
+    try{
+      var raw = localStorage.getItem(RETURN_HINT_KEY);
+      if (!raw) return '';
+      var payload = JSON.parse(raw);
+      if (!payload || !payload.url) return '';
+      if (Math.abs(Date.now() - Number(payload.ts || 0)) > 1000*60*60*8) return '';
+      var target = String(payload.url||'');
+      if (!target || target.split('#')[0] === currentUrl()) return '';
+      return target;
+    }catch(_){ return ''; }
+  }
+  function getStackBackTarget(){
+    try{
+      var raw = sessionStorage.getItem(RETURN_STACK_KEY);
+      var stack = raw ? JSON.parse(raw) : [];
+      var here = currentUrl();
+      while (stack.length && String((stack[stack.length-1]||{}).url||'') === here) stack.pop();
+      var target = stack.pop() || null;
+      sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+      return target && target.url ? target.url : '';
+    }catch(_){ return ''; }
+  }
   var LS_COLLAPSED = 'SINET_QB_COLLAPSED';
 
   // Elements across the app can opt-in to Quickbar preferences by adding:
@@ -148,6 +186,7 @@
     bar.id = 'sinetQuickbar';
     bar.className = 'sinet-quickbar';
 
+    try{ rememberCurrentPage(); }catch(_){ }
     var isMobile = (window.matchMedia && window.matchMedia('(max-width: 520px)').matches);
     var collapsed = (localStorage.getItem(LS_COLLAPSED) === '1');
     // Mobile: always start collapsed (saves space); user can expand when needed
@@ -176,7 +215,7 @@
     btnBack.title = 'Nazad';
     btnBack.addEventListener('click', function(ev){
       ev.preventDefault();
-      var target = getBackTarget();
+      var target = getBackTarget() || getHintTarget() || getStackBackTarget();
       if (target) { location.href = target; return; }
       if (history.length > 1) { history.back(); return; }
       location.href = base() + 'index.html';

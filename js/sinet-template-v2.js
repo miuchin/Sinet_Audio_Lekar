@@ -244,7 +244,15 @@
   function goBack(){
     if(BACK_URL){ location.href = BACK_URL; return; }
     const back = QS.get('back'); if(back){ location.href = back; return; }
-    try{ history.back(); }catch(_){ location.href = '../index.html'; }
+    try{
+      const raw = localStorage.getItem('sinet_return_hint_v1');
+      if (raw){
+        const payload = JSON.parse(raw);
+        const target = String(payload?.url || '');
+        if (target && target.split('#')[0] !== String(location.href||'').split('#')[0]) { location.href = target; return; }
+      }
+    }catch(_){ }
+    try{ history.back(); return; }catch(_){ location.href = '../index.html'; }
   }
 
 

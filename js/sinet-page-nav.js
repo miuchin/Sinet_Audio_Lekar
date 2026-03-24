@@ -15,6 +15,45 @@
     if (inPages()) return '../';
     return './';
   }
+  var RETURN_STACK_KEY = 'sinet_return_stack_v1';
+  var RETURN_HINT_KEY = 'sinet_return_hint_v1';
+  function currentAbsUrl(){ return String(location.href||'').split('#')[0]; }
+  function rememberCurrentPage(){
+    try{
+      var raw = sessionStorage.getItem(RETURN_STACK_KEY);
+      var stack = raw ? JSON.parse(raw) : [];
+      var entry = { url: currentAbsUrl(), page: 'standalone', ts: Date.now() };
+      var prev = stack[stack.length-1];
+      if (!prev || String(prev.url||'') !== entry.url){
+        stack.push(entry);
+        while (stack.length > 120) stack.shift();
+        sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+      }
+    }catch(_){ }
+  }
+  function getHintTarget(){
+    try{
+      var raw = localStorage.getItem(RETURN_HINT_KEY);
+      if (!raw) return '';
+      var payload = JSON.parse(raw);
+      if (!payload || !payload.url) return '';
+      if (Math.abs(Date.now() - Number(payload.ts || 0)) > 1000*60*60*8) return '';
+      var target = String(payload.url||'');
+      if (!target || target.split('#')[0] === currentAbsUrl()) return '';
+      return target;
+    }catch(_){ return ''; }
+  }
+  function getStackBackTarget(){
+    try{
+      var raw = sessionStorage.getItem(RETURN_STACK_KEY);
+      var stack = raw ? JSON.parse(raw) : [];
+      var here = currentAbsUrl();
+      while (stack.length && String((stack[stack.length-1]||{}).url||'') === here) stack.pop();
+      var target = stack.pop() || null;
+      sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+      return target && target.url ? target.url : '';
+    }catch(_){ return ''; }
+  }
   function sameOriginReferrer(){
     try{
       if (!document.referrer) return '';
@@ -34,7 +73,7 @@
   }
   function goBack(ev){
     if (ev) ev.preventDefault();
-    var target = getBackTarget();
+    var target = getBackTarget() || getHintTarget() || getStackBackTarget();
     if (target) { location.href = target; return false; }
     try { if (history.length > 1) { history.back(); return false; } } catch(_){ }
     location.href = base() + 'index.html';
@@ -234,6 +273,7 @@
     try{ mount(targetId); }catch(_){ }
     if (n>0){ setTimeout(function(){ try{ mount(targetId); }catch(_){ } }, 300); setTimeout(function(){ try{ mount(targetId); }catch(_){ } }, 900); }
   }
+  try{ rememberCurrentPage(); }catch(_){ }
   window.SINET_PAGE_NAV = { mount: function(targetId){ mountWithRetry(2, targetId); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ mountWithRetry(2); });
   else mountWithRetry(2);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.23';
+const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.29';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -27,6 +27,7 @@ const CORE_ASSETS = [
   './data/mkb10_sr.json',
   './data/freq_catalog.json',
   './anamneza.html',
+  './mobile-qa.html',
   './DS-Generator.html',
   './pages/integrativna_biblioteka.html',
   './pages/integrativni_vodic.html',

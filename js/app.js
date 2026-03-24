@@ -1,7 +1,7 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.8 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
+  Version: 16.0.0.118.30 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
   Author: miuchins | Co-author: SINET AI
 */
 
@@ -10,7 +10,7 @@ import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
 import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
 import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.23";
+const SINET_APP_VERSION = "16.0.0.118.30";
 
 
 
@@ -269,7 +269,7 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.118.23 CATALOG IMPORT + DEPLOY EXPORT + NAV HARDENING');
+    console.log('SINET v16.0.0.118.25 CATALOG IMPORT + DEPLOY EXPORT + NAV HARDENING');
     this.cacheUI();
     try { this._ensureSpaPageTools(); } catch(_) {}
     try { this._ensureMenuPriorityOrder(); } catch(_) {}
@@ -11268,8 +11268,10 @@ async function __consumeBookReturnBridgeIfAny(){
   try { payload = JSON.parse(raw); } catch(_) { return; }
   const a = getApp();
   if (!a || typeof a.nav !== 'function') return;
-  const targetPage = String(payload?.forceHome ? 'home' : (payload?.page || 'home'));
-  try { a.nav(targetPage); } catch(_) { try { a.nav('home'); } catch(_) {} }
+  const requestedPage = String(payload?.page || payload?.sourcePage || 'home');
+  const hasCatalogContext = !!(String(payload?.oblast || '').trim() || String(payload?.q || '').trim() || String(payload?.symptomId || '').trim());
+  const targetPage = String(payload?.forceHome ? 'home' : ((requestedPage === 'home' && hasCatalogContext) ? 'catalog' : requestedPage));
+  try { a.nav(targetPage); } catch(_) { try { a.nav(hasCatalogContext ? 'catalog' : 'home'); } catch(_) {} }
   await new Promise(r => setTimeout(r, 140));
   if (!payload?.forceHome && targetPage === 'catalog') {
     const input = document.getElementById('search-input');
@@ -15336,6 +15338,9 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
 
 /* ===================== v16.0.0.118.6 HOTFIX — Atlas mirrors live catalog + opens current oblast/query ===================== */
 (function(){
+  function setSinetReturnHint(payload){
+    try { localStorage.setItem('sinet_return_hint_v1', JSON.stringify({ ...(payload || {}), ts: Date.now() })); } catch(_) {}
+  }
   function atlasBuildUrl(state){
     const params = new URLSearchParams();
     if (state && state.oblast) params.set('oblast', String(state.oblast));
@@ -15360,6 +15365,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
           from: this.currentPageId || 'app',
           ts: Date.now()
         }));
+        setSinetReturnHint({ url: 'index.html', page: this.currentPageId || 'catalog', sourcePage: this.currentPageId || 'catalog', oblast: oblast || '', q: q || '', symptomId: String(this.selectedSymptom?.id || this.selectedSymptom?.uid || '') });
       } catch(_) {}
       window.location.href = atlasBuildUrl({ oblast, q, mode });
     } catch(_) {
@@ -15383,8 +15389,11 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
           from: this.currentPageId || 'app',
           ts: Date.now()
         }));
+        const page = String(this.currentPageId || 'home');
+        const returnPage = (page === 'home' && (oblast || q || selectedId)) ? 'catalog' : page;
         localStorage.setItem('sinet_book_return_bridge', JSON.stringify({
-          page: this.currentPageId || 'home',
+          page: returnPage,
+          sourcePage: page,
           oblast: oblast || '',
           q: q || '',
           symptomId: selectedId || '',
@@ -15392,6 +15401,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
           url: 'index.html',
           ts: Date.now()
         }));
+        setSinetReturnHint({ url: 'index.html', page: returnPage, sourcePage: page, oblast: oblast || '', q: q || '', symptomId: selectedId || '' });
       } catch(_) {}
       window.location.href = 'katalog-book.html';
     } catch(_) {

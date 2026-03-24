@@ -1,6 +1,6 @@
 # SINET Audio Lekar
 
-**Verzija:** v16.0.0.118.23  
+**Verzija:** v16.0.0.118.28  
 **Status:** stabilna radna verzija za deljenje, testiranje i dalje dopune kataloga.
 
 ## Šta je ovo

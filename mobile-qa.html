@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>SINET Mobile QA v16.0.0.118.29</title>
+  <style>
+    :root{--primary:#4A90E2;--dark:#203247;--bg:#f4f8fc;--card:#ffffff;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;--muted:#64748b;}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:'Segoe UI',sans-serif;background:var(--bg);color:#18324a}
+    header{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,#4A90E2,#5aa0ef);color:#fff;padding:12px 14px calc(12px + env(safe-area-inset-top));box-shadow:0 2px 10px rgba(0,0,0,.12)}
+    .topline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .title{font-weight:900;font-size:1.02rem}
+    .sub{font-size:.86rem;opacity:.92;margin-top:4px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    .btn.white{background:#fff;color:#17406f}
+    .btn.soft{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25)}
+    main{padding:14px;padding-bottom:calc(24px + env(safe-area-inset-bottom));max-width:1100px;margin:0 auto}
+    .card{background:var(--card);border-radius:16px;padding:14px;margin:0 0 14px 0;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid #dbe7f4}
+    .card h2{margin:0 0 10px 0;font-size:1rem;color:#0f3d66}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .metric{background:#f8fbff;border:1px solid #d8e7ff;border-radius:14px;padding:12px}
+    .metric .label{font-size:.78rem;color:var(--muted);margin-bottom:6px}
+    .metric .value{font-weight:900;font-size:1.1rem;color:#0f172a;overflow-wrap:anywhere}
+    .stack{display:flex;gap:8px;flex-wrap:wrap}
+    .route-btn{flex:1 1 180px;background:#edf5ff;color:#11457a;border:1px solid #cfe0f5}
+    .step{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed #d8e0ea}
+    .step:last-child{border-bottom:none}
+    .step b{display:block;margin-bottom:4px}
+    .pillbox{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .pill{border:none;border-radius:999px;padding:9px 12px;font-weight:900;cursor:pointer}
+    .pass{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
+    .warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+    .fail{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+    .pill.active{box-shadow:0 0 0 2px rgba(74,144,226,.15) inset;transform:translateY(-1px)}
+    textarea{width:100%;min-height:110px;border-radius:14px;border:1px solid #cbd5e1;padding:12px;font:inherit;resize:vertical;background:#fff}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .small{font-size:.9rem;color:#526273}
+    .status-ok{color:#166534;font-weight:900}.status-warn{color:#b45309;font-weight:900}.status-bad{color:#b91c1c;font-weight:900}
+    .footer-note{font-size:.88rem;color:#526273}
+    @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}.step{grid-template-columns:1fr}.pillbox{justify-content:flex-start}.title{font-size:.96rem}.btn{flex:1 1 120px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topline">
+      <div>
+        <div class="title">📱 SINET Mobile QA / Test prikaza</div>
+        <div class="sub">Brzi pregled ekrana bez DevTools-a • v16.0.0.118.29</div>
+      </div>
+      <div class="actions">
+        <button class="btn white" onclick="goBack()">⬅ Nazad</button>
+        <a class="btn white" href="index.html">🏠 Početak</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="card">
+      <h2>🧭 Brzi test ulazi</h2>
+      <div class="stack">
+        <a class="btn route-btn" href="index.html#catalog">📚 Katalog</a>
+        <a class="btn route-btn" href="katalog-book.html">📘 Book</a>
+        <a class="btn route-btn" href="atlas.html">🗺️ Atlas</a>
+        <a class="btn route-btn" href="index.html">🏠 Početna</a>
+      </div>
+      <p class="small" style="margin:10px 0 0 0;">Otvori ekran koji testiraš, vrati se ovde i obeleži rezultat. Testeri mogu samo da koriste dugmad i screenshot.</p>
+    </section>
+
+    <section class="card">
+      <h2>📐 Osnovni podaci o ekranu</h2>
+      <div class="grid">
+        <div class="metric"><div class="label">Viewport</div><div class="value mono" id="m-viewport">-</div></div>
+        <div class="metric"><div class="label">Screen</div><div class="value mono" id="m-screen">-</div></div>
+        <div class="metric"><div class="label">DPR</div><div class="value mono" id="m-dpr">-</div></div>
+        <div class="metric"><div class="label">Orijentacija</div><div class="value" id="m-orientation">-</div></div>
+        <div class="metric"><div class="label">Procena uređaja</div><div class="value" id="m-breakpoint">-</div></div>
+        <div class="metric"><div class="label">Safe area top/bottom</div><div class="value mono" id="m-safe">-</div></div>
+        <div class="metric"><div class="label">Sticky header procena</div><div class="value mono" id="m-header">-</div></div>
+        <div class="metric"><div class="label">Prostor za sadržaj</div><div class="value mono" id="m-content">-</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🧪 10 koraka za test</h2>
+      <div id="steps"></div>
+    </section>
+
+    <section class="card">
+      <h2>📝 Napomena testera</h2>
+      <textarea id="qa-notes" placeholder="Npr. meni pokriva pretragu, kartica se otvara prenisko, Book radi dobro, Nazad je OK..."></textarea>
+      <div class="stack" style="margin-top:10px;">
+        <button class="btn white" style="background:#0f766e;color:#fff;" onclick="copyReport()">📋 Kopiraj izveštaj</button>
+        <button class="btn white" style="background:#2563eb;color:#fff;" onclick="downloadReport()">⬇ Sačuvaj TXT</button>
+        <button class="btn white" style="background:#475569;color:#fff;" onclick="resetQa()">♻ Reset testa</button>
+      </div>
+      <p class="footer-note" style="margin-top:10px;">Predlog za testere: otvori ekran → napravi screenshot → vrati se ovde → upiši gde je problem → pošalji screenshot + TXT izveštaj.</p>
+    </section>
+
+    <section class="card">
+      <h2>ℹ️ Status testa</h2>
+      <div id="overall-status" class="small">Priprema…</div>
+      <pre id="report-preview" class="small mono" style="white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-top:10px;max-height:280px;overflow:auto;"></pre>
+    </section>
+  </main>
+  <script>
+    const LS_KEY = 'sinet_mobile_qa_v1';
+    const steps = [
+      ['home','Otvori Početnu','Da li su početne kartice odmah vidljive bez da header pojede ekran?'],
+      ['catalog-open','Otvori Katalog','Da li su KATALOG / ATLAS / BOOK i pretraga vidljivi bez velikog prekrivanja?'],
+      ['catalog-scroll','Skroluj Katalog 3 ekrana','Da li sticky deo ostavlja dovoljno prostora za listu?'],
+      ['catalog-detail','Otvori simptom iz Kataloga','Da li se detaljna kartica otvara čitljivo i bez gušenja ekrana?'],
+      ['catalog-back','Vrati se Nazad','Da li Nazad vraća na prethodno mesto, a ne na početak?'],
+      ['book-open','Otvori Book','Da li se oblast/simptom otvaraju pregledno na telefonu?'],
+      ['book-back','Book → Nazad','Da li se povratak ponaša normalno i bez restarta aplikacije?'],
+      ['atlas-open','Otvori Atlas','Da li je Atlas čitljiv i bez preklapanja fiksnih elemenata?'],
+      ['rotate','Rotiraj ekran','Da li prelaz portrait/landscape ne lomi prikaz?'],
+      ['overall','Opšti utisak','Da li je aplikacija upotrebljiva na ovom telefonu bez DevTools-a?']
+    ];
+    function loadState(){ try{return JSON.parse(localStorage.getItem(LS_KEY)||'{}')}catch(_){return {}} }
+    function saveState(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); updatePreview(); }
+    function goBack(){ if(history.length > 1) history.back(); else window.location.href='index.html'; }
+    function setMetric(id,val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+    function getSafePx(varName){ const probe=document.createElement('div'); probe.style.position='fixed'; probe.style[varName]='env('+varName+')'; probe.style.visibility='hidden'; document.body.appendChild(probe); const val = parseFloat(getComputedStyle(probe)[varName]) || 0; probe.remove(); return val; }
+    function calcMetrics(){
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const sw = screen.width, sh = screen.height;
+      const dpr = window.devicePixelRatio || 1;
+      const orient = vw > vh ? 'landscape' : 'portrait';
+      const breakpoint = vw <= 520 ? 'telefon mali' : (vw <= 860 ? 'telefon/tablet' : 'tablet/desktop');
+      const safeTop = getSafePx('top') || 0, safeBottom = getSafePx('bottom') || 0;
+      const estHeader = vw <= 520 ? 112 : 84;
+      const content = Math.max(0, vh - estHeader - safeBottom);
+      setMetric('m-viewport', vw + ' × ' + vh + ' px');
+      setMetric('m-screen', sw + ' × ' + sh + ' px');
+      setMetric('m-dpr', dpr.toFixed(2));
+      setMetric('m-orientation', orient);
+      setMetric('m-breakpoint', breakpoint);
+      setMetric('m-safe', safeTop + ' / ' + safeBottom + ' px');
+      setMetric('m-header', '~ ' + estHeader + ' px');
+      setMetric('m-content', '~ ' + content + ' px');
+    }
+    function renderSteps(){
+      const state = loadState();
+      const wrap = document.getElementById('steps');
+      wrap.innerHTML = steps.map(([id,title,desc], idx) => `
+        <div class="step">
+          <div><b>${idx+1}. ${title}</b><div class="small">${desc}</div></div>
+          <div class="pillbox">
+            <button class="pill pass ${state[id]==='pass'?'active':''}" onclick="markStep('${id}','pass')">✅ OK</button>
+            <button class="pill warn ${state[id]==='warn'?'active':''}" onclick="markStep('${id}','warn')">⚠ Delimično</button>
+            <button class="pill fail ${state[id]==='fail'?'active':''}" onclick="markStep('${id}','fail')">❌ Problem</button>
+          </div>
+        </div>`).join('');
+      const notes = document.getElementById('qa-notes');
+      notes.value = state.notes || '';
+      notes.oninput = () => { const s=loadState(); s.notes=notes.value; saveState(s); };
+      updatePreview();
+    }
+    function markStep(id, val){ const s=loadState(); s[id]=val; saveState(s); renderSteps(); }
+    function buildReport(){
+      const s = loadState();
+      const results = steps.map(([id,title]) => ({id,title,status:s[id]||'n/a'}));
+      const pass = results.filter(r=>r.status==='pass').length;
+      const warn = results.filter(r=>r.status==='warn').length;
+      const fail = results.filter(r=>r.status==='fail').length;
+      const summary = fail>0 ? 'problem_detected' : (warn>0 ? 'partial' : (pass===steps.length ? 'all_ok' : 'in_progress'));
+      return {
+        app:'SINET Mobile QA v1', version:'16.0.0.118.29', created_at:new Date().toISOString(),
+        viewport:{width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio||1},
+        screen:{width:screen.width,height:screen.height},
+        orientation: window.innerWidth>window.innerHeight?'landscape':'portrait',
+        results, counts:{pass,warn,fail,total:steps.length}, status:summary, notes:s.notes||''
+      };
+    }
+    function updatePreview(){
+      const rep = buildReport();
+      document.getElementById('report-preview').textContent = JSON.stringify(rep,null,2);
+      const statusEl = document.getElementById('overall-status');
+      const txt = rep.status==='all_ok' ? '<span class="status-ok">✅ Sve izgleda dobro.</span>' : rep.status==='problem_detected' ? '<span class="status-bad">❌ Uočen je problem na ovom uređaju.</span>' : rep.status==='partial' ? '<span class="status-warn">⚠ Ima delimičnih problema ili kompromisa.</span>' : 'Test je u toku.';
+      statusEl.innerHTML = txt + ' Prolaza: <b>' + rep.counts.pass + '</b>, delimično: <b>' + rep.counts.warn + '</b>, problema: <b>' + rep.counts.fail + '</b>.';
+    }
+    async function copyReport(){ const txt = document.getElementById('report-preview').textContent; try{ await navigator.clipboard.writeText(txt); alert('Izveštaj je kopiran.'); }catch(_){ alert('Kopiranje nije uspelo. Probaj Sačuvaj TXT.'); } }
+    function downloadReport(){ const rep = document.getElementById('report-preview').textContent; const blob = new Blob([rep], {type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='SINET_Mobile_QA_Report_v1.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1200); }
+    function resetQa(){ localStorage.removeItem(LS_KEY); renderSteps(); }
+    window.addEventListener('resize', calcMetrics);
+    calcMetrics(); renderSteps();
+  </script>
+</body>
+</html>

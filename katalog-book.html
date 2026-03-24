@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SINET Katalog Book • 5619 simptoma</title>
+  <title>SINET Katalog Book • 5682 simptoma</title>
   <meta name="description" content="Korisnički vodič kroz SINET katalog simptoma, oblasti, MKB-10 šifre, preporuke, frekvencije i holistički pristup." />
   <style>
     :root {
@@ -461,7 +461,7 @@
           <div class="brand-badge">📘</div>
           <div>
             <div class="title">SINET Katalog Book</div>
-            <div class="subtitle">Knjiga kataloga: 5619 simptoma sa direktnim putem ka poznatoj kartici aplikacije</div>
+            <div class="subtitle">Knjiga kataloga: 5682 simptoma sa direktnim putem ka poznatoj kartici aplikacije</div>
           </div>
         </div>
 
@@ -609,6 +609,50 @@
     const SELECTION_KEY = 'sinet_book_selection';
     const RETURN_BRIDGE_KEY = 'sinet_book_return_bridge';
     const RETURN_REQUEST_KEY = 'sinet_book_return_request';
+
+    const RETURN_HINT_KEY = 'sinet_return_hint_v1';
+    const RETURN_STACK_KEY = 'sinet_return_stack_v1';
+    function currentAbsUrl() { return String(location.href || '').split('#')[0]; }
+    function writeReturnHint(payload) {
+      try { localStorage.setItem(RETURN_HINT_KEY, JSON.stringify({ ...(payload || {}), ts: Date.now() })); } catch(_) {}
+    }
+    function readReturnHint() {
+      try {
+        const raw = localStorage.getItem(RETURN_HINT_KEY);
+        if (!raw) return null;
+        const payload = JSON.parse(raw);
+        if (!payload || !payload.url) return null;
+        if (Math.abs(Date.now() - Number(payload.ts || 0)) > 1000 * 60 * 60 * 8) return null;
+        if (String(payload.url).split('#')[0] === currentAbsUrl()) return null;
+        return payload;
+      } catch(_) { return null; }
+    }
+    function rememberBookEntry() {
+      try {
+        const entry = { url: currentAbsUrl(), page: 'book', ts: Date.now() };
+        const raw = sessionStorage.getItem(RETURN_STACK_KEY);
+        const stack = raw ? JSON.parse(raw) : [];
+        const prev = stack[stack.length - 1];
+        if (!prev || String(prev.url || '') !== entry.url) {
+          stack.push(entry);
+          while (stack.length > 120) stack.shift();
+          sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+        }
+      } catch(_) {}
+    }
+    function getStackBackTarget() {
+      try {
+        const raw = sessionStorage.getItem(RETURN_STACK_KEY);
+        const stack = raw ? JSON.parse(raw) : [];
+        const here = currentAbsUrl();
+        while (stack.length && String(stack[stack.length - 1]?.url || '') === here) stack.pop();
+        const target = stack.pop() || null;
+        sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+        return target && target.url ? target : null;
+      } catch(_) { return null; }
+    }
+
+    rememberBookEntry();
 
     const state = {
       items: [],
@@ -790,11 +834,18 @@
     }
     function sendReturnToApp(home = false) {
       const bridge = getReturnBridge();
+      const hasCatalogContext = !!(String(bridge?.oblast || '').trim() || String(bridge?.q || '').trim() || String(bridge?.symptomId || '').trim());
+      const preferredPage = (!home && ((bridge?.page === 'home' && hasCatalogContext) || !bridge?.page)) ? 'catalog' : (bridge?.page || 'home');
+      const payload = { ...(bridge || {}), page: preferredPage, forceHome: !!home, ts: Date.now() };
       try {
-        localStorage.setItem(RETURN_REQUEST_KEY, JSON.stringify({ ...(bridge || {}), forceHome: !!home, ts: Date.now() }));
+        localStorage.setItem(RETURN_REQUEST_KEY, JSON.stringify(payload));
       } catch(_) {}
-      if (bridge && bridge.page === 'atlas') { location.href = 'atlas.html'; return; }
+      if (!home && preferredPage === 'atlas') { writeReturnHint({ url: currentAbsUrl(), page: 'book', sourcePage: 'book' }); location.href = 'atlas.html'; return; }
       if (bridge && bridge.url) { location.href = bridge.url; return; }
+      const hinted = readReturnHint();
+      if (hinted && hinted.url) { location.href = hinted.url; return; }
+      const stacked = getStackBackTarget();
+      if (stacked && stacked.url) { location.href = stacked.url; return; }
       location.href = 'index.html';
     }
     function goBookBack() {
@@ -1175,6 +1226,7 @@
       if (!item) return;
       try {
         localStorage.setItem('sinet_atlas_bridge', JSON.stringify({ action, id: item._id || item.id || '', symptom: item._symptom || item.simptom || '', query: item._symptom || item.simptom || '', oblast: item._area || item.oblast || '', mode: 'all', from: 'catalog-book', bookState: { activeArea: state.activeArea, query: state.query, selectedItemId: state.selectedItemId || '', listScrollTop: els.list ? els.list.scrollTop : 0, detailsScrollTop: els.detailsBody ? els.detailsBody.scrollTop : 0 }, ts: Date.now() }));
+        writeReturnHint({ url: currentAbsUrl(), page: 'book', sourcePage: 'book', oblast: state.activeArea || '', q: state.query || '', symptomId: state.selectedItemId || '' });
       } catch (_) {}
       saveUiState();
       location.href = 'index.html';
@@ -1186,7 +1238,10 @@
       const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'SINET_moj_izbor.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); toast('Izvezen JSON za moj izbor.');
     }
     function openAtlasWithContext() {
-      try { localStorage.setItem('sinet_atlas_entry_bridge', JSON.stringify({ oblast: state.activeArea !== 'Sve oblasti' ? state.activeArea : '', q: state.query || '', mode: 'all', ts: Date.now() })); } catch(_) {}
+      try {
+        localStorage.setItem('sinet_atlas_entry_bridge', JSON.stringify({ oblast: state.activeArea !== 'Sve oblasti' ? state.activeArea : '', q: state.query || '', mode: 'all', ts: Date.now() }));
+        writeReturnHint({ url: currentAbsUrl(), page: 'book', sourcePage: 'book', oblast: state.activeArea || '', q: state.query || '', symptomId: state.selectedItemId || '' });
+      } catch(_) {}
       saveUiState(); location.href = 'atlas.html';
     }
     function openCatalogWithContext() { if (state.selectedItem) return sendBridge('catalog_only', state.selectedItem); sendReturnToApp(false); }

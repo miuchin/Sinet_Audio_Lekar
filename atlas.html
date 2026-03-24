@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SINET Atlas simptoma v16.0.0.118.23</title>
+  <title>SINET Atlas simptoma v16.0.0.118.30</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./css/main.css">
   <style>
@@ -80,7 +80,7 @@
         <button class="atlas-btn primary" onclick="atlasOpenCatalog()">📚 KATALOG</button>
         <button class="atlas-btn ok" onclick="atlasHome()">🏠 POČETAK</button>
       </div>
-      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.23</div>
+      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.30</div>
     </div>
 
     <section class="atlas-hero">
@@ -126,7 +126,7 @@
         <div class="sub">Atlas je brzi ulaz u Katalog. Uvodni ekran i pregled oblasti ostaju u Atlasu, a puni detalj simptoma se otvara kroz isti prozor kao u Katalogu.</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
           <button class="atlas-btn primary" style="flex:1;min-width:180px;" onclick="atlasOpenCatalog()">📚 Otvori Katalog</button>
-          <button class="atlas-btn" style="flex:1;min-width:180px;" onclick="location.href='katalog-book.html'">📘 Katalog Book</button>
+          <button class="atlas-btn" style="flex:1;min-width:180px;" onclick="atlasOpenBook()">📘 Katalog Book</button>
           <button class="atlas-btn ghost" style="flex:1;min-width:180px;" onclick="atlasBack()">← Nazad</button>
           <button class="atlas-btn purple" style="flex:1;min-width:180px;" onclick="sendBridge('ai', state.selected || '', currentSelectedSymptomName())">🤖 AI u aplikaciji</button>
         </div>
@@ -563,6 +563,55 @@ async function copyText(txt){
 }
 
 
+
+const RETURN_HINT_KEY = 'sinet_return_hint_v1';
+const RETURN_STACK_KEY = 'sinet_return_stack_v1';
+function currentAbsUrl(){ return String(location.href || '').split('#')[0]; }
+function writeReturnHint(payload){ try { localStorage.setItem(RETURN_HINT_KEY, JSON.stringify({ ...(payload || {}), ts: Date.now() })); } catch(_){} }
+function readReturnHint(){
+  try {
+    const raw = localStorage.getItem(RETURN_HINT_KEY);
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    if (!payload || !payload.url) return null;
+    if (Math.abs(Date.now() - Number(payload.ts || 0)) > 1000 * 60 * 60 * 8) return null;
+    if (String(payload.url).split('#')[0] === currentAbsUrl()) return null;
+    return payload;
+  } catch(_) { return null; }
+}
+function rememberAtlasEntry(){
+  try {
+    const entry = { url: currentAbsUrl(), page: 'atlas', ts: Date.now() };
+    const raw = sessionStorage.getItem(RETURN_STACK_KEY);
+    const stack = raw ? JSON.parse(raw) : [];
+    const prev = stack[stack.length - 1];
+    if (!prev || String(prev.url || '') !== entry.url) {
+      stack.push(entry);
+      while (stack.length > 120) stack.shift();
+      sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+    }
+  } catch(_){}
+}
+function getStackBackTarget(){
+  try {
+    const raw = sessionStorage.getItem(RETURN_STACK_KEY);
+    const stack = raw ? JSON.parse(raw) : [];
+    const here = currentAbsUrl();
+    while (stack.length && String(stack[stack.length - 1]?.url || '') === here) stack.pop();
+    const target = stack.pop() || null;
+    sessionStorage.setItem(RETURN_STACK_KEY, JSON.stringify(stack));
+    return target && target.url ? target : null;
+  } catch(_) { return null; }
+}
+rememberAtlasEntry();
+function atlasOpenBook(){
+  try {
+    localStorage.setItem('sinet_book_return_bridge', JSON.stringify({ page:'atlas', sourcePage:'atlas', url:'atlas.html', oblast: state.oblast || '', q: state.query || '', symptomId: state.selected || '', ts: Date.now() }));
+    writeReturnHint({ url: currentAbsUrl(), page: 'atlas', sourcePage: 'atlas', oblast: state.oblast || '', q: state.query || '', symptomId: state.selected || '' });
+  } catch(_){}
+  location.href='katalog-book.html';
+}
+
 function currentSelectedSymptomName(){
   const it = (listItems().find((x) => x.id === state.selected) || state.items.find((x) => x.id === state.selected));
   return String(it?.simptom || state.query || '');
@@ -581,6 +630,10 @@ function atlasBack(){
       return;
     }
   } catch(_) {}
+  const hinted = readReturnHint();
+  if (hinted && hinted.url) { location.href = hinted.url; return; }
+  const stacked = getStackBackTarget();
+  if (stacked && stacked.url) { location.href = stacked.url; return; }
   try {
     if (window.history.length > 1) { window.history.back(); return; }
   } catch(_) {}
@@ -608,6 +661,7 @@ function sendBridge(action, id, symptom){
       from: 'atlas',
       ts: Date.now()
     }));
+    writeReturnHint({ url: currentAbsUrl(), page: 'atlas', sourcePage: 'atlas', oblast: state.oblast || '', q: state.query || '', symptomId: state.selected || '' });
   } catch(_) {}
   location.href = 'index.html';
 }
