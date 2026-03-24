@@ -1,7 +1,7 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.5.3 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
+  Version: 16.0.0.118.8 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
   Author: miuchins | Co-author: SINET AI
 */
 
@@ -10,7 +10,7 @@ import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
 import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
 import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.5.3";
+const SINET_APP_VERSION = "16.0.0.118.23";
 
 
 
@@ -251,6 +251,7 @@ class App {
     this.lastCatalogViewTitle = "";
 
     this.userSymptoms = [];
+    this.catalogImports = [];
     this.overrides = {};
 
     // Nav helpers (elder-friendly)
@@ -268,7 +269,7 @@ class App {
   }
 
   async init() {
-    console.log('SINET v16.0.0.118.5.3 STICKY MY SYMPTOMS IMPORT + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK');
+    console.log('SINET v16.0.0.118.23 CATALOG IMPORT + DEPLOY EXPORT + NAV HARDENING');
     this.cacheUI();
     try { this._ensureSpaPageTools(); } catch(_) {}
     try { this._ensureMenuPriorityOrder(); } catch(_) {}
@@ -355,6 +356,7 @@ class App {
     // v15.3 — load senior presets + user symptoms + overrides (never break init)
     try { await this.loadSeniorPresets(); } catch (e) { console.warn('loadSeniorPresets failed', e); }
     try { await this.loadUserSymptoms(); } catch (e) { console.warn('loadUserSymptoms failed', e); }
+    try { await this.loadCatalogImports(); } catch (e) { console.warn('loadCatalogImports failed', e); }
     try { await this.loadOverrides(); } catch (e) { console.warn('loadOverrides failed', e); }
     try { this.applyUserDataToCatalog(); } catch (e) { console.warn('applyUserDataToCatalog failed', e); }
 
@@ -1501,6 +1503,9 @@ _restoreNavContext(ctx) {
   /* ===================== NAV ===================== */
   nav(pageId, opts = {}) {
     try {
+      if (!this.ui || !this.ui.screens) this.cacheUI();
+    } catch (_) {}
+    try {
       if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
         const ae = document.activeElement;
         if (ae && typeof ae.blur === 'function' && /^(INPUT|TEXTAREA|SELECT)$/i.test(ae.tagName || '')) ae.blur();
@@ -1518,8 +1523,9 @@ _restoreNavContext(ctx) {
 
     this.currentPageId = pageId;
 
-    Object.values(this.ui.screens).forEach(s => s?.classList?.remove('active'));
-    document.getElementById('page-' + pageId)?.classList?.add('active');
+    const screens = (this.ui && this.ui.screens) ? this.ui.screens : {};
+    try { Object.values(screens).forEach(s => s?.classList?.remove('active')); } catch (_) {}
+    try { document.getElementById('page-' + pageId)?.classList?.add('active'); } catch (_) {}
 
     const ov = document.getElementById('nav-overlay');
     if (ov) ov.style.display='none';
@@ -1548,20 +1554,20 @@ _restoreNavContext(ctx) {
       }
     } catch(_) {}
 
-    if (pageId === 'favorites') this.updateFavorites();
-    if (pageId === 'catalog') this.showCatalogHome();
-    if (pageId === 'playlist') this.renderPlaylistUI();
-    if (pageId === 'protocols') this.renderProtocolsUI();
-    if (pageId === 'mysymptoms') this.renderUserSymptomsUI();
-    if (pageId === 'ai') this.prepareAIUI();
-    if (pageId === 'workbench') this.renderWorkbenchPicker();
-    if (pageId === 'settings') this.renderAuditPreview();
-    if (pageId === 'sessions') this.renderSessionsUI();
-    if (pageId === 'admin') this.renderAdminUI();
-    if (pageId === 'system' && typeof this.renderSystemUI === 'function') this.renderSystemUI();
-    if (pageId === 'studio') this.renderStudioUI();
+    try { if (pageId === 'favorites') this.updateFavorites(); } catch (e) { console.warn('nav favorites failed', e); }
+    try { if (pageId === 'catalog') this.showCatalogHome(); } catch (e) { console.warn('nav catalog failed', e); }
+    try { if (pageId === 'playlist') this.renderPlaylistUI(); } catch (e) { console.warn('nav playlist failed', e); }
+    try { if (pageId === 'protocols') this.renderProtocolsUI(); } catch (e) { console.warn('nav protocols failed', e); }
+    try { if (pageId === 'mysymptoms') this.renderUserSymptomsUI(); } catch (e) { console.warn('nav mysymptoms failed', e); }
+    try { if (pageId === 'ai') this.prepareAIUI(); } catch (e) { console.warn('nav ai failed', e); }
+    try { if (pageId === 'workbench') this.renderWorkbenchPicker(); } catch (e) { console.warn('nav workbench failed', e); }
+    try { if (pageId === 'settings') this.renderAuditPreview(); } catch (e) { console.warn('nav settings failed', e); }
+    try { if (pageId === 'sessions') this.renderSessionsUI(); } catch (e) { console.warn('nav sessions failed', e); }
+    try { if (pageId === 'admin') this.renderAdminUI(); } catch (e) { console.warn('nav admin failed', e); }
+    try { if (pageId === 'system' && typeof this.renderSystemUI === 'function') this.renderSystemUI(); } catch (e) { console.warn('nav system failed', e); }
+    try { if (pageId === 'studio') this.renderStudioUI(); } catch (e) { console.warn('nav studio failed', e); }
     if (pageId === 'home') {
-      this.renderHomeResumePanel();
+      try { this.renderHomeResumePanel(); } catch (e) { console.warn('nav home failed', e); }
       // Always return to ENTRY (only two big buttons) when navigating to Home from anywhere.
       // User can then choose PRVA POMOĆ or GLAVNI MENI.
       try { if (!(opts && opts.keepHomeEntryMode)) this.setHomeEntryMode(null); } catch(_) {}
@@ -7524,6 +7530,74 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     } catch (e) {}
   }
 
+  _sanitizeCatalogImportItem(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const naziv = String(raw.naziv || raw.name || raw.symptom || '').trim();
+    if (!naziv) return null;
+    const item = { ...raw };
+    item.id = String(item.id || '').trim();
+    item.naziv = naziv;
+    item.oblast = String(item.oblast || item.kategorija || 'UVEZENO').trim() || 'UVEZENO';
+    item.mkb10 = String(item.mkb10 || item.mkb || '').trim();
+    if (!Array.isArray(item.frekvencije)) item.frekvencije = [];
+    item.frekvencije = item.frekvencije.filter(Boolean).map((f) => {
+      if (typeof f === 'number') return { hz: f };
+      if (typeof f === 'string') return { hz: f };
+      if (f && typeof f === 'object') return f;
+      return null;
+    }).filter(Boolean);
+    if (!item.opis) item.opis = '';
+    return item;
+  }
+
+
+  async loadCatalogImports() {
+    try {
+      const raw = localStorage.getItem("sinet_catalog_imports_v1");
+      const parsed = raw ? JSON.parse(raw) : [];
+      const rows = Array.isArray(parsed) ? parsed : [];
+      this.catalogImports = rows.map((it) => this._sanitizeCatalogImportItem(it)).filter(Boolean);
+    } catch (e) {
+      this.catalogImports = [];
+    }
+  }
+
+  async saveCatalogImports() {
+    try {
+      const rows = (Array.isArray(this.catalogImports) ? this.catalogImports : []).map((it) => this._sanitizeCatalogImportItem(it)).filter(Boolean);
+      this.catalogImports = rows;
+      localStorage.setItem("sinet_catalog_imports_v1", JSON.stringify(rows));
+    } catch (e) {}
+  }
+
+  _buildDeployCatalogArray() {
+    const core = Array.isArray(this.catalogCoreItems) ? this.catalogCoreItems.slice() : (this.catalogItems || []).filter(it => !String(it?.id || '').startsWith('usr-'));
+    const out = core.map(it => {
+      const ov = this.overrides?.[it.id];
+      return ov ? this._deepMerge(it, ov) : it;
+    });
+    const imports = Array.isArray(this.catalogImports) ? this.catalogImports.slice() : [];
+    const seen = new Set(out.map(it => String(it?.id || '')).filter(Boolean));
+    for (const it of imports) {
+      const id = String(it?.id || '');
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      out.push(it);
+    }
+    return out;
+  }
+
+  exportDeployCatalogJson() {
+    try {
+      const rows = this._buildDeployCatalogArray();
+      this._downloadJson(rows, `SINET_CATALOG_FOR_DEPLOY_${new Date().toISOString().slice(0,10)}.json`);
+      this.showToast(`⬇️ Preuzet katalog za deploy: ${rows.length} stavki`, { timeoutMs: 5000, actionLabel:'Katalog', actionNav:'catalog' });
+      this.log?.('USER', 'Export Deploy Catalog', String(rows.length));
+    } catch (e) {
+      alert('Greška pri izvozu kataloga za deploy: ' + (e?.message || e));
+    }
+  }
+
   async loadOverrides() {
     try {
       const raw = localStorage.getItem("sinet_overrides_v1");
@@ -7560,10 +7634,11 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
       return ov ? this._deepMerge(it, ov) : it;
     });
 
-    // Remove existing user items, then append latest
+    // Remove runtime-only user items from base, then append deployable catalog imports and latest user items
     merged = merged.filter(it => !String(it.id||"").startsWith("usr-"));
+    const catalogImports = Array.isArray(this.catalogImports) ? this.catalogImports : [];
     const us = Array.isArray(this.userSymptoms) ? this.userSymptoms : [];
-    merged = merged.concat(us);
+    merged = merged.concat(catalogImports).concat(us);
 
     // De-duplicate by id
     const seen = new Set();
@@ -7716,11 +7791,12 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     host.innerHTML = `
       <div style="background:#fff; border:1px solid #eee; border-radius:12px; padding:12px; margin-top:10px;">
         <div style="font-weight:900; margin-bottom:8px;">📥 Import simptoma (JSON)</div>
-        <p style="margin:0 0 10px 0; color:#667; line-height:1.55;">Uvezi <b>jedan simptom</b>, <b>više simptoma</b> ili ceo <b>SINET STL JSON</b>. Podrazumevano ide u <b>Moje simptome</b>, a može odmah i u <b>Favorite</b> ili <b>Listu</b>.</p>
+        <p style="margin:0 0 10px 0; color:#667; line-height:1.55;">Uvezi <b>jedan simptom</b>, <b>više simptoma</b> ili ceo <b>SINET STL JSON</b>. Podrazumevano ide u <b>Moje simptome</b>, a može odmah i u <b>Katalog</b>, <b>Favorite</b> ili <b>Listu</b>.</p>
 
         <label style="font-weight:900; display:block; margin-bottom:6px;">Cilj importa</label>
         <select id="us_import_target" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
           <option value="mysymptoms" selected>🧬 Moji simptomi</option>
+          <option value="catalog">📚 Katalog (+ spremno za deploy export)</option>
           <option value="favorites">⭐ Favoriti (+ čuva u Moje simptome)</option>
           <option value="playlist">🎵 Lista (+ čuva u Moje simptome)</option>
         </select>
@@ -7875,6 +7951,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     const core = Array.isArray(this.catalogCoreItems) && this.catalogCoreItems.length
       ? this.catalogCoreItems.slice()
       : (Array.isArray(this.catalogItems) ? this.catalogItems.filter(it => !String(it?.id || '').startsWith('usr-')) : []);
+    const catalogImports = Array.isArray(this.catalogImports) ? this.catalogImports.slice() : [];
     const user = Array.isArray(this.userSymptoms) ? this.userSymptoms.slice() : [];
     const byName = new Map();
     const byId = new Map();
@@ -7886,6 +7963,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
       if (key && !byName.has(key)) byName.set(key, { item, source });
     };
     core.forEach(it => add(it, 'catalog'));
+    catalogImports.forEach(it => add(it, 'catalog'));
     user.forEach(it => add(it, 'user'));
     return { byName, byId };
   }
@@ -7963,6 +8041,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     const ta = document.getElementById('us_import_json');
     const targetEl = document.getElementById('us_import_target');
     const target = String(targetEl?.value || 'mysymptoms');
+    const toCatalog = target === 'catalog';
 
     const fileTexts = await this._readImportedSymptomsFromFiles(fileEl);
     const pasted = String(ta?.value || '').trim();
@@ -7972,7 +8051,6 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     }
 
     const invalidInputs = [];
-    const normalizedRows = [];
     const parsedSources = [];
 
     const allInputs = fileTexts.slice();
@@ -8007,8 +8085,13 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
 
     const lookup = this._collectCatalogLookupMaps();
     const batchKeys = new Set();
-    const usedIds = new Set((this.userSymptoms || []).map(it => String(it?.id || '')).filter(Boolean));
-    const newItems = [];
+    const allUsedIds = new Set([
+      ...(Array.isArray(this.catalogCoreItems) ? this.catalogCoreItems.map(it => String(it?.id || '')) : []),
+      ...(Array.isArray(this.catalogImports) ? this.catalogImports.map(it => String(it?.id || '')) : []),
+      ...(Array.isArray(this.userSymptoms) ? this.userSymptoms.map(it => String(it?.id || '')) : [])
+    ].filter(Boolean));
+    const newUserItems = [];
+    const newCatalogItems = [];
     const importedIds = [];
     const linkedIds = [];
     const duplicates = [];
@@ -8029,40 +8112,73 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
       const existingById = normalized.originalId ? lookup.byId.get(normalized.originalId) : null;
       const existingByName = lookup.byName.get(normalized.dedupeKey);
       const existing = existingById || existingByName;
-      if (existing && existing.item?.id && existing.source === 'user') {
+
+      if (existing && existing.item?.id && existing.source === 'catalog') {
+        linkedIds.push(String(existing.item.id));
+        duplicates.push({ naziv: normalized.naziv, reason: 'već postoji u Katalogu', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
+        batchKeys.add(normalized.dedupeKey);
+        continue;
+      }
+
+      if (existing && existing.item?.id && existing.source === 'user' && !toCatalog) {
         linkedIds.push(String(existing.item.id));
         duplicates.push({ naziv: normalized.naziv, reason: 'već postoji u Mojim simptomima', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
         batchKeys.add(normalized.dedupeKey);
         continue;
       }
 
-      if (existing && existing.item?.id && existing.source === 'catalog') {
-        duplicates.push({ naziv: normalized.naziv, reason: 'nađen u katalogu — kloniran u Moje simptome', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
+      if (existing && existing.item?.id && existing.source === 'user' && toCatalog) {
+        duplicates.push({ naziv: normalized.naziv, reason: 'nađen u Mojim simptomima — dodat u Katalog', sourceLabel: row.sourceLabel, linkedId: String(existing.item.id) });
       }
 
-      let baseId = String(('usr-' + this._slugify(normalized.naziv))).trim();
-      if (!baseId) baseId = 'usr-' + this._slugify(normalized.naziv || 'simptom');
-      if (!baseId.startsWith('usr-')) baseId = 'usr-' + baseId.replace(/^usr-/, '');
+      let baseId = '';
+      if (toCatalog) {
+        const wanted = String(normalized.originalId || '').trim();
+        baseId = wanted && !/^usr-/i.test(wanted) ? wanted : `cat-${this._slugify(normalized.naziv || 'simptom')}`;
+      } else {
+        baseId = String(('usr-' + this._slugify(normalized.naziv))).trim();
+        if (!baseId.startsWith('usr-')) baseId = 'usr-' + baseId.replace(/^usr-/, '');
+      }
+      if (!baseId) baseId = toCatalog ? `cat-${Date.now()}` : `usr-${Date.now()}`;
       let id = baseId;
-      if (usedIds.has(id)) {
+      if (allUsedIds.has(id)) {
         let k = 2;
-        while (usedIds.has(`${baseId}-${k}`)) k++;
+        while (allUsedIds.has(`${baseId}-${k}`)) k++;
         id = `${baseId}-${k}`;
       }
-      usedIds.add(id);
+      allUsedIds.add(id);
       batchKeys.add(normalized.dedupeKey);
-      lookup.byId.set(id, { item: { ...normalized.item, id }, source: 'user' });
-      lookup.byName.set(normalized.dedupeKey, { item: { ...normalized.item, id }, source: 'user' });
 
-      newItems.push({ ...normalized.item, id });
+      const item = { ...normalized.item, id };
+      if (toCatalog) {
+        if (!item.oblast || item.oblast === 'MOJI SIMPTOMI') item.oblast = 'UVEZENO';
+        item.izvor = item.izvor || 'Import u katalog';
+        const safeItem = this._sanitizeCatalogImportItem(item);
+        if (!safeItem) continue;
+        newCatalogItems.push(safeItem);
+        lookup.byId.set(id, { item: safeItem, source: 'catalog' });
+        lookup.byName.set(normalized.dedupeKey, { item: safeItem, source: 'catalog' });
+      } else {
+        newUserItems.push(item);
+        lookup.byId.set(id, { item, source: 'user' });
+        lookup.byName.set(normalized.dedupeKey, { item, source: 'user' });
+      }
       importedIds.push(id);
     }
 
-    if (newItems.length) {
-      this.userSymptoms = [...newItems, ...(Array.isArray(this.userSymptoms) ? this.userSymptoms : [])];
+    if (newCatalogItems.length) {
+      this.catalogImports = [...newCatalogItems, ...(Array.isArray(this.catalogImports) ? this.catalogImports : [])];
+      await this.saveCatalogImports();
+    }
+
+    if (newUserItems.length) {
+      this.userSymptoms = [...newUserItems, ...(Array.isArray(this.userSymptoms) ? this.userSymptoms : [])];
       await this.saveUserSymptoms();
-      this.applyUserDataToCatalog();
       try { this.renderUserSymptomsList(); } catch (_) {}
+    }
+
+    if (newCatalogItems.length || newUserItems.length) {
+      this.applyUserDataToCatalog();
       try { this.renderSystemPresets(); } catch (_) {}
       try { if (document.getElementById('page-catalog')?.classList?.contains('active')) this.showCatalogHome(); } catch (_) {}
     }
@@ -8084,10 +8200,11 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     lines.push('📥 Import simptoma — izveštaj');
     lines.push('');
     lines.push(`Ukupno prepoznatih stavki: ${parsedSources.length}`);
-    lines.push(`Novo uvezeno u Moje simptome: ${importedIds.length}`);
+    lines.push(toCatalog ? `Novo uvezeno u Katalog: ${importedIds.length}` : `Novo uvezeno u Moje simptome: ${importedIds.length}`);
     lines.push(`Već postojećih / povezanih: ${Array.from(new Set(linkedIds)).length}`);
     lines.push(`Preskočeno duplikata u batch-u: ${duplicates.filter(x => x.reason === 'duplikat u istom importu').length}`);
     if (autoAdded) lines.push(target === 'favorites' ? `Automatski dodato u Favorite: ${autoAdded.added}/${autoAdded.total}` : `Automatski dodato u Listu: ${autoAdded.added}/${autoAdded.total}`);
+    if (toCatalog) lines.push('Za GitHub / Netlify preuzmi “KATALOG ZA DEPLOY” i zameni data/SINET_CATALOG.json u repo-u.');
     if (invalidInputs.length || invalid.length) lines.push(`Nevažećih unosa: ${invalidInputs.length + invalid.length}`);
 
     const pushList = (title, arr, mapper, max = 30) => {
@@ -8098,22 +8215,24 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
       if (arr.length > max) lines.push(`... i još ${arr.length - max}`);
     };
 
-    pushList('Novo uvezeni simptomi:', newItems, (it) => `${it.simptom || it.naziv} → ${it.id}`);
+    const createdItems = toCatalog ? newCatalogItems : newUserItems;
+    pushList(toCatalog ? 'Novo uvezeni kataloški simptomi:' : 'Novo uvezeni simptomi:', createdItems, (it) => `${it.simptom || it.naziv} → ${it.id}`);
     pushList('Već postojeći / povezani:', duplicates.filter(x => x.linkedId), (it) => `${it.naziv} — ${it.reason}${it.linkedId ? ` (${it.linkedId})` : ''}`);
     pushList('Nevažeći / odbačeni unosi:', invalidInputs.concat(invalid), (it) => String(it));
 
     const footer = `
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-        <button class="btn-full" style="margin-top:0; padding:10px; background:#8e44ad;" onclick="window.app && window.app.closeTextModal && window.app.closeTextModal(); window.app && window.app.nav && window.app.nav('mysymptoms');">🧬 Otvori Moje simptome</button>
+        <button class="btn-full" style="margin-top:0; padding:10px; background:${toCatalog ? '#3498db' : '#8e44ad'};" onclick="window.app && window.app.closeTextModal && window.app.closeTextModal(); window.app && window.app.nav && window.app.nav('${toCatalog ? 'catalog' : 'mysymptoms'}');">${toCatalog ? '📚 Otvori Katalog' : '🧬 Otvori Moje simptome'}</button>
+        <button class="btn-full" style="margin-top:0; padding:10px; background:#16a085;" onclick="window.app && window.app.exportDeployCatalogJson && window.app.exportDeployCatalogJson()">⬇️ KATALOG ZA DEPLOY</button>
         <button class="btn-full" style="margin-top:0; padding:10px; background:#f1c40f; color:#2c3e50;" onclick="window.app && window.app.addLastImportedSymptomsToFavorites && window.app.addLastImportedSymptomsToFavorites()">⭐ Dodaj sve u Favorite</button>
         <button class="btn-full" style="margin-top:0; padding:10px; background:#27ae60;" onclick="window.app && window.app.addLastImportedSymptomsToPlaylist && window.app.addLastImportedSymptomsToPlaylist()">🎵 Dodaj sve u Listu</button>
       </div>
     `;
 
     this.openTextModal('📥 Import simptoma — report', lines.join('\n'), footer);
-    this.nav('mysymptoms');
+    this.nav(toCatalog ? 'catalog' : 'mysymptoms');
     this.cancelUserSymptomImportPanel();
-    this.showToast(`✅ Import završen: ${importedIds.length} novo / ${Array.from(new Set(linkedIds)).length} povezano`, { actionLabel:'Moji simptomi', actionNav:'mysymptoms', timeoutMs: 5000 });
+    this.showToast(toCatalog ? `✅ Uvezeno u Katalog: ${importedIds.length} novo / ${Array.from(new Set(linkedIds)).length} povezano` : `✅ Import završen: ${importedIds.length} novo / ${Array.from(new Set(linkedIds)).length} povezano`, { actionLabel: toCatalog ? 'Katalog' : 'Moji simptomi', actionNav: toCatalog ? 'catalog' : 'mysymptoms', timeoutMs: 5000 });
   }
 
   showUserSymptomForm(editId = null) {
@@ -11115,11 +11234,20 @@ function setupMobileHeaderCompact(){
 })();
 
 window.addEventListener('DOMContentLoaded', async () => {
-  await app.init();
-  setupMobileHeaderCompact();
+  try {
+    await app.init();
+  } catch (e) {
+    console.error('SINET init failed; enabling fallback navigation', e);
+    try { app.cacheUI(); } catch(_) {}
+    try { app.currentPageId = app.currentPageId || 'home'; } catch(_) {}
+    try { document.getElementById('loader') && (document.getElementById('loader').style.display = 'none'); } catch(_) {}
+    try { app.showToast && app.showToast('⚠️ Aplikacija je u fallback režimu. Navigacija radi, a problematični modul ćemo ispraviti.', { timeoutMs: 7000 }); } catch(_) {}
+  }
+  try { setupMobileHeaderCompact(); } catch(e) { console.warn('setupMobileHeaderCompact failed', e); }
   try { await __importDsBridgeIfAny(); } catch(e) { console.warn('DS import call failed', e); }
   try { await __importUserSymptomBridgeIfAny(); } catch(e) { console.warn('User symptom import call failed', e); }
   try { await __consumeAtlasBridgeIfAny(); } catch(e) { console.warn('Atlas bridge failed', e); }
+  try { await __consumeBookReturnBridgeIfAny(); } catch(e) { console.warn('Book return bridge failed', e); }
 });
 window.app = app;
 window.nav = (id) => app.nav(id);
@@ -11130,6 +11258,41 @@ function getApp(){
 }
 window.getApp = getApp;
 
+
+
+async function __consumeBookReturnBridgeIfAny(){
+  const raw = localStorage.getItem('sinet_book_return_request');
+  if (!raw) return;
+  localStorage.removeItem('sinet_book_return_request');
+  let payload = null;
+  try { payload = JSON.parse(raw); } catch(_) { return; }
+  const a = getApp();
+  if (!a || typeof a.nav !== 'function') return;
+  const targetPage = String(payload?.forceHome ? 'home' : (payload?.page || 'home'));
+  try { a.nav(targetPage); } catch(_) { try { a.nav('home'); } catch(_) {} }
+  await new Promise(r => setTimeout(r, 140));
+  if (!payload?.forceHome && targetPage === 'catalog') {
+    const input = document.getElementById('search-input');
+    const oblast = String(payload?.oblast || '');
+    const q = String(payload?.q || '');
+    if (oblast && typeof a.openOblast === 'function') {
+      try { a.openOblast(oblast); } catch(_) {}
+      await new Promise(r => setTimeout(r, 100));
+    }
+    if (input && q) {
+      input.value = q;
+      try { if (typeof a.filterCatalog === 'function') a.filterCatalog(q || null, { submitted:true, source:'book-return' }); } catch(_) {}
+      await new Promise(r => setTimeout(r, 100));
+    }
+    const itemId = String(payload?.symptomId || '');
+    if (itemId && typeof a.openModal === 'function') { try { a.openModal(itemId); } catch(_) {} }
+  }
+  try {
+    const mainEl = document.querySelector('main');
+    if (mainEl && Number.isFinite(Number(payload?.scrollTop))) mainEl.scrollTop = Number(payload.scrollTop || 0);
+  } catch(_) {}
+  try { if (typeof a.showToast === 'function') a.showToast(payload?.forceHome ? '🏠 Povratak na početnu iz Book modula.' : '↩️ Povratak na prethodno mesto iz Book modula.'); } catch(_) {}
+}
 
 async function __consumeAtlasBridgeIfAny(){
   const raw = localStorage.getItem('sinet_atlas_bridge');
@@ -11143,34 +11306,67 @@ async function __consumeAtlasBridgeIfAny(){
   const symptom = String(payload?.symptom || payload?.query || '');
   const action = String(payload?.action || 'catalog');
 
-  const goCatalog = async () => {
-    a.nav('catalog');
-    await new Promise(r => setTimeout(r, 120));
-    const input = document.getElementById('search-input');
-    if (input && symptom) input.value = symptom;
-    try {
-      if (typeof a.filterCatalog === 'function') a.filterCatalog(symptom || null, { submitted:true, source:'atlas' });
-    } catch(_) {}
-    await new Promise(r => setTimeout(r, 80));
+  const resolveItem = () => {
+    const all = Array.isArray(a.catalogItems) ? a.catalogItems : [];
+    if (id) {
+      const exact = all.find((it) => String(it?.id || '') === id);
+      if (exact) return exact;
+    }
+    if (symptom) {
+      const exactByName = all.find((it) => String(it?.simptom || '').trim().toLowerCase() === symptom.trim().toLowerCase());
+      if (exactByName) return exactByName;
+      const fuzzy = all.find((it) => String(it?.simptom || '').toLowerCase().includes(symptom.trim().toLowerCase()));
+      if (fuzzy) return fuzzy;
+    }
+    return null;
   };
 
-  if (action === 'catalog') {
-    await goCatalog();
-    if (id && typeof a.openModal === 'function') {
-      try { a.openModal(id); } catch(_) {}
+  const goCatalog = async (preferItem = true) => {
+    a.nav('catalog');
+    await new Promise(r => setTimeout(r, 120));
+    const item = preferItem ? resolveItem() : null;
+    const input = document.getElementById('search-input');
+    if (item?.oblast && typeof a.openOblast === 'function') {
+      try { a.openOblast(item.oblast); } catch(_) {}
+      await new Promise(r => setTimeout(r, 80));
+    } else if (input && symptom) {
+      input.value = symptom;
+      try {
+        if (typeof a.filterCatalog === 'function') a.filterCatalog(symptom || null, { submitted:true, source:'atlas' });
+      } catch(_) {}
+      await new Promise(r => setTimeout(r, 80));
     }
+    if (input && (item?.simptom || symptom)) input.value = String(item?.simptom || symptom);
+    return item;
+  };
+
+  if (action === 'home') {
+    try { a.nav('home'); } catch(_) {}
+    return;
+  }
+
+  if (action === 'catalog' || action === 'catalog_only') {
+    const item = await goCatalog(true);
+    const targetId = String(item?.id || id || '');
+    if (targetId && typeof a.openModal === 'function') {
+      for (const waitMs of [40, 120, 260]) {
+        await new Promise(r => setTimeout(r, waitMs));
+        try { a.openModal(targetId); break; } catch(_) {}
+      }
+    }
+    if (typeof a.showToast === 'function' && targetId) a.showToast('📚 Otvoren Katalog na izabranoj stavci iz Atlasa.');
     return;
   }
 
   if (action === 'playlist') {
-    await goCatalog();
+    await goCatalog(true);
     if (id && typeof a.quickAddToPlaylist === 'function') await a.quickAddToPlaylist(id);
     if (typeof a.showToast === 'function') a.showToast('✅ Dodato u Listu iz Atlasa.');
     return;
   }
 
   if (action === 'favorite') {
-    await goCatalog();
+    await goCatalog(true);
     try {
       if (id && typeof a.isFavoriteId === 'function' && !a.isFavoriteId(id) && typeof a.toggleFavoriteQuick === 'function') {
         await a.toggleFavoriteQuick(id);
@@ -11181,19 +11377,19 @@ async function __consumeAtlasBridgeIfAny(){
   }
 
   if (action === 'mysymptoms') {
-    await goCatalog();
+    await goCatalog(true);
     if (id && typeof a.quickAddToMySymptoms === 'function') await a.quickAddToMySymptoms(id);
     return;
   }
 
   if (action === 'protocol') {
-    await goCatalog();
+    await goCatalog(true);
     if (id && typeof a.quickCreateProtocolFromItem === 'function') await a.quickCreateProtocolFromItem(id);
     return;
   }
 
   if (action === 'ai') {
-    await goCatalog();
+    await goCatalog(true);
     try {
       if (symptom && typeof a.prefillAI === 'function') a.prefillAI(symptom, '');
       a.nav('ai');
@@ -15134,5 +15330,72 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     const r = await origInit816.apply(this, arguments);
     try { this._syncHomeFirstAidNav816(); } catch(_) {}
     return r;
+  };
+})();
+
+
+/* ===================== v16.0.0.118.6 HOTFIX — Atlas mirrors live catalog + opens current oblast/query ===================== */
+(function(){
+  function atlasBuildUrl(state){
+    const params = new URLSearchParams();
+    if (state && state.oblast) params.set('oblast', String(state.oblast));
+    if (state && state.q) params.set('q', String(state.q));
+    if (state && state.mode && state.mode !== 'all') params.set('mode', String(state.mode));
+    const qs = params.toString();
+    return 'atlas.html' + (qs ? ('?' + qs) : '');
+  }
+
+  App.prototype.openAtlasWithContext = function(preferred = {}) {
+    try {
+      const input = document.getElementById('search-input');
+      const q = String(preferred.q || input?.value || this.lastSearchQuery || '').trim();
+      const fallbackOblast = (this.selectedSymptom && this.selectedSymptom.oblast) || this.lastCatalogViewTitle || '';
+      const oblast = String(preferred.oblast || this.activeOblast || fallbackOblast || '').replace(/^PRIKAZ:\s*/i, '').trim();
+      const mode = String(preferred.mode || 'all').trim() || 'all';
+      try {
+        localStorage.setItem('sinet_atlas_entry_bridge', JSON.stringify({
+          oblast: oblast || '',
+          q: q || '',
+          mode,
+          from: this.currentPageId || 'app',
+          ts: Date.now()
+        }));
+      } catch(_) {}
+      window.location.href = atlasBuildUrl({ oblast, q, mode });
+    } catch(_) {
+      window.location.href = 'atlas.html';
+    }
+  };
+
+
+  App.prototype.openCatalogBookWithContext = function(preferred = {}) {
+    try {
+      const input = document.getElementById('search-input');
+      const q = String(preferred.q || input?.value || this.lastSearchQuery || '').trim();
+      const fallbackOblast = (this.selectedSymptom && this.selectedSymptom.oblast) || this.lastCatalogViewTitle || '';
+      const oblast = String(preferred.oblast || this.activeOblast || fallbackOblast || '').replace(/^PRIKAZ:\s*/i, '').trim();
+      const mainEl = document.querySelector('main');
+      const selectedId = String(this.selectedSymptom?.id || this.selectedSymptom?.uid || '');
+      try {
+        localStorage.setItem('sinet_book_entry_bridge', JSON.stringify({
+          oblast: oblast || '',
+          q: q || '',
+          from: this.currentPageId || 'app',
+          ts: Date.now()
+        }));
+        localStorage.setItem('sinet_book_return_bridge', JSON.stringify({
+          page: this.currentPageId || 'home',
+          oblast: oblast || '',
+          q: q || '',
+          symptomId: selectedId || '',
+          scrollTop: Number(mainEl?.scrollTop || 0),
+          url: 'index.html',
+          ts: Date.now()
+        }));
+      } catch(_) {}
+      window.location.href = 'katalog-book.html';
+    } catch(_) {
+      window.location.href = 'katalog-book.html';
+    }
   };
 })();

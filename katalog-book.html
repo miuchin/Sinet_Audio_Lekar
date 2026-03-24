@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINET Katalog Book • 5619 simptoma</title>
+  <meta name="description" content="Korisnički vodič kroz SINET katalog simptoma, oblasti, MKB-10 šifre, preporuke, frekvencije i holistički pristup." />
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --panel-2: #fdfdfd;
+      --text: #1f2a37;
+      --muted: #607086;
+      --line: #dbe3ec;
+      --accent: #5d87ff;
+      --accent-2: #eaf0ff;
+      --soft: #eef5f7;
+      --success: #0f8a5f;
+      --warning: #9a6700;
+      --shadow: 0 10px 30px rgba(20, 36, 65, 0.08);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --maxw: 1680px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { min-height: 100vh; }
+    button, input, select, textarea { font: inherit; }
+    .app {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr) 420px;
+      gap: 14px;
+      min-height: 100vh;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .sidebar, .details {
+      position: sticky;
+      top: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .sidebar-header, .details-header, .content-header {
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .brand-badge {
+      width: 44px; height: 44px; border-radius: 14px;
+      display:grid; place-items:center; font-size: 22px;
+      background: linear-gradient(135deg, #eef3ff, #f5fbff);
+      border: 1px solid var(--line);
+    }
+    .title { font-size: 1.1rem; font-weight: 800; line-height: 1.15; }
+    .subtitle { color: var(--muted); font-size: 0.92rem; margin-top: 4px; }
+    .toolbar {
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .search {
+      width:100%; padding: 13px 14px; border-radius: 14px; border:1px solid var(--line); background:#fff;
+      outline:none;
+    }
+    .search:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(93,135,255,0.12); }
+    .quick-stats {
+      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top: 10px;
+    }
+    .stat {
+      background: linear-gradient(180deg, #fff, #f8fbff);
+      border:1px solid var(--line); border-radius:14px; padding: 12px;
+    }
+    .stat .n { font-weight:800; font-size: 1.15rem; }
+    .stat .l { color:var(--muted); font-size: 0.86rem; margin-top:4px; }
+    .areas-wrap { overflow:auto; padding: 10px; }
+    .area-btn {
+      width:100%; text-align:left; border:none; background:#fff; border:1px solid var(--line); border-radius: 14px;
+      padding: 12px 12px; margin-bottom: 8px; cursor:pointer; transition: .18s ease; color: var(--text);
+    }
+    .area-btn:hover, .area-btn.active { background: var(--accent-2); border-color: rgba(93,135,255,.35); transform: translateY(-1px); }
+    .area-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .area-name { font-weight:700; }
+    .area-count { color: var(--muted); font-size:0.86rem; white-space:nowrap; }
+    .content {
+      min-width: 0;
+      overflow: hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .hero {
+      padding: 18px;
+      background: linear-gradient(135deg, #ffffff, #f5fbff);
+      border-bottom:1px solid var(--line);
+      display:grid;
+      gap: 14px;
+    }
+    .hero-top {
+      display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    }
+    .hero-title { font-size: 1.45rem; font-weight: 800; line-height:1.15; }
+    .hero-desc { color:var(--muted); max-width: 74ch; }
+    .hero-badges { display:flex; gap:8px; flex-wrap:wrap; }
+    .badge {
+      padding: 8px 11px; border-radius:999px; border:1px solid var(--line); background:#fff; color:var(--muted); font-size: 0.85rem;
+    }
+    .top-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn {
+      border:none; cursor:pointer; padding: 11px 14px; border-radius: 14px; font-weight:700;
+      background: #fff; border:1px solid var(--line); color:var(--text);
+    }
+    .btn.primary { background: var(--accent); color:#fff; border-color: transparent; }
+    .btn.soft { background: var(--soft); }
+    .btn:hover { transform: translateY(-1px); }
+    .results-toolbar {
+      display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap;
+      padding: 14px 18px; border-bottom:1px solid var(--line);
+    }
+    .results-meta { color: var(--muted); }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip {
+      padding: 8px 10px; border-radius: 999px; border:1px solid var(--line); background:#fff; cursor:pointer; color:var(--muted);
+    }
+    .chip.active { background: var(--accent-2); color: var(--accent); border-color: rgba(93,135,255,.3); }
+    .list {
+      padding: 16px;
+      display:grid;
+      gap: 12px;
+      overflow:auto;
+      max-height: calc(100vh - 240px);
+    }
+    .card {
+      border:1px solid var(--line);
+      border-radius: 18px;
+      background:#fff;
+      padding: 16px;
+      cursor:pointer;
+      transition: .18s ease;
+      display:grid;
+      gap: 12px;
+    }
+    .card:hover { transform: translateY(-1px); box-shadow: var(--shadow); border-color: rgba(93,135,255,.28); }
+    .card-top {
+      display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+    }
+    .card-title { font-weight:800; font-size: 1.05rem; line-height:1.2; }
+    .card-sub { color:var(--muted); font-size:0.9rem; }
+    .card-desc { color:#364559; line-height:1.45; }
+    .mini-meta { display:flex; gap:8px; flex-wrap:wrap; }
+    .mini {
+      border-radius:999px; border:1px solid var(--line); padding: 6px 9px; font-size:0.82rem; color:var(--muted); background:#fcfdff;
+    }
+    .details-body {
+      padding: 16px;
+      overflow:auto;
+      display:grid;
+      gap: 14px;
+    }
+    .empty {
+      padding: 22px;
+      color:var(--muted);
+      text-align:center;
+    }
+    .section {
+      border:1px solid var(--line); border-radius: 16px; padding: 14px; background:#fff;
+    }
+    .section h3 {
+      margin:0 0 10px; font-size: 1rem;
+    }
+    .kv {
+      display:grid; grid-template-columns: 130px 1fr; gap:8px 10px; align-items:start;
+      font-size: 0.94rem;
+    }
+    .kv div:nth-child(odd) { color:var(--muted); }
+    .freq-list {
+      display:grid; gap:8px;
+    }
+    .freq {
+      border:1px solid var(--line); border-radius: 12px; padding: 10px; background:#fdfefe;
+    }
+    .freq-top {
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      font-weight:700;
+    }
+    .detail-actions {
+      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+    }
+    .route-grid {
+      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
+      margin-top: 12px;
+    }
+    .route-grid .btn { min-height: 52px; }
+    .route-note {
+      color: var(--muted); font-size:.92rem; line-height:1.45;
+    }
+    .muted { color:var(--muted); }
+    .pill {
+      display:inline-flex; gap:6px; align-items:center; padding:7px 10px; border-radius:999px;
+      border:1px solid var(--line); background:#fff; color:var(--muted); font-size: .84rem;
+    }
+    .divider { height:1px; background:var(--line); margin: 6px 0; }
+
+    .detail-premium-hero {
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      border:1px solid #d7e5f2;
+      border-radius: 18px;
+      padding: 14px;
+      display:grid;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(14,48,74,0.07);
+    }
+    .detail-premium-head {
+      display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;
+    }
+    .detail-premium-title { font-size:1.14rem; font-weight:800; line-height:1.2; margin:0; }
+    .detail-premium-sub { color:var(--muted); margin-top:6px; }
+    .detail-ribbon {
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .detail-ribbon .pill {
+      background:#f8fbff;
+      border-color:#d7e5f2;
+      color:#31506d;
+      font-weight:700;
+    }
+    .detail-summary-grid {
+      display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px;
+    }
+    .detail-summary-card {
+      border:1px solid #dfe8f1;
+      background:#fff;
+      border-radius:14px;
+      padding: 12px;
+    }
+    .detail-summary-card .k { color:var(--muted); font-size:.82rem; }
+    .detail-summary-card .v { margin-top:4px; font-weight:800; color:#20415d; }
+    .detail-summary-note {
+      border:1px dashed #d7e5f2;
+      background:#fbfdff;
+      border-radius:14px;
+      padding: 12px 13px;
+      color:#466178;
+      line-height:1.5;
+    }
+    .detail-route-hero {
+      border:1px solid #d7e5f2;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      border-radius: 18px;
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+    }
+    .detail-route-head {
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;
+    }
+    .detail-route-title { margin:0; font-size:1rem; color:#1e4660; }
+    .detail-route-sub { color:var(--muted); line-height:1.45; }
+    .route-grid.route-grid-premium .btn {
+      min-height: 58px;
+      border-radius: 16px;
+      font-weight: 800;
+    }
+    .detail-actions.detail-actions-premium {
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+    .freq-list.compact .freq {
+      background:#fbfdff;
+      border-color:#e3ebf4;
+    }
+    .section.book-premium h3 {
+      color:#1e4660;
+      letter-spacing:.01em;
+    }
+    .mobile-bar {
+      display:none;
+      position: sticky; top:0; z-index:20;
+      background: rgba(246,248,251,0.92);
+      backdrop-filter: blur(10px);
+      padding: 10px 0 8px;
+    }
+    .mobile-bar-inner {
+      display:flex; gap:8px;
+    }
+    .toast {
+      position: fixed; right: 18px; bottom: 18px; z-index: 100;
+      background: #1f2a37; color:#fff; padding: 12px 14px; border-radius: 14px;
+      box-shadow: var(--shadow); opacity:0; transform: translateY(8px); pointer-events:none; transition:.22s ease;
+      max-width: 320px;
+    }
+    .toast.show { opacity:1; transform: translateY(0); }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(12, 19, 31, .34); z-index: 50;
+      opacity: 0; pointer-events: none; transition: .18s ease;
+    }
+    .modal-backdrop.show { opacity:1; pointer-events:auto; }
+    .action-sheet {
+      position: fixed; left: 50%; bottom: 16px; transform: translate(-50%, 18px);
+      width: min(760px, calc(100vw - 24px)); z-index: 60;
+      background:#fff; border:1px solid var(--line); border-radius: 24px; box-shadow: 0 24px 60px rgba(10,20,40,.22);
+      opacity:0; pointer-events:none; transition:.22s ease;
+      overflow:hidden;
+    }
+    .action-sheet.show { opacity:1; pointer-events:auto; transform: translate(-50%, 0); }
+    .sheet-head { padding: 16px 16px 10px; border-bottom:1px solid var(--line); }
+    .sheet-body { padding: 16px; display:grid; gap: 14px; }
+    .sheet-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    .sheet-btn {
+      border:1px solid var(--line); background:#fff; border-radius: 16px; padding: 14px;
+      text-align:left; cursor:pointer;
+    }
+    .sheet-btn strong { display:block; margin-bottom:6px; }
+    .sheet-btn small { color:var(--muted); }
+    .footer-note {
+      padding: 14px 18px 20px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    mark {
+      background: #fff3bf;
+      color: inherit;
+      border-radius: 4px;
+      padding: 0 2px;
+    }
+    
+    .book-top-nav {
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom: 12px;
+      padding: 10px 12px; border:1px solid var(--line); border-radius: 16px;
+      background: linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
+      box-shadow: var(--shadow);
+    }
+    .book-top-nav .nav-note { color: var(--muted); font-size:.9rem; margin-left:auto; }
+    .btn.secondary { background:#334155; color:#fff; border-color:#334155; }
+    .btn.ghost { background:transparent; }
+    .details.pending .details-body { align-content:start; }
+    .detail-placeholder {
+      display:grid; gap:12px; align-content:start;
+      background: linear-gradient(180deg,#fff 0%,#fbfdff 100%);
+    }
+    .detail-placeholder .hint {
+      padding:12px 14px; border:1px dashed #c9d6e6; border-radius:14px; color:var(--muted); background:#f8fbff;
+    }
+    .mobile-bottom-nav {
+      display:none; position: sticky; bottom: 0; z-index: 25; padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(246,248,251,0.15), rgba(246,248,251,0.96)); backdrop-filter: blur(8px);
+    }
+    .mobile-bottom-nav .inner {
+      max-width: var(--maxw); margin:0 auto; padding:0 10px; display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:8px;
+    }
+    .mobile-bottom-nav .btn { padding: 10px 8px; font-size: .86rem; }
+    .book-shell-note { font-size:.9rem; color:var(--muted); }
+    .card.active { border-color: rgba(93,135,255,.45); box-shadow: 0 12px 28px rgba(93,135,255,.12); background:linear-gradient(180deg,#fff 0%,#f9fbff 100%); }
+    .section.book-premium { background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%); }
+
+    .context-strip {
+      display:grid; grid-template-columns: 1.25fr 1fr 1fr auto; gap:10px;
+      padding: 14px 18px 6px;
+    }
+    .context-card {
+      border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);
+      padding: 12px 14px;
+    }
+    .context-card .k { color:var(--muted); font-size:.82rem; margin-bottom:6px; }
+    .context-card .v { font-weight:800; line-height:1.25; }
+    .context-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:stretch; justify-content:flex-end; }
+    .context-actions .btn { min-height: 48px; }
+    .detail-nav { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:8px; }
+    .detail-nav .btn { padding:10px 8px; }
+    .floating-top {
+      position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 24;
+      width: 52px; height: 52px; border-radius: 16px; display:none; place-items:center;
+      background: var(--accent); color:#fff; border:none; box-shadow: var(--shadow); cursor:pointer; font-size:1.1rem;
+    }
+    .floating-top.show { display:grid; }
+    .desktop-only { display:inline-flex; }
+    .mobile-only { display:none; }
+
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 280px minmax(0,1fr); }
+      .details { position: static; max-height: none; }
+    }
+    @media (max-width: 920px) {
+      .context-strip { grid-template-columns: 1fr; padding-top: 10px; }
+      .context-actions { justify-content:stretch; }
+      .context-actions .btn { flex:1 1 auto; }
+      .desktop-only { display:none; }
+      .mobile-only { display:inline-flex; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; left: 12px; top: 64px; width:min(360px, calc(100vw - 24px)); max-height: calc(100vh - 76px);
+        z-index: 30; transform: translateX(-120%); transition:.22s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .details {
+        position: static;
+        max-height: none;
+      }
+      .mobile-bar { display:block; }
+      .mobile-bottom-nav { display:block; }
+      .list { max-height: none; }
+      .book-top-nav .nav-note { width:100%; margin-left:0; }
+    }
+    @media (max-width: 680px) {
+      .detail-nav { grid-template-columns: 1fr 1fr; }
+      .hero-title { font-size: 1.2rem; }
+      .detail-actions, .sheet-grid, .route-grid { grid-template-columns: 1fr; }
+      .quick-stats { grid-template-columns: 1fr 1fr; }
+      .kv { grid-template-columns: 1fr; }
+      .app { padding: 10px; gap: 10px; }
+      .panel, .card, .section { border-radius: 16px; }
+      .mobile-bottom-nav .inner { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 1180px) {
+      .detail-summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .detail-actions.detail-actions-premium { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .route-grid.route-grid-premium { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 760px) {
+      .detail-summary-grid { grid-template-columns: 1fr 1fr; }
+      .detail-actions.detail-actions-premium { grid-template-columns: 1fr; }
+      .route-grid.route-grid-premium { grid-template-columns: 1fr 1fr; }
+      .detail-premium-hero, .detail-route-hero, .section.book-premium { border-radius: 16px; }
+    }
+    @media (max-width: 520px) {
+      .detail-summary-grid { grid-template-columns: 1fr; }
+      .route-grid.route-grid-premium { grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="mobile-bar">
+    <div class="app" style="min-height:auto; grid-template-columns:1fr; padding-top:0; padding-bottom:0;">
+      <div class="mobile-bar-inner">
+        <button class="btn primary" id="toggleSidebar">☰ Oblasti</button>
+        <button class="btn soft" id="showListBtn">📚 Simptomi</button>
+        <button class="btn soft" id="toggleDetails">🧾 Kartica</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <aside class="panel sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-badge">📘</div>
+          <div>
+            <div class="title">SINET Katalog Book</div>
+            <div class="subtitle">Knjiga kataloga: 5619 simptoma sa direktnim putem ka poznatoj kartici aplikacije</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input id="searchInput" class="search" type="search" placeholder="Pretraga: simptom, opis, oblast, MKB-10..." />
+        </div>
+
+        <div class="quick-stats">
+          <div class="stat">
+            <div class="n" id="statTotal">5619</div>
+            <div class="l">Ukupno simptoma</div>
+          </div>
+          <div class="stat">
+            <div class="n" id="statAreas">177</div>
+            <div class="l">Oblasti</div>
+          </div>
+          <div class="stat">
+            <div class="n" id="statMkb">5619</div>
+            <div class="l">Sa MKB-10</div>
+          </div>
+          <div class="stat">
+            <div class="n" id="statFreq">5619</div>
+            <div class="l">Sa frekvencijama</div>
+          </div>
+        </div>
+      </div>
+      <div class="areas-wrap" id="areasWrap"></div>
+    </aside>
+
+    <main class="panel content">
+      <div class="content-header hero">
+        <div class="book-top-nav">
+          <button class="btn" id="bookBackBtn">← NAZAD</button>
+          <button class="btn primary" id="bookHomeBtn">🏠 POČETAK</button>
+          <button class="btn secondary" id="bookCatalogBtn">📖 KATALOG</button>
+          <button class="btn ghost" id="bookAtlasBtn">🗂 ATLAS</button>
+          <div class="nav-note">Book sada pamti mesto, oblast i izabrani simptom.</div>
+        </div>
+        <div class="hero-top">
+          <div>
+            <div class="hero-title">SINET Katalog Book • korisnički pregled kataloga</div>
+            <div class="hero-desc">
+              Levo su sve oblasti kao bookmarks. Klik na oblast otvara simptome i opise. Klik na simptom otvara detaljnu karticu sa MKB-10, preporukom, ukupnim trajanjem, frekvencijama i poznatim SINET akcijama.
+            </div>
+          </div>
+          <div class="top-actions">
+            <button class="btn primary" id="exportSelectionBtn">Izvezi moj izbor</button>
+            <button class="btn" id="copyAreaBtn">Kopiraj aktivnu oblast</button>
+            <button class="btn soft" id="scrollTopBtn">Na vrh</button>
+          </div>
+        </div>
+        <div class="hero-badges">
+          <span class="badge">Responsive 100%</span>
+          <span class="badge">Radi nad SINET_CATALOG.json</span>
+          <span class="badge">Pripremljeno za integraciju sa aplikacijom</span>
+          <span class="badge">Detalji + akcioni panel</span>
+        </div>
+      </div>
+
+      <div class="results-toolbar">
+        <div class="results-meta" id="resultsMeta">Učitavanje kataloga...</div>
+        <div class="chips" id="quickChips"></div>
+      </div>
+
+      <div class="context-strip" id="contextStrip">
+        <div class="context-card">
+          <div class="k">Aktivna oblast</div>
+          <div class="v" id="contextArea">Sve oblasti</div>
+        </div>
+        <div class="context-card">
+          <div class="k">Prikaz / pretraga</div>
+          <div class="v" id="contextMode">Po oblasti</div>
+        </div>
+        <div class="context-card">
+          <div class="k">Aktivni simptom</div>
+          <div class="v" id="contextSelected">Još nije otvoren</div>
+        </div>
+        <div class="context-actions">
+          <button class="btn soft" id="contextResetBtn">Reset filtara</button>
+          <button class="btn desktop-only" id="contextJumpSelectedBtn">Idi na aktivni simptom</button>
+        </div>
+      </div>
+
+      <div class="list" id="list">
+        <div class="empty">Učitavanje...</div>
+      </div>
+      <div class="footer-note">
+        Ovaj Book modul je sada deo aplikacije. Klik na simptom otvara detalj, a akcije ispod detaljne kartice vode direktno u isti tok rada kao u glavnom Katalogu: otvori karticu, dodaj u Listu, Favorit, Moje simptome, Protokol ili AI.
+      </div>
+    </main>
+
+    <aside class="panel details" id="details">
+      <div class="details-header">
+        <div class="title">Detaljna kartica simptoma</div>
+        <div class="subtitle">SINET premium prikaz: opis, MKB-10, preporuka, frekvencije i isti tok rada kao u glavnom Katalogu.</div>
+      </div>
+      <div class="details-body" id="detailsBody">
+        <div class="empty">Nijedan simptom još nije otvoren.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="mobile-bottom-nav">
+    <div class="inner">
+      <button class="btn" id="mobileBackBtn">← Nazad</button>
+      <button class="btn primary" id="mobileHomeBtn">🏠 Početak</button>
+      <button class="btn" id="mobileAreasBtn">☰ Oblasti</button>
+      <button class="btn" id="mobileListBtn">📚 Lista</button>
+      <button class="btn" id="mobileCardBtn">🧾 Kartica</button>
+    </div>
+  </div>
+
+  <button class="floating-top" id="floatingTopBtn" aria-label="Na vrh">↑</button>
+
+  <div class="modal-backdrop" id="backdrop"></div>
+  <div class="action-sheet" id="sheet">
+    <div class="sheet-head">
+      <div class="title" id="sheetTitle">Akcije za simptom</div>
+      <div class="subtitle" id="sheetSubtitle">Odaberi isti tok rada koji već postoji u glavnom Katalogu aplikacije.</div>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-grid">
+        <button class="sheet-btn" data-action="open-detail"><strong>Otvori detalje</strong><small>Opis, MKB-10, preporuke i frekvencije.</small></button>
+        <button class="sheet-btn" data-action="bridge-catalog"><strong>📖 Poznata kartica</strong><small>Otvori isti modal i isti tok rada kao u glavnom Katalogu.</small></button>
+        <button class="sheet-btn" data-action="bridge-playlist"><strong>➕ U listu</strong><small>Dodaj simptom direktno u Queue / Listu.</small></button>
+        <button class="sheet-btn" data-action="bridge-favorite"><strong>⭐ Favorit</strong><small>Sačuvaj stavku u Favorite.</small></button>
+        <button class="sheet-btn" data-action="bridge-mysymptoms"><strong>🧬 Moji simptomi</strong><small>Dodaj u lične simptome korisnika.</small></button>
+        <button class="sheet-btn" data-action="bridge-protocol"><strong>📑 Protokol</strong><small>Pokreni tok ka protokolu.</small></button>
+        <button class="sheet-btn" data-action="bridge-ai"><strong>🤖 AI</strong><small>Pošalji simptom u AI upitnik aplikacije.</small></button>
+        <button class="sheet-btn" data-action="add-selection"><strong>Dodaj u moj izbor</strong><small>Lokalna selekcija za izdvajanje i eksport.</small></button>
+        <button class="sheet-btn" data-action="copy-name"><strong>Kopiraj naziv</strong><small>Brzo kopiranje naziva simptoma.</small></button>
+        <button class="sheet-btn" data-action="copy-json"><strong>Kopiraj JSON zapis</strong><small>Ceo zapis za proveru ili obradu.</small></button>
+      </div>
+      <button class="btn" id="closeSheetBtn">Zatvori</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  
+  <script>
+    const DATA_URLS = ['./data/SINET_CATALOG.json', './SINET_CATALOG.json', './data/SINET_CATALOG_normativni_5619_plus_okcipitalna_bundles.json'];
+    const UI_STATE_KEY = 'sinet_book_ui_state_v2';
+    const UI_HISTORY_KEY = 'sinet_book_ui_history_v2';
+    const SELECTION_KEY = 'sinet_book_selection';
+    const RETURN_BRIDGE_KEY = 'sinet_book_return_bridge';
+    const RETURN_REQUEST_KEY = 'sinet_book_return_request';
+
+    const state = {
+      items: [],
+      activeArea: 'Sve oblasti',
+      selectedItem: null,
+      selectedItemId: null,
+      query: '',
+      displayMode: 'oblast',
+      visibleCount: 120,
+      selection: JSON.parse(localStorage.getItem(SELECTION_KEY) || '[]'),
+      isLoaded: false,
+    };
+
+    const els = {
+      areasWrap: document.getElementById('areasWrap'),
+      searchInput: document.getElementById('searchInput'),
+      list: document.getElementById('list'),
+      resultsMeta: document.getElementById('resultsMeta'),
+      details: document.getElementById('details'),
+      detailsBody: document.getElementById('detailsBody'),
+      quickChips: document.getElementById('quickChips'),
+      toast: document.getElementById('toast'),
+      sidebar: document.getElementById('sidebar'),
+      toggleSidebar: document.getElementById('toggleSidebar'),
+      toggleDetails: document.getElementById('toggleDetails'),
+      showListBtn: document.getElementById('showListBtn'),
+      scrollTopBtn: document.getElementById('scrollTopBtn'),
+      copyAreaBtn: document.getElementById('copyAreaBtn'),
+      exportSelectionBtn: document.getElementById('exportSelectionBtn'),
+      backdrop: document.getElementById('backdrop'),
+      sheet: document.getElementById('sheet'),
+      sheetTitle: document.getElementById('sheetTitle'),
+      sheetSubtitle: document.getElementById('sheetSubtitle'),
+      closeSheetBtn: document.getElementById('closeSheetBtn'),
+      bookBackBtn: document.getElementById('bookBackBtn'),
+      bookHomeBtn: document.getElementById('bookHomeBtn'),
+      bookCatalogBtn: document.getElementById('bookCatalogBtn'),
+      bookAtlasBtn: document.getElementById('bookAtlasBtn'),
+      mobileBackBtn: document.getElementById('mobileBackBtn'),
+      mobileHomeBtn: document.getElementById('mobileHomeBtn'),
+      mobileAreasBtn: document.getElementById('mobileAreasBtn'),
+      mobileListBtn: document.getElementById('mobileListBtn'),
+      mobileCardBtn: document.getElementById('mobileCardBtn'),
+      contextArea: document.getElementById('contextArea'),
+      contextMode: document.getElementById('contextMode'),
+      contextSelected: document.getElementById('contextSelected'),
+      contextResetBtn: document.getElementById('contextResetBtn'),
+      contextJumpSelectedBtn: document.getElementById('contextJumpSelectedBtn'),
+      floatingTopBtn: document.getElementById('floatingTopBtn')
+    };
+
+    const normalize = (v) => (v || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isMobile = () => window.innerWidth <= 920;
+    function getAreaItems() {
+      if (state.activeArea === 'Sve oblasti') return state.items.slice();
+      return state.items.filter(item => item._area === state.activeArea);
+    }
+    function updateContextStrip() {
+      const areaItems = getAreaItems();
+      const filtered = getFilteredItems();
+      const modeLabel = state.displayMode === 'selection'
+        ? `Moj izbor • ${filtered.length}`
+        : state.displayMode === 'search'
+          ? (state.query ? `Pretraga • ${state.query}` : 'Pretraga kroz ceo katalog')
+          : `Po oblasti • ${filtered.length}/${areaItems.length}`;
+      if (els.contextArea) els.contextArea.textContent = state.activeArea || 'Sve oblasti';
+      if (els.contextMode) els.contextMode.textContent = modeLabel;
+      if (els.contextSelected) els.contextSelected.textContent = state.selectedItem?._symptom || 'Još nije otvoren';
+      if (els.contextJumpSelectedBtn) els.contextJumpSelectedBtn.disabled = !state.selectedItemId;
+    }
+    function hardResetPaneScrolls() {
+      try { els.list.scrollTop = 0; } catch(_) {}
+      try { els.detailsBody.scrollTop = 0; } catch(_) {}
+      try { if (!isMobile()) window.scrollTo({ top: 0, behavior: 'auto' }); } catch(_) {}
+    }
+    function scrollActiveCardIntoView() {
+      if (!state.selectedItemId) return;
+      const safeId = (window.CSS && CSS.escape) ? CSS.escape(state.selectedItemId) : state.selectedItemId.replace(/"/g, '\"');
+      const node = els.list.querySelector(`.card[data-id="${safeId}"]`);
+      if (node) node.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    function activateArea(areaName, opts = {}) {
+      if (!opts.fromHistory) pushHistory('area');
+      state.activeArea = areaName || 'Sve oblasti';
+      state.displayMode = 'oblast';
+      state.visibleCount = 120;
+      if (!opts.keepQuery) state.query = '';
+      if (els.searchInput) els.searchInput.value = state.query;
+      location.hash = '#oblast=' + encodeURIComponent(state.activeArea);
+      renderAreas(); renderQuickChips(); renderList(true); maybePrimeDetails(); updateContextStrip(); hardResetPaneScrolls();
+      if (isMobile() && opts.closeSidebar !== false) { els.sidebar.classList.remove('open'); showListView(); }
+      saveUiState();
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escapeHtmlAttr(v) { return escapeHtml(v).replace(/`/g, '&#96;'); }
+    function toast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => els.toast.classList.remove('show'), 2200);
+    }
+    function getEntryContext() {
+      try {
+        const raw = localStorage.getItem('sinet_book_entry_bridge');
+        if (!raw) return { oblast:'', q:'' };
+        return JSON.parse(raw) || { oblast:'', q:'' };
+      } catch(_) { return { oblast:'', q:'' }; }
+    }
+    function clearEntryContext() { try { localStorage.removeItem('sinet_book_entry_bridge'); } catch(_) {} }
+    function getReturnBridge() {
+      try {
+        const raw = localStorage.getItem(RETURN_BRIDGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch(_) { return null; }
+    }
+    function saveUiState() {
+      try {
+        sessionStorage.setItem(UI_STATE_KEY, JSON.stringify({
+          activeArea: state.activeArea,
+          query: state.query,
+          displayMode: state.displayMode,
+          selectedItemId: state.selectedItemId || '',
+          visibleCount: state.visibleCount,
+          listScrollTop: els.list ? els.list.scrollTop : 0,
+          areasScrollTop: els.areasWrap ? els.areasWrap.scrollTop : 0,
+          detailsScrollTop: els.detailsBody ? els.detailsBody.scrollTop : 0,
+          scrollY: window.scrollY || 0,
+          ts: Date.now()
+        }));
+      } catch(_) {}
+    }
+    function loadUiState() {
+      try {
+        const raw = sessionStorage.getItem(UI_STATE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch(_) { return null; }
+    }
+    function snapshotState() {
+      return {
+        activeArea: state.activeArea,
+        query: state.query,
+        displayMode: state.displayMode,
+        selectedItemId: state.selectedItemId || '',
+        visibleCount: state.visibleCount,
+        listScrollTop: els.list ? els.list.scrollTop : 0,
+        areasScrollTop: els.areasWrap ? els.areasWrap.scrollTop : 0,
+        detailsScrollTop: els.detailsBody ? els.detailsBody.scrollTop : 0,
+        scrollY: window.scrollY || 0,
+        ts: Date.now()
+      };
+    }
+    function pushHistory(reason) {
+      if (!state.isLoaded) return;
+      try {
+        const snap = snapshotState();
+        snap.reason = reason || 'view';
+        const raw = sessionStorage.getItem(UI_HISTORY_KEY);
+        const stack = raw ? JSON.parse(raw) : [];
+        const prev = stack[stack.length - 1];
+        const same = prev && prev.activeArea === snap.activeArea && prev.query === snap.query && prev.displayMode === snap.displayMode && prev.selectedItemId === snap.selectedItemId;
+        if (!same) {
+          stack.push(snap);
+          while (stack.length > 80) stack.shift();
+          sessionStorage.setItem(UI_HISTORY_KEY, JSON.stringify(stack));
+        }
+      } catch(_) {}
+    }
+    function popHistory() {
+      try {
+        const raw = sessionStorage.getItem(UI_HISTORY_KEY);
+        const stack = raw ? JSON.parse(raw) : [];
+        const snap = stack.pop();
+        sessionStorage.setItem(UI_HISTORY_KEY, JSON.stringify(stack));
+        return snap || null;
+      } catch(_) { return null; }
+    }
+    function sendReturnToApp(home = false) {
+      const bridge = getReturnBridge();
+      try {
+        localStorage.setItem(RETURN_REQUEST_KEY, JSON.stringify({ ...(bridge || {}), forceHome: !!home, ts: Date.now() }));
+      } catch(_) {}
+      if (bridge && bridge.page === 'atlas') { location.href = 'atlas.html'; return; }
+      if (bridge && bridge.url) { location.href = bridge.url; return; }
+      location.href = 'index.html';
+    }
+    function goBookBack() {
+      const snap = popHistory();
+      if (snap) {
+        applySnapshot(snap, true);
+        toast('Vraćeno na prethodno mesto u Book modulu.');
+        return;
+      }
+      sendReturnToApp(false);
+    }
+    function goBookHome() { sendReturnToApp(true); }
+    function showListView() {
+      document.querySelector('.content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (isMobile()) els.sidebar.classList.remove('open');
+    }
+    function showDetailsView() {
+      els.details?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (isMobile()) els.sidebar.classList.remove('open');
+    }
+    function renderEmptyDetails(message) {
+      state.selectedItem = null;
+      state.selectedItemId = null;
+      els.details.classList.add('pending');
+      els.detailsBody.innerHTML = `
+        <div class="section detail-placeholder book-premium">
+          <h3>Detaljna kartica simptoma</h3>
+          <div class="hint">${escapeHtml(message || 'Odaberi simptom iz liste da otvoriš detaljnu karticu.')}</div>
+          <div class="book-shell-note">Na laptopu Book prikazuje tri kolone. Na mobilnom se radi u koracima: oblast → simptomi → kartica.</div>
+        </div>
+      `;
+      updateContextStrip();
+      saveUiState();
+    }
+    function maybePrimeDetails(items) {
+      const filtered = items || getFilteredItems();
+      if (!filtered.length) return renderEmptyDetails('Nema simptoma za prikaz u ovoj oblasti ili pretrazi.');
+      if (isMobile()) return renderEmptyDetails('Odaberi simptom iz liste da otvoriš detaljnu karticu.');
+      const selectedVisible = filtered.find(it => it._id === state.selectedItemId);
+      renderDetails(selectedVisible || filtered[0], { autoScroll: false });
+    }
+
+    async function loadData() {
+      let loaded = null;
+      for (const url of DATA_URLS) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          loaded = await res.json();
+          break;
+        } catch (_) {}
+      }
+      if (loaded && !Array.isArray(loaded) && Array.isArray(loaded.items)) loaded = loaded.items;
+      if (!Array.isArray(loaded)) {
+        els.list.innerHTML = '<div class="empty">Katalog nije učitan. Postavi ovaj HTML pored fajla <strong>SINET_CATALOG.json</strong> i otvori ga preko servera aplikacije.</div>';
+        els.resultsMeta.textContent = 'Katalog nije učitan';
+        return renderEmptyDetails('Katalog nije učitan.');
+      }
+      state.items = loaded.map((item, idx) => {
+        const area = item.oblast || 'Bez oblasti';
+        const sub = item.podOblast || '';
+        const symptom = item.simptom || item.canonical_naziv || 'Bez naziva';
+        const desc = item.opis || '';
+        const mkb = item.mkb10 || (item.mkb10_obj && item.mkb10_obj.sifra) || '';
+        const aliases = Array.isArray(item.alias_terms) ? item.alias_terms : [];
+        const keywords = Array.isArray(item.keywords) ? item.keywords : [];
+        const searchTerms = Array.isArray(item.search_terms) ? item.search_terms : [];
+        const enabledFreqs = Array.isArray(item.frekvencije) ? item.frekvencije.filter(f => f && (f.enabled !== false)) : [];
+        const totalFreqMin = enabledFreqs.reduce((sum, f) => sum + Number(f.trajanje_min || item.trajanjePoFrekvencijiMin || 0), 0);
+        const segmentMin = Number(item?.preporuka?.segment_min || totalFreqMin || item.trajanjePoFrekvencijiMin || 0);
+        const searchIndex = normalize([area, sub, symptom, desc, mkb, ...aliases, ...keywords, ...searchTerms].join(' | '));
+        return {
+          ...item,
+          _row: idx + 1,
+          _area: area,
+          _sub: sub,
+          _symptom: symptom,
+          _desc: desc,
+          _mkb: mkb,
+          _enabledFreqs: enabledFreqs,
+          _totalFreqMin: totalFreqMin,
+          _segmentMin: segmentMin,
+          _searchIndex: searchIndex,
+          _id: item.id || item.uid || item.canonical_id || ('row-' + idx)
+        };
+      });
+      const counts = new Map();
+      state.items.forEach(item => counts.set(item._area, (counts.get(item._area) || 0) + 1));
+      document.getElementById('statTotal').textContent = String(state.items.length);
+      document.getElementById('statAreas').textContent = String(counts.size);
+      document.getElementById('statMkb').textContent = String(state.items.filter(it => it._mkb).length);
+      document.getElementById('statFreq').textContent = String(state.items.filter(it => (it._enabledFreqs || []).length).length);
+
+      const entry = getEntryContext();
+      const stored = loadUiState();
+      const hashArea = decodeURIComponent((location.hash || '').replace(/^#oblast=/,''));
+      if (entry && entry.oblast && counts.has(entry.oblast)) state.activeArea = entry.oblast;
+      else if (stored && stored.activeArea && (stored.activeArea === 'Sve oblasti' || counts.has(stored.activeArea))) state.activeArea = stored.activeArea;
+      else if (hashArea && counts.has(hashArea)) state.activeArea = hashArea;
+      if (entry && entry.q) { state.query = String(entry.q || ''); state.displayMode = 'search'; }
+      else if (stored && typeof stored.query === 'string') { state.query = stored.query; state.displayMode = stored.displayMode || (state.query ? 'search' : 'oblast'); }
+      if (stored && stored.visibleCount) state.visibleCount = Number(stored.visibleCount || 120);
+      if (els.searchInput) els.searchInput.value = state.query;
+      clearEntryContext();
+      state.isLoaded = true;
+      renderAreas();
+      renderQuickChips();
+      renderList();
+      updateContextStrip();
+      const filtered = getFilteredItems();
+      const selected = stored?.selectedItemId ? filtered.find(it => it._id === stored.selectedItemId) || state.items.find(it => it._id === stored.selectedItemId) : null;
+      if (selected && !isMobile()) renderDetails(selected, { autoScroll: false });
+      else maybePrimeDetails(filtered);
+      requestAnimationFrame(() => {
+        try { if (stored && typeof stored.areasScrollTop === 'number') els.areasWrap.scrollTop = stored.areasScrollTop; } catch(_) {}
+        try { if (stored && typeof stored.listScrollTop === 'number') els.list.scrollTop = stored.listScrollTop; } catch(_) {}
+        try { if (stored && typeof stored.detailsScrollTop === 'number') els.detailsBody.scrollTop = stored.detailsScrollTop; } catch(_) {}
+        try { if (stored && typeof stored.scrollY === 'number' && stored.scrollY > 0 && isMobile()) window.scrollTo({ top: stored.scrollY, behavior: 'auto' }); } catch(_) {}
+      });
+    }
+
+    function renderAreas() {
+      const counts = new Map();
+      state.items.forEach(item => counts.set(item._area, (counts.get(item._area) || 0) + 1));
+      const areaButtons = ['Sve oblasti', ...Array.from(counts.keys()).sort((a,b) => a.localeCompare(b, 'sr'))].map(name => {
+        const count = name === 'Sve oblasti' ? state.items.length : counts.get(name) || 0;
+        const active = state.activeArea === name ? 'active' : '';
+        return `
+          <button class="area-btn ${active}" data-area="${escapeHtmlAttr(name)}">
+            <div class="area-top">
+              <div class="area-name">${escapeHtml(name)}</div>
+              <div class="area-count">${count}</div>
+            </div>
+          </button>`;
+      }).join('');
+      els.areasWrap.innerHTML = areaButtons;
+      els.areasWrap.querySelectorAll('.area-btn').forEach(btn => {
+        btn.addEventListener('click', () => activateArea(btn.dataset.area));
+      });
+    }
+    function renderQuickChips() {
+      const chips = [['oblast', 'Prikaz po oblasti'], ['search', 'Pretraga kroz ceo katalog'], ['selection', `Moj izbor (${state.selection.length})`]];
+      els.quickChips.innerHTML = chips.map(([mode, label]) => `<button class="chip ${state.displayMode===mode?'active':''}" data-mode="${mode}">${label}</button>`).join('');
+      els.quickChips.querySelectorAll('.chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pushHistory('mode');
+          state.displayMode = btn.dataset.mode;
+          state.visibleCount = 120;
+          renderQuickChips(); renderList(true); maybePrimeDetails(); updateContextStrip(); hardResetPaneScrolls(); saveUiState();
+        });
+      });
+    }
+    function getFilteredItems() {
+      const q = normalize(state.query);
+      let items = state.items;
+      if (state.displayMode === 'selection') {
+        const set = new Set(state.selection.map(x => x._id || x.id || x.uid || x.canonical_id));
+        items = items.filter(item => set.has(item._id));
+      } else if (state.displayMode === 'oblast' && state.activeArea !== 'Sve oblasti') {
+        items = items.filter(item => item._area === state.activeArea);
+      }
+      if (q) items = items.filter(item => item._searchIndex.includes(q));
+      return items.slice().sort((a,b) => a._symptom.localeCompare(b._symptom, 'sr'));
+    }
+    function highlight(text, query) {
+      if (!query) return escapeHtml(text || '');
+      const raw = text || '';
+      const idx = normalize(raw).indexOf(normalize(query).trim());
+      if (idx < 0) return escapeHtml(raw);
+      return `${escapeHtml(raw.slice(0, idx))}<mark>${escapeHtml(raw.slice(idx, idx + query.length))}</mark>${escapeHtml(raw.slice(idx + query.length))}`;
+    }
+    function renderList(resetScroll = false) {
+      const items = getFilteredItems();
+      const total = items.length;
+      const shown = items.slice(0, state.visibleCount);
+      let modeLabel = 'Sve oblasti';
+      if (state.displayMode === 'selection') modeLabel = 'Moj izbor';
+      else if (state.displayMode === 'oblast') modeLabel = state.activeArea;
+      else if (state.displayMode === 'search') modeLabel = state.query ? `Pretraga: "${state.query}"` : 'Pretraga kroz ceo katalog';
+      els.resultsMeta.textContent = `${modeLabel} · prikazano ${shown.length} od ${total}`;
+      if (!shown.length) {
+        els.list.innerHTML = '<div class="empty">Nema rezultata za trenutni izbor ili pretragu.</div>';
+        updateContextStrip();
+        saveUiState();
+        return;
+      }
+      els.list.innerHTML = shown.map(item => {
+        const mkbLabel = item._mkb ? item._mkb : 'bez MKB-10';
+        const freqCount = item._enabledFreqs.length;
+        const desc = item._desc.length > 220 ? item._desc.slice(0, 220) + '…' : item._desc;
+        const active = item._id === state.selectedItemId ? 'active' : '';
+        return `
+          <article class="card ${active}" data-id="${escapeHtmlAttr(item._id)}">
+            <div class="card-top">
+              <div>
+                <div class="card-title">${highlight(item._symptom, state.query)}</div>
+                <div class="card-sub">${escapeHtml(item._area)}${item._sub ? ' · ' + escapeHtml(item._sub) : ''}</div>
+              </div>
+              <button class="btn" data-action-open="${escapeHtmlAttr(item._id)}">Akcije</button>
+            </div>
+            <div class="card-desc">${highlight(desc, state.query)}</div>
+            <div class="mini-meta">
+              <span class="mini">MKB-10: ${escapeHtml(mkbLabel)}</span>
+              <span class="mini">Frekvencije: ${freqCount}</span>
+              <span class="mini">Segment: ${item._segmentMin || item.trajanjePoFrekvencijiMin || 0} min</span>
+              <span class="mini">Preporuka: loop ${item?.preporuka?.loop_uzastopno || 1}</span>
+            </div>
+          </article>`;
+      }).join('') + (shown.length < total ? `<div style="padding-top:8px; display:flex; justify-content:center;"><button class="btn primary" id="loadMoreBtn">Učitaj još</button></div>` : '');
+      if (resetScroll) els.list.scrollTop = 0;
+      els.list.querySelectorAll('.card').forEach(card => {
+        const item = state.items.find(x => x._id === card.dataset.id);
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('[data-action-open]')) return;
+          pushHistory('detail');
+          renderDetails(item, { autoScroll: isMobile() });
+        });
+      });
+      els.list.querySelectorAll('[data-action-open]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const item = state.items.find(x => x._id === btn.dataset.actionOpen);
+          renderDetails(item, { autoScroll: false });
+          openSheet(item);
+        });
+      });
+      document.getElementById('loadMoreBtn')?.addEventListener('click', () => { state.visibleCount += 120; renderList(false); updateContextStrip(); saveUiState(); });
+      updateContextStrip();
+      saveUiState();
+    }
+    function renderDetails(item, opts = {}) {
+      if (!item) return renderEmptyDetails('Odaberi simptom iz liste da otvoriš detaljnu karticu.');
+      state.selectedItem = item;
+      state.selectedItemId = item._id;
+      els.details.classList.remove('pending');
+      const mkbObj = item.mkb10_obj || {};
+      const rec = item.preporuka || {};
+      const hol = item.holisticki || item.holistika || {};
+      const psi = hol.psihosomatika || {};
+      const afr = hol.afirmacija || {};
+      const duh = hol.duhovnost || {};
+      const mol = hol.molitva || {};
+      const nar = (hol.narodni_lek && (hol.narodni_lek.opis || hol.narodni_lek.tekst)) ? (hol.narodni_lek.opis || hol.narodni_lek.tekst) : ((hol.saveti && hol.saveti.narodno) || '');
+      const holisticBlocks = [
+        psi.uzrok ? `<div class="section book-premium"><h3>🧠 Psihosomatika – uzrok</h3><div class="route-note">${escapeHtml(psi.uzrok)}</div></div>` : '',
+        psi.lek ? `<div class="section book-premium"><h3>🫶 Psihosomatika – lek / pristup</h3><div class="route-note">${escapeHtml(psi.lek)}</div></div>` : '',
+        afr.tekst ? `<div class="section book-premium"><h3>✨ Afirmacija</h3><div class="route-note">${escapeHtml(afr.tekst)}</div>${afr.autor ? `<div class="muted" style="margin-top:8px;">Autor: ${escapeHtml(afr.autor)}</div>` : ''}</div>` : '',
+        duh.tekst ? `<div class="section book-premium"><h3>🕯️ Duhovni fokus</h3><div class="route-note">${escapeHtml(duh.tekst)}</div></div>` : '',
+        mol.tekst ? `<div class="section book-premium"><h3>🙏 Molitveni fokus</h3><div class="route-note">${escapeHtml(mol.tekst)}</div></div>` : '',
+        nar ? `<div class="section book-premium"><h3>🌿 Narodni savet / podrška</h3><div class="route-note">${escapeHtml(nar)}</div></div>` : ''
+      ].filter(Boolean).join('');
+      const holisticHtml = `<div class="section book-premium" id="detailHolisticSection"><h3>Holistički / alternativni pristup simptomu</h3><div class="route-note" style="margin-bottom:10px;">Ovaj sloj je podržavajući i informativan. Ne zamenjuje pregled, dijagnostiku i hitnu procenu kada postoje jaki ili alarmantni simptomi.</div><div class="divider"></div>${holisticBlocks || '<div class="empty">Za ovu stavku još nema upisanog holističkog prikaza.</div>'}</div>`;
+      const freqHtml = (item._enabledFreqs || []).slice(0, 24).map(freq => `
+        <div class="freq">
+          <div class="freq-top"><span>${escapeHtml(freq.naziv || String(freq.value || '') + ' Hz')}</span><span class="muted">${escapeHtml(String(freq.trajanje_min || item.trajanjePoFrekvencijiMin || ''))} min</span></div>
+          <div class="muted" style="margin-top:6px;">${escapeHtml(freq.opis || freq.funkcija || freq.svrha || '')}</div>
+        </div>`).join('') || '<div class="empty">Nema upisanih frekvencija.</div>';
+      const totalFreqMin = item._totalFreqMin || (item._enabledFreqs || []).length * Number(item.trajanjePoFrekvencijiMin || 0);
+      els.detailsBody.innerHTML = `
+        <div class="detail-premium-hero" id="detailSummarySection">
+          <div class="detail-premium-head">
+            <div>
+              <h3 class="detail-premium-title">${escapeHtml(item._symptom)}</h3>
+              <div class="detail-premium-sub">${escapeHtml(item._area)}${item._sub ? ' · ' + escapeHtml(item._sub) : ''}</div>
+            </div>
+            <span class="pill">${escapeHtml(item._mkb || 'bez MKB-10')}</span>
+          </div>
+          <div class="detail-ribbon">
+            <span class="pill">📘 Premium Book kartica</span>
+            <span class="pill">🎯 ${escapeHtml(String(rec.segment_min || item._segmentMin || 0))} min segment</span>
+            <span class="pill">🔁 ${escapeHtml(String(rec.loop_uzastopno || 1))} loop</span>
+            <span class="pill">🎵 ${escapeHtml(String((item._enabledFreqs || []).length))} frekv.</span>
+          </div>
+          <div class="detail-summary-grid">
+            <div class="detail-summary-card"><div class="k">Trajanje po frekvenciji</div><div class="v">${escapeHtml(String(item.trajanjePoFrekvencijiMin || 0))} min</div></div>
+            <div class="detail-summary-card"><div class="k">Ukupno frekvencije</div><div class="v">${escapeHtml(String(totalFreqMin || 0))} min</div></div>
+            <div class="detail-summary-card"><div class="k">Dnevno dana</div><div class="v">${escapeHtml(String(rec.dnevno_dana || '—'))}</div></div>
+            <div class="detail-summary-card"><div class="k">Pauza dana</div><div class="v">${escapeHtml(String(rec.pauza_dana || '—'))}</div></div>
+          </div>
+          <div class="detail-summary-note">${escapeHtml(item._desc || '')}</div>
+        </div>
+        <div class="detail-nav">
+          <button class="btn soft" id="detailToSummary">Sažetak</button>
+          <button class="btn soft" id="detailToPlan">Plan</button>
+          <button class="btn soft" id="detailToHolistic">Holistički</button>
+          <button class="btn soft" id="detailToFreq">Frekvencije</button>
+          <button class="btn soft" id="detailToAppRoute">Kartica app</button>
+          <button class="btn primary" id="detailActionSheet">Akcije</button>
+        </div>
+        <div class="detail-actions detail-actions-premium">
+          <button class="btn" id="detailAddSelection">Dodaj u moj izbor</button>
+          <button class="btn" id="detailJumpList">Na aktivnu stavku u listi</button>
+          <button class="btn soft" id="detailCopySymptom">Kopiraj simptom</button>
+        </div>
+        <div class="detail-route-hero section book-premium" id="detailAppRouteSection">
+          <div class="detail-route-head">
+            <div>
+              <h3 class="detail-route-title">Poznata SINET kartica u aplikaciji</h3>
+              <div class="detail-route-sub">Ove akcije vode u isti korisnički tok kao u glavnom Katalogu — ista kartica, ista dugmad i ista logika rada.</div>
+            </div>
+            <span class="pill">🔗 App bridge</span>
+          </div>
+          <div class="route-grid route-grid-premium">
+            <button class="btn primary" id="routeOpenCatalog">📖 Otvori karticu</button>
+            <button class="btn" id="routeAddPlaylist">➕ U listu</button>
+            <button class="btn" id="routeFavorite">⭐ Favorit</button>
+            <button class="btn" id="routeMySymptoms">🧬 Moji simptomi</button>
+            <button class="btn" id="routeProtocol">📑 Protokol</button>
+            <button class="btn secondary" id="routeAI">🤖 AI</button>
+          </div>
+        </div>
+        <div class="section book-premium" id="detailPlanSection">
+          <h3>Osnovni podaci i plan</h3>
+          <div class="kv">
+            <div>Oblast</div><div>${escapeHtml(item._area)}</div>
+            <div>Podoblast</div><div>${escapeHtml(item._sub || '—')}</div>
+            <div>MKB-10</div><div>${escapeHtml(item._mkb || '—')}</div>
+            <div>Naziv MKB-10</div><div>${escapeHtml(mkbObj.naziv || '—')}</div>
+            <div>ID</div><div>${escapeHtml(item._id)}</div>
+            <div>Senior Quick</div><div>${item.seniorQuick ? 'Da' : 'Ne'}</div>
+            <div>Trajanje po frekvenciji</div><div>${escapeHtml(String(item.trajanjePoFrekvencijiMin || 0))} min</div>
+            <div>Segment</div><div>${escapeHtml(String(rec.segment_min || item._segmentMin || 0))} min</div>
+            <div>Loop uzastopno</div><div>${escapeHtml(String(rec.loop_uzastopno || 1))}</div>
+            <div>Dnevno dana</div><div>${escapeHtml(String(rec.dnevno_dana || '—'))}</div>
+            <div>Pauza dana</div><div>${escapeHtml(String(rec.pauza_dana || '—'))}</div>
+            <div>Ukupno trajanje svih frekvencija</div><div>${escapeHtml(String(totalFreqMin || 0))} min</div>
+          </div>
+        </div>
+        ${holisticHtml}
+        <div class="section book-premium" id="detailFreqSection">
+          <h3>Frekvencijski sloj</h3>
+          <div class="route-note" style="margin-bottom:10px;">Book kartica sada prikazuje isti sadržaj koji korisnik očekuje u SINET toku: naziv frekvencije, procenjeno trajanje i opis/funkciju.</div>
+          <div class="freq-list compact">${freqHtml}</div>
+        </div>`;
+      document.getElementById('detailActionSheet')?.addEventListener('click', () => openSheet(item));
+      document.getElementById('detailAddSelection')?.addEventListener('click', () => addSelection(item));
+      document.getElementById('detailJumpList')?.addEventListener('click', () => scrollActiveCardIntoView());
+      document.getElementById('detailCopySymptom')?.addEventListener('click', () => copyText(item._symptom || '', 'Naziv simptoma kopiran.'));
+      document.getElementById('detailToSummary')?.addEventListener('click', () => document.getElementById('detailSummarySection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+      document.getElementById('detailToPlan')?.addEventListener('click', () => document.getElementById('detailPlanSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+      document.getElementById('detailToHolistic')?.addEventListener('click', () => document.getElementById('detailHolisticSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+      document.getElementById('detailToFreq')?.addEventListener('click', () => document.getElementById('detailFreqSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+      document.getElementById('detailToAppRoute')?.addEventListener('click', () => document.getElementById('detailAppRouteSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
+      document.getElementById('routeOpenCatalog')?.addEventListener('click', () => sendBridge('catalog', item));
+      document.getElementById('routeAddPlaylist')?.addEventListener('click', () => sendBridge('playlist', item));
+      document.getElementById('routeFavorite')?.addEventListener('click', () => sendBridge('favorite', item));
+      document.getElementById('routeMySymptoms')?.addEventListener('click', () => sendBridge('mysymptoms', item));
+      document.getElementById('routeProtocol')?.addEventListener('click', () => sendBridge('protocol', item));
+      document.getElementById('routeAI')?.addEventListener('click', () => sendBridge('ai', item));
+      try { els.detailsBody.scrollTop = 0; } catch(_) {}
+      renderList(false);
+      updateContextStrip();
+      saveUiState();
+      if (opts.autoScroll) showDetailsView();
+    }
+    function openSheet(item) {
+      if (!item) return;
+      state.selectedItem = item;
+      els.sheetTitle.textContent = item._symptom;
+      els.sheetSubtitle.textContent = (item._area || '') + (item._mkb ? ' · ' + item._mkb : '');
+      els.backdrop.classList.add('show');
+      els.sheet.classList.add('show');
+    }
+    function closeSheet() { els.backdrop.classList.remove('show'); els.sheet.classList.remove('show'); }
+    function addSelection(item) {
+      const exists = state.selection.some(x => (x._id || x.id) === item._id);
+      if (!exists) {
+        state.selection.push({ _id: item._id, simptom: item._symptom, oblast: item._area, mkb10: item._mkb });
+        localStorage.setItem(SELECTION_KEY, JSON.stringify(state.selection));
+        renderQuickChips();
+      }
+      toast(exists ? 'Stavka je već u tvom izboru.' : 'Dodato u moj izbor.');
+    }
+    async function copyText(text, okMessage='Kopirano.') {
+      try { await navigator.clipboard.writeText(text); toast(okMessage); } catch (_) { toast('Kopiranje nije uspelo na ovom uređaju.'); }
+    }
+    function sendBridge(action, item) {
+      if (!item) return;
+      try {
+        localStorage.setItem('sinet_atlas_bridge', JSON.stringify({ action, id: item._id || item.id || '', symptom: item._symptom || item.simptom || '', query: item._symptom || item.simptom || '', oblast: item._area || item.oblast || '', mode: 'all', from: 'catalog-book', bookState: { activeArea: state.activeArea, query: state.query, selectedItemId: state.selectedItemId || '', listScrollTop: els.list ? els.list.scrollTop : 0, detailsScrollTop: els.detailsBody ? els.detailsBody.scrollTop : 0 }, ts: Date.now() }));
+      } catch (_) {}
+      saveUiState();
+      location.href = 'index.html';
+    }
+    function exportSelection() {
+      if (!state.selection.length) return toast('Moj izbor je prazan.');
+      const selected = state.items.filter(item => state.selection.some(s => s._id === item._id));
+      const blob = new Blob([JSON.stringify(selected, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'SINET_moj_izbor.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); toast('Izvezen JSON za moj izbor.');
+    }
+    function openAtlasWithContext() {
+      try { localStorage.setItem('sinet_atlas_entry_bridge', JSON.stringify({ oblast: state.activeArea !== 'Sve oblasti' ? state.activeArea : '', q: state.query || '', mode: 'all', ts: Date.now() })); } catch(_) {}
+      saveUiState(); location.href = 'atlas.html';
+    }
+    function openCatalogWithContext() { if (state.selectedItem) return sendBridge('catalog_only', state.selectedItem); sendReturnToApp(false); }
+    function applySnapshot(snap, fromHistory = false) {
+      if (!snap) return;
+      state.activeArea = snap.activeArea || 'Sve oblasti';
+      state.query = snap.query || '';
+      state.displayMode = snap.displayMode || (state.query ? 'search' : 'oblast');
+      state.visibleCount = Number(snap.visibleCount || 120);
+      state.selectedItemId = snap.selectedItemId || '';
+      if (els.searchInput) els.searchInput.value = state.query;
+      renderAreas(); renderQuickChips(); renderList(false);
+      const filtered = getFilteredItems();
+      const selected = filtered.find(it => it._id === state.selectedItemId) || state.items.find(it => it._id === state.selectedItemId);
+      if (selected && !isMobile()) renderDetails(selected, { autoScroll: false }); else maybePrimeDetails(filtered);
+      requestAnimationFrame(() => {
+        try { if (typeof snap.areasScrollTop === 'number') els.areasWrap.scrollTop = snap.areasScrollTop; } catch(_) {}
+        try { if (typeof snap.listScrollTop === 'number') els.list.scrollTop = snap.listScrollTop; } catch(_) {}
+        try { if (typeof snap.detailsScrollTop === 'number') els.detailsBody.scrollTop = snap.detailsScrollTop; } catch(_) {}
+        try { if (typeof snap.scrollY === 'number' && isMobile()) window.scrollTo({ top: snap.scrollY, behavior: 'auto' }); } catch(_) {}
+      });
+      updateContextStrip();
+      saveUiState();
+    }
+
+    els.searchInput.addEventListener('input', (e) => { pushHistory('search'); state.query = e.target.value || ''; state.displayMode = state.query ? 'search' : 'oblast'; state.visibleCount = 120; renderQuickChips(); renderList(true); maybePrimeDetails(); saveUiState(); });
+    els.areasWrap?.addEventListener('scroll', saveUiState, { passive: true });
+    els.list?.addEventListener('scroll', saveUiState, { passive: true });
+    els.detailsBody?.addEventListener('scroll', saveUiState, { passive: true });
+    window.addEventListener('scroll', () => {
+      saveUiState();
+      if (els.floatingTopBtn) els.floatingTopBtn.classList.toggle('show', (window.scrollY || 0) > 260);
+    }, { passive: true });
+    window.addEventListener('beforeunload', saveUiState);
+    window.addEventListener('resize', () => { if (!isMobile() && !state.selectedItemId) maybePrimeDetails(); updateContextStrip(); saveUiState(); });
+    els.toggleSidebar?.addEventListener('click', () => els.sidebar.classList.toggle('open'));
+    els.toggleDetails?.addEventListener('click', showDetailsView);
+    els.showListBtn?.addEventListener('click', showListView);
+    els.scrollTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    els.floatingTopBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    els.contextResetBtn?.addEventListener('click', () => {
+      pushHistory('reset');
+      state.query = '';
+      state.displayMode = 'oblast';
+      if (els.searchInput) els.searchInput.value = '';
+      activateArea('Sve oblasti', { fromHistory: true, keepQuery: true, closeSidebar: true });
+      renderEmptyDetails('Odaberi simptom iz liste da otvoriš detaljnu karticu.');
+    });
+    els.contextJumpSelectedBtn?.addEventListener('click', scrollActiveCardIntoView);
+    els.copyAreaBtn?.addEventListener('click', () => copyText(state.activeArea, 'Aktivna oblast kopirana.'));
+    els.exportSelectionBtn?.addEventListener('click', exportSelection);
+    els.backdrop?.addEventListener('click', closeSheet);
+    els.closeSheetBtn?.addEventListener('click', closeSheet);
+    els.bookBackBtn?.addEventListener('click', goBookBack);
+    els.mobileBackBtn?.addEventListener('click', goBookBack);
+    els.bookHomeBtn?.addEventListener('click', goBookHome);
+    els.mobileHomeBtn?.addEventListener('click', goBookHome);
+    els.bookCatalogBtn?.addEventListener('click', openCatalogWithContext);
+    els.bookAtlasBtn?.addEventListener('click', openAtlasWithContext);
+    els.mobileAreasBtn?.addEventListener('click', () => els.sidebar.classList.toggle('open'));
+    els.mobileListBtn?.addEventListener('click', showListView);
+    els.mobileCardBtn?.addEventListener('click', showDetailsView);
+    els.sheet.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const item = state.selectedItem; if (!item) return;
+        const action = btn.dataset.action;
+        if (action === 'open-detail') { renderDetails(item, { autoScroll: isMobile() }); closeSheet(); return; }
+        if (action === 'add-selection') { addSelection(item); closeSheet(); return; }
+        if (action === 'copy-name') { await copyText(item._symptom, 'Naziv simptoma kopiran.'); return; }
+        if (action === 'copy-json') { await copyText(JSON.stringify(item, null, 2), 'JSON zapis kopiran.'); return; }
+        if (action === 'bridge-catalog') { sendBridge('catalog', item); closeSheet(); return; }
+        if (action === 'bridge-playlist') { sendBridge('playlist', item); closeSheet(); return; }
+        if (action === 'bridge-favorite') { sendBridge('favorite', item); closeSheet(); return; }
+        if (action === 'bridge-mysymptoms') { sendBridge('mysymptoms', item); closeSheet(); return; }
+        if (action === 'bridge-protocol') { sendBridge('protocol', item); closeSheet(); return; }
+        if (action === 'bridge-ai') { sendBridge('ai', item); closeSheet(); return; }
+      });
+    });
+    loadData();
+  </script>
+
+</body>
+</html>

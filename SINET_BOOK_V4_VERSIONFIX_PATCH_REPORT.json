@@ -1,0 +1,19 @@
+{
+  "base_version": "16.0.0.118.19",
+  "display_version_fixed_to": "16.0.0.118.20",
+  "patched_files": [
+    "index.html",
+    "index-nosw.html",
+    "atlas.html",
+    "js/app.js",
+    "service-worker.js",
+    "README.md"
+  ],
+  "notes": [
+    "Visible app/build version aligned on landing and no-sw pages.",
+    "Atlas visible version aligned.",
+    "app.js runtime version aligned.",
+    "service worker cache name bumped to force refresh.",
+    "index app.js query string bumped for cache busting."
+  ]
+}

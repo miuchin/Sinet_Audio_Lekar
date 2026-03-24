@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SINET Atlas simptoma v16.0.0.118.0</title>
+  <title>SINET Atlas simptoma v16.0.0.118.23</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./css/main.css">
   <style>
@@ -37,14 +37,20 @@
     .atlas-panel h2{margin:0 0 8px 0;font-size:1.05rem;color:var(--text)}
     .atlas-panel .sub{color:var(--muted);font-size:.93rem;line-height:1.5}
     .atlas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 20px}
-    .atlas-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s box-shadow,.15s transform,.15s border-color}
+    .atlas-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s box-shadow,.15s transform,.15s border-color;text-align:left;width:100%}
     .atlas-card:hover{box-shadow:0 10px 24px rgba(15,23,42,.08);transform:translateY(-1px)}
     .atlas-card.active{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,.15)}
     .atlas-card h3{margin:0 0 6px 0;font-size:1rem;color:var(--text)}
     .atlas-card .meta{font-size:.88rem;color:var(--muted);line-height:1.45}
     .atlas-layout{display:grid;grid-template-columns:minmax(340px,1fr) minmax(380px,1.1fr);gap:14px;align-items:start}
+    .atlas-breadcrumb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px 0}
+    .crumb{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:#334155;font-weight:700;font-size:.9rem}
+    .crumb.active{background:#eef6ff;border-color:#bfdbfe;color:#0f3d66}
+    .atlas-step{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-weight:800;font-size:.9rem;margin:0 0 10px 0}
     .atlas-list{display:flex;flex-direction:column;gap:10px;max-height:72vh;overflow:auto;padding-right:4px}
-    .item{border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:#fbfdff}
+    .item{border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:#fbfdff;text-align:left;width:100%}
+    .item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .item-open{white-space:nowrap;padding:8px 12px;border:none;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer}
     .item.active{border-color:var(--primary);background:#eef6ff}
     .item-title{font-weight:800;color:var(--text);margin-bottom:6px}
     .item-desc{font-size:.93rem;color:#475569;line-height:1.45}
@@ -70,10 +76,11 @@
   <div class="atlas-wrap">
     <div class="atlas-top">
       <div class="atlas-actions">
-        <button class="atlas-btn ghost" onclick="location.href='index.html'">← Nazad u aplikaciju</button>
-        <button class="atlas-btn primary" onclick="location.href='index.html'">🏠 Početak</button>
+        <button class="atlas-btn ghost" onclick="atlasBack()">← NAZAD</button>
+        <button class="atlas-btn primary" onclick="atlasOpenCatalog()">📚 KATALOG</button>
+        <button class="atlas-btn ok" onclick="atlasHome()">🏠 POČETAK</button>
       </div>
-      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.0</div>
+      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.23</div>
     </div>
 
     <section class="atlas-hero">
@@ -107,7 +114,7 @@
     <section class="atlas-meta-grid">
       <div class="atlas-panel">
         <h2>📌 Kako se koristi Atlas</h2>
-        <div class="sub">1. Klikni oblast. 2. Otvori simptom. 3. Iz detalja idi u <b>Katalog</b>, <b>Listu</b>, <b>Favorite</b>, <b>Moje</b>, <b>Protokol</b> ili <b>AI</b>.</div>
+        <div class="sub">1. Klikni oblast. 2. U listi klikni simptom. 3. Dugme <b>📖 Otvori u Katalogu</b> otvara baš tu stavku u istom katalog prozoru, sa svim dugmićima, MKB-10 i frekvencijama.</div>
         <div class="legend">
           <div class="mini"><b>🔎 Pretraga</b><br><span class="muted">Radi po nazivu, opisu, MKB-10, oblastima i širim pojmovima.</span></div>
           <div class="mini"><b>🎵 Freq filter</b><br><span class="muted">Prikazuje samo simptome koji imaju povezane frekvencije.</span></div>
@@ -116,10 +123,12 @@
       </div>
       <div class="atlas-panel">
         <h2>⚡ Brzi ulazi</h2>
-        <div class="sub">Atlas je namenski brz pregled. Za puni radni tok koristi aplikaciju.</div>
+        <div class="sub">Atlas je brzi ulaz u Katalog. Uvodni ekran i pregled oblasti ostaju u Atlasu, a puni detalj simptoma se otvara kroz isti prozor kao u Katalogu.</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-          <button class="atlas-btn primary" style="flex:1;min-width:180px;" onclick="location.href='index.html'">📚 Povratak u aplikaciju</button>
-          <button class="atlas-btn purple" style="flex:1;min-width:180px;" onclick="location.href='index.html';">🤖 AI u aplikaciji</button>
+          <button class="atlas-btn primary" style="flex:1;min-width:180px;" onclick="atlasOpenCatalog()">📚 Otvori Katalog</button>
+          <button class="atlas-btn" style="flex:1;min-width:180px;" onclick="location.href='katalog-book.html'">📘 Katalog Book</button>
+          <button class="atlas-btn ghost" style="flex:1;min-width:180px;" onclick="atlasBack()">← Nazad</button>
+          <button class="atlas-btn purple" style="flex:1;min-width:180px;" onclick="sendBridge('ai', state.selected || '', currentSelectedSymptomName())">🤖 AI u aplikaciji</button>
         </div>
       </div>
     </section>
@@ -131,34 +140,213 @@
 
     <section class="atlas-layout">
       <div class="atlas-panel">
+        <div class="atlas-breadcrumb" id="atlasBreadcrumb">
+          <span class="crumb active">🗺️ Atlas</span>
+          <span class="crumb">📂 Oblast</span>
+          <span class="crumb">📋 Simptom</span>
+        </div>
+        <div class="atlas-step">1️⃣ Izaberi oblast → 2️⃣ Iz liste izaberi simptom → 3️⃣ Otvori tu istu stavku u Katalogu</div>
         <h2 id="listTitle">Simptomi</h2>
         <div id="listSub" class="sub">Klik na oblast prikazuje simptome. Pretraga radi preko celog kataloga.</div>
         <div id="atlasList" class="atlas-list"></div>
       </div>
-      <div class="atlas-panel">
+      <div class="atlas-panel" id="detailPanel">
+        <div class="atlas-step">3️⃣ Kompletan detalj se otvara u Katalogu</div>
         <h2>Detalj simptoma</h2>
-        <div class="sub">Otvori simptom da vidiš opis, MKB-10 i frekvencije.</div>
+        <div class="sub">Atlas služi za brz izbor. Kada otvoriš stavku u Katalogu, dobijaš isti puni detalj kao i u glavnoj aplikaciji. Za dublji pregled svih oblasti i opisa koristi 📘 Katalog Book.</div>
         <div id="detail"><div class="detail-copy">Ovde će se prikazati detalj izabrane stavke.</div></div>
       </div>
     </section>
   </div>
 <script>
-const state={items:[], filtered:[], selected:null, oblast:'', query:'', mode:'all'};
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const short=(s,n=180)=>{s=String(s||'').trim(); return s.length>n? s.slice(0,n-1)+'…':s};
-const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'dj').replace(/[^a-z0-9]+/g,' ').trim();
-const uniq=arr=>Array.from(new Set((arr||[]).filter(Boolean)));
-const hasFreq=it=>Array.isArray(it?.frekvencije) && it.frekvencije.length>0;
-const mkbCode=it=>String(it?.mkb10_obj?.sifra || it?.mkb10 || '').trim();
-const mkbDesc=it=>String(it?.mkb10_obj?.naziv || '').trim();
-const hasMkb=it=>{const c=mkbCode(it); const d=mkbDesc(it); return !!((c && c!=='NONE') || d);};
-function listItems(){ return state.filtered.length ? state.filtered : []; }
+const state = {
+  items: [],
+  filtered: [],
+  selected: null,
+  oblast: '',
+  query: '',
+  mode: 'all',
+  entryApplied: false
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const short = (s, n=180) => { s = String(s || '').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g,'dj').replace(/[^a-z0-9]+/g,' ').trim();
+const uniq = (arr) => Array.from(new Set((arr || []).filter(Boolean)));
+const hasFreq = (it) => Array.isArray(it?.frekvencije) && it.frekvencije.length > 0;
+const mkbCode = (it) => String(it?.mkb10_obj?.sifra || it?.mkb10 || '').trim();
+const mkbDesc = (it) => String(it?.mkb10_obj?.naziv || '').trim();
+const hasMkb = (it) => {
+  const c = mkbCode(it);
+  const d = mkbDesc(it);
+  return !!((c && c !== 'NONE') || d);
+};
+
+function updateBreadcrumb(){
+  const wrap = $('atlasBreadcrumb');
+  if (!wrap) return;
+  const selected = state.selected ? (state.items.find((it) => it.id === state.selected) || {}).simptom || 'Simptom' : '';
+  wrap.innerHTML = [
+    '<span class="crumb active">🗺️ Atlas</span>',
+    state.oblast ? `<span class="crumb active">📂 ${esc(state.oblast)}</span>` : '<span class="crumb">📂 Oblast</span>',
+    state.selected ? `<span class="crumb active">📋 ${esc(String(selected))}</span>` : '<span class="crumb">📋 Simptom</span>'
+  ].join('<span class="muted">→</span>');
+}
+
+function revealDetail(){
+  const panel = $('detailPanel');
+  if (!panel) return;
+  try { panel.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(_) {}
+}
+
+function safeParse(text, fallback) {
+  try { return text ? JSON.parse(text) : fallback; } catch(_) { return fallback; }
+}
+
+function deepMerge(base, patch) {
+  if (Array.isArray(base) || Array.isArray(patch)) return patch;
+  if (!base || typeof base !== 'object') return patch;
+  if (!patch || typeof patch !== 'object') return patch;
+  const out = { ...base };
+  for (const key of Object.keys(patch)) {
+    out[key] = key in base ? deepMerge(base[key], patch[key]) : patch[key];
+  }
+  return out;
+}
+
+function normalizeFreqArray(raw, fallbackSource = '') {
+  const arr = Array.isArray(raw) ? raw : [];
+  const out = [];
+  for (const f of arr) {
+    if (f == null) continue;
+    if (typeof f === 'number' || typeof f === 'string') {
+      const v = Number(f);
+      if (Number.isFinite(v)) out.push({ value: v, hz: v, naziv: `${v} Hz`, opis: '', svrha: '', izvor: fallbackSource || '' });
+      continue;
+    }
+    if (typeof f !== 'object') continue;
+    const v = Number(f.value ?? f.hz ?? f.freq ?? '');
+    const naziv = String(f.naziv || (Number.isFinite(v) ? `${v} Hz` : '')).trim();
+    const opis = String(f.opis || '').trim();
+    const svrha = String(f.svrha || f.funkcija || f.purpose || '').trim();
+    const izvor = String(f.izvor || fallbackSource || '').trim();
+    if (naziv || Number.isFinite(v) || opis || svrha) {
+      out.push({ ...f, value: Number.isFinite(v) ? v : f.value, hz: Number.isFinite(v) ? v : (f.hz ?? ''), naziv, opis, svrha, izvor });
+    }
+  }
+  return out;
+}
+
+function normalizeAtlasItem(item, index = 0) {
+  const src = (item && typeof item === 'object') ? item : {};
+  const symptomName = String(src.simptom || src.naziv || src.name || src.title || '').trim();
+  if (!symptomName) return null;
+  const id = String(src.id || src.uid || `atlas-${index + 1}`).trim();
+  const oblast = String(src.oblast || src.category || src.group || 'Ostalo').trim() || 'Ostalo';
+  const podOblast = String(src.podOblast || src.subcategory || '').trim();
+  const quickGroup = String(src.quickGroup || src.quick_group || '').trim();
+  const opis = String(src.opis || src.description || '').trim();
+  const preporuka = String(src.preporuka || src.recommendation || '').trim();
+  const mkb10 = String(src.mkb10 || src.mkb10_sifra || src.icd10 || '').trim();
+  const mkb10_obj = (src.mkb10_obj && typeof src.mkb10_obj === 'object') ? src.mkb10_obj : {};
+  const frekvencije = normalizeFreqArray(src.frekvencije || src.freqs || [], String(src.izvor || src.source || ''));
+  return {
+    ...src,
+    id,
+    uid: String(src.uid || id).trim(),
+    simptom: symptomName,
+    oblast,
+    podOblast,
+    quickGroup,
+    opis,
+    preporuka,
+    mkb10,
+    mkb10_obj: {
+      sifra: String(mkb10_obj.sifra || mkb10 || '').trim(),
+      naziv: String(mkb10_obj.naziv || mkb10_obj.opis || '').trim()
+    },
+    frekvencije,
+    tags: Array.isArray(src.tags) ? src.tags : [],
+    keywords: Array.isArray(src.keywords) ? src.keywords : [],
+    search_terms: Array.isArray(src.search_terms) ? src.search_terms : [],
+    alias_terms: Array.isArray(src.alias_terms) ? src.alias_terms : []
+  };
+}
+
+function loadLocalOverrides() {
+  const raw = localStorage.getItem('sinet_overrides_v1');
+  const parsed = safeParse(raw, {});
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+}
+
+function loadLocalUserSymptoms() {
+  const raw = localStorage.getItem('sinet_user_symptoms_v1');
+  const parsed = safeParse(raw, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function mergeLiveCatalog(baseItems) {
+  const normalizedBase = (Array.isArray(baseItems) ? baseItems : [])
+    .map((it, idx) => normalizeAtlasItem(it, idx))
+    .filter(Boolean);
+
+  const overrides = loadLocalOverrides();
+  const mergedBase = normalizedBase.map((it) => {
+    const patch = overrides?.[it.id];
+    return normalizeAtlasItem(patch ? deepMerge(it, patch) : it, 0) || it;
+  });
+
+  const userItems = loadLocalUserSymptoms()
+    .map((it, idx) => {
+      const normalized = normalizeAtlasItem({
+        ...it,
+        oblast: String(it?.oblast || 'MOJI SIMPTOMI').trim() || 'MOJI SIMPTOMI'
+      }, idx);
+      return normalized ? { ...normalized, _sourceBucket: 'mysymptoms' } : null;
+    })
+    .filter(Boolean);
+
+  const combined = [...mergedBase.filter((it) => !String(it.id || '').startsWith('usr-')), ...userItems];
+  const seen = new Set();
+  const out = [];
+  for (const it of combined) {
+    const key = String(it?.id || '').trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(it);
+  }
+  return out;
+}
+
+function getEntryContext() {
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = {
+    oblast: String(params.get('oblast') || '').trim(),
+    q: String(params.get('q') || '').trim(),
+    mode: String(params.get('mode') || '').trim()
+  };
+  const fromStorage = safeParse(localStorage.getItem('sinet_atlas_entry_bridge'), {}) || {};
+  return {
+    oblast: fromUrl.oblast || String(fromStorage.oblast || '').trim(),
+    q: fromUrl.q || String(fromStorage.q || '').trim(),
+    mode: fromUrl.mode || String(fromStorage.mode || '').trim() || 'all'
+  };
+}
+
+function clearEntryContext() {
+  try { localStorage.removeItem('sinet_atlas_entry_bridge'); } catch(_) {}
+}
+
+function listItems() {
+  return state.filtered.length ? state.filtered : [];
+}
+
 function searchTerms(q){
   const base = uniq(norm(q).split(/\s+/).filter(Boolean));
-  const extra=[];
-  const nq=norm(q);
-  const groups=[
+  const extra = [];
+  const nq = norm(q);
+  const groups = [
     {keys:['bol','bolovi','glavobolja','migrena'], terms:['bol','bolovi','glava','glavobolja','migrena','zglob','kicma','vrat']},
     {keys:['reuma','reumatoidni','artritis','artroza','ra'], terms:['reuma','reumatoidni','artritis','artroza','ra','zglob','zglobovi']},
     {keys:['stitna','stitna zlezda','hashimoto','hasimoto','tiroid'], terms:['stitna','hashimoto','hasimoto','tiroid','hormoni','autoimuno']},
@@ -166,151 +354,354 @@ function searchTerms(q){
     {keys:['koza','psorijaza','ekcem','osip'], terms:['koza','psorijaza','ekcem','osip','dermatitis','svrab']},
     {keys:['disanje','kasalj','sinusi','pluca','bronh'], terms:['disanje','kasalj','sinusi','pluca','bronh','respiratorno']}
   ];
-  groups.forEach(g=>{ if(g.keys.some(k=>nq.includes(k))) extra.push(...g.terms); });
+  groups.forEach((g) => { if (g.keys.some((k) => nq.includes(k))) extra.push(...g.terms); });
   return uniq(base.concat(extra));
 }
+
 function searchText(it){
   return norm([
-    it.simptom,it.opis,it.preporuka,it.oblast,it.podOblast,it.quickGroup,
-    mkbCode(it),mkbDesc(it),
-    (it.tags||[]).join(' '),(it.keywords||[]).join(' '),(it.search_terms||[]).join(' '),(it.alias_terms||[]).join(' '),
-    (it.frekvencije||[]).map(f=>[f?.naziv,f?.opis,f?.svrha,f?.value,f?.hz].join(' ')).join(' ')
+    it.simptom, it.opis, it.preporuka, it.oblast, it.podOblast, it.quickGroup,
+    mkbCode(it), mkbDesc(it),
+    (it.tags || []).join(' '), (it.keywords || []).join(' '), (it.search_terms || []).join(' '), (it.alias_terms || []).join(' '),
+    (it.frekvencije || []).map((f) => [f?.naziv, f?.opis, f?.svrha, f?.value, f?.hz].join(' ')).join(' ')
   ].join(' '));
 }
-function score(it,q){
-  if(!q) return 1;
-  const title=norm(it.simptom||'');
-  const opis=norm(it.opis||'');
-  const oblast=norm((it.oblast||'')+' '+(it.podOblast||'')+' '+(it.quickGroup||''));
-  const code=norm(mkbCode(it));
-  const desc=norm(mkbDesc(it));
-  const blob=searchText(it);
-  let s=0;
-  if(title===q) s+=140;
-  else if(title.startsWith(q)) s+=95;
-  else if(title.includes(q)) s+=70;
-  if(code && (code===q || code.includes(q))) s+=48;
-  if(desc.includes(q)) s+=42;
-  if(oblast.includes(q)) s+=30;
-  if(opis.includes(q)) s+=24;
-  if(blob.includes(q)) s+=10;
-  for(const term of searchTerms(q)){
-    if(!term || term.length<2 || term===q) continue;
-    if(title.includes(term)) s+=12;
-    else if(code.includes(term) || desc.includes(term)) s+=8;
-    else if(oblast.includes(term)) s+=7;
-    else if(blob.includes(term)) s+=4;
+
+function score(it, q){
+  if (!q) return 1;
+  const title = norm(it.simptom || '');
+  const opis = norm(it.opis || '');
+  const oblast = norm((it.oblast || '') + ' ' + (it.podOblast || '') + ' ' + (it.quickGroup || ''));
+  const code = norm(mkbCode(it));
+  const desc = norm(mkbDesc(it));
+  const blob = searchText(it);
+  let s = 0;
+  if (title === q) s += 140;
+  else if (title.startsWith(q)) s += 95;
+  else if (title.includes(q)) s += 70;
+  if (code && (code === q || code.includes(q))) s += 48;
+  if (desc.includes(q)) s += 42;
+  if (oblast.includes(q)) s += 30;
+  if (opis.includes(q)) s += 24;
+  if (blob.includes(q)) s += 10;
+  for (const term of searchTerms(q)) {
+    if (!term || term.length < 2 || term === q) continue;
+    if (title.includes(term)) s += 12;
+    else if (code.includes(term) || desc.includes(term)) s += 8;
+    else if (oblast.includes(term)) s += 7;
+    else if (blob.includes(term)) s += 4;
   }
-  if(hasFreq(it)) s+=1;
-  if(hasMkb(it)) s+=1;
+  if (hasFreq(it)) s += 1;
+  if (hasMkb(it)) s += 1;
   return s;
 }
+
 function updateKpis(items){
-  $('kpiTotal').textContent=items.length;
-  $('kpiFreq').textContent=items.filter(hasFreq).length;
-  $('kpiMkb').textContent=items.filter(hasMkb).length;
-  $('kpiOblast').textContent=new Set(items.map(it=>it.oblast||'Ostalo')).size;
+  $('kpiTotal').textContent = String(items.length);
+  $('kpiFreq').textContent = String(items.filter(hasFreq).length);
+  $('kpiMkb').textContent = String(items.filter(hasMkb).length);
+  $('kpiOblast').textContent = String(new Set(items.map((it) => it.oblast || 'Ostalo')).size);
 }
+
 function filteredBase(){
   let items = [...state.items];
-  if(state.mode==='freq') items = items.filter(hasFreq);
-  if(state.mode==='mkb') items = items.filter(hasMkb);
-  if(state.oblast) items = items.filter(it => (it.oblast||'Ostalo') === state.oblast);
+  if (state.mode === 'freq') items = items.filter(hasFreq);
+  if (state.mode === 'mkb') items = items.filter(hasMkb);
+  if (state.oblast) items = items.filter((it) => (it.oblast || 'Ostalo') === state.oblast);
   return items;
 }
+
 function renderOblasti(){
-  const map=new Map();
-  filteredBase().forEach(it=>{
-    const k=it.oblast||'Ostalo';
-    const v=map.get(k)||{count:0,freq:0,mkb:0};
-    v.count++;
-    if(hasFreq(it)) v.freq++;
-    if(hasMkb(it)) v.mkb++;
-    map.set(k,v);
+  const map = new Map();
+  filteredBase().forEach((it) => {
+    const key = it.oblast || 'Ostalo';
+    const val = map.get(key) || { count:0, freq:0, mkb:0, mine:0 };
+    val.count += 1;
+    if (hasFreq(it)) val.freq += 1;
+    if (hasMkb(it)) val.mkb += 1;
+    if (String(it.id || '').startsWith('usr-') || it._sourceBucket === 'mysymptoms') val.mine += 1;
+    map.set(key, val);
   });
-  const html=[...map.entries()]
-    .sort((a,b)=>b[1].count-a[1].count || a[0].localeCompare(b[0],'sr'))
-    .map(([oblast,v])=>`<div class="atlas-card ${state.oblast===oblast?'active':''}" onclick="openOblast(${JSON.stringify(oblast)})"><h3>📌 ${esc(oblast)}</h3><div class="meta">${v.count} simptoma • ${v.freq} sa frekvencijama • ${v.mkb} sa MKB-10</div></div>`)
+
+  const html = [...map.entries()]
+    .sort((a,b) => b[1].count - a[1].count || a[0].localeCompare(b[0], 'sr'))
+    .map(([oblast, v]) => `<button type="button" class="atlas-card ${state.oblast === oblast ? 'active' : ''}" data-oblast="${esc(oblast)}"><h3>📌 ${esc(oblast)}</h3><div class="meta">${v.count} simptoma • ${v.freq} sa frekvencijama • ${v.mkb} sa MKB-10${v.mine ? ` • ${v.mine} iz Mojih simptoma` : ''}</div></button>`)
     .join('');
-  $('oblastGrid').innerHTML=html || '<div class="list-empty">Nema oblasti za trenutni filter.</div>';
+
+  $('oblastGrid').innerHTML = html || '<div class="list-empty">Nema oblasti za trenutni filter.</div>';
 }
+
 function statusText(total){
-  const mode = state.mode==='freq' ? 'Samo sa frekvencijama' : state.mode==='mkb' ? 'Samo sa MKB-10' : 'Ceo atlas';
+  const mode = state.mode === 'freq' ? 'Samo sa frekvencijama' : state.mode === 'mkb' ? 'Samo sa MKB-10' : 'Ceo atlas';
   const oblast = state.oblast ? ` • oblast: ${state.oblast}` : '';
   const query = state.query ? ` • upit: ${state.query}` : '';
   return `${mode} • rezultata: ${total}${oblast}${query}`;
 }
+
 function renderList(items){
-  const modeLabel = state.mode==='freq' ? ' — samo sa frekvencijama' : state.mode==='mkb' ? ' — samo sa MKB-10' : '';
+  const modeLabel = state.mode === 'freq' ? ' — samo sa frekvencijama' : state.mode === 'mkb' ? ' — samo sa MKB-10' : '';
   $('listTitle').textContent = state.query ? `Rezultati za: ${state.query}` : (state.oblast ? `Oblast: ${state.oblast}${modeLabel}` : `Simptomi${modeLabel}`);
-  $('listSub').textContent = state.query ? `${items.length} rezultata. Klik otvara puni opis i frekvencije.` : (state.oblast ? `${items.length} simptoma u oblasti.` : 'Izaberi oblast, “Ceo atlas” ili unesi pojam za punu listu.');
-  if(!items.length){ $('atlasList').innerHTML='<div class="list-empty">Nema rezultata za ovaj izbor.</div>'; return; }
-  $('atlasList').innerHTML = items.map(it=>{
+  $('listSub').textContent = state.query ? `${items.length} rezultata. Klik na simptom ili “Otvori u Katalogu” za kompletan prikaz.` : (state.oblast ? `${items.length} simptoma u oblasti. Sledeći korak: otvori simptom u Katalogu.` : 'Izaberi oblast, “Ceo atlas” ili unesi pojam za punu listu.');
+
+  if (!items.length) {
+    $('atlasList').innerHTML = '<div class="list-empty">Nema rezultata za ovaj izbor.</div>';
+    return;
+  }
+
+  $('atlasList').innerHTML = items.map((it) => {
     const code = mkbCode(it) || 'bez MKB';
     const name = mkbDesc(it) || '';
-    const freqCount=(it.frekvencije||[]).length;
-    return `<div class="item ${state.selected===it.id?'active':''}" onclick="selectItem(${JSON.stringify(it.id)})"><div class="item-title">${esc(it.simptom||'(bez naziva)')}</div><div class="item-desc">${esc(short(it.opis||'Opis nije popunjen.',160))}</div><div class="pills"><span class="pill">📂 ${esc(it.oblast||'Ostalo')}</span><span class="pill">🏷️ ${esc(code)}</span><span class="pill">🎵 ${freqCount}</span></div>${name?`<div class="item-desc" style="margin-top:8px; font-size:.88rem; color:#64748b;">${esc(short(name,180))}</div>`:''}</div>`;
+    const freqCount = (it.frekvencije || []).length;
+    const mine = String(it.id || '').startsWith('usr-') || it._sourceBucket === 'mysymptoms';
+    return `<div class="item ${state.selected === it.id ? 'active' : ''}" data-id="${esc(it.id)}"><div class="item-head"><div><div class="item-title">${esc(it.simptom || '(bez naziva)')}</div><div class="item-desc">${esc(short(it.opis || 'Opis nije popunjen.', 160))}</div></div><button type="button" class="item-open" data-open-item="${esc(it.id)}">📖 Otvori u Katalogu</button></div><div class="pills"><span class="pill">📂 ${esc(it.oblast || 'Ostalo')}</span><span class="pill">🏷️ ${esc(code)}</span><span class="pill">🎵 ${freqCount}</span>${mine ? '<span class="pill">🧬 Moji simptomi</span>' : ''}</div>${name ? `<div class="item-desc" style="margin-top:8px; font-size:.88rem; color:#64748b;">${esc(short(name, 180))}</div>` : ''}<div class="actions" style="margin-top:10px;grid-template-columns:repeat(3,minmax(0,1fr));"><button class="a-catalog" data-action="catalog" data-id="${esc(it.id)}">📖 Detalj</button><button class="a-list" data-action="playlist" data-id="${esc(it.id)}">➕ U listu</button><button class="a-fav" data-action="favorite" data-id="${esc(it.id)}">⭐ Favorit</button><button class="a-my" data-action="mysymptoms" data-id="${esc(it.id)}">🧬 Moje</button><button class="a-proto" data-action="protocol" data-id="${esc(it.id)}">📑 Protokol</button><button class="a-ai" data-action="ai" data-id="${esc(it.id)}">🤖 AI</button></div></div>`;
   }).join('');
 }
+
 function renderDetail(it){
-  if(!it){ $('detail').innerHTML='<div class="detail-copy">Ovde će se prikazati detalj izabrane stavke.</div>'; return; }
-  const freqs=(it.frekvencije||[]).slice(0,24);
-  const code=mkbCode(it);
-  const name=mkbDesc(it);
-  $('detail').innerHTML=`<h3 class="detail-title">${esc(it.simptom||'(bez naziva)')}</h3>
-    <div class="pills"><span class="pill">📂 ${esc(it.oblast||'Ostalo')}</span>${it.podOblast?`<span class="pill">🧩 ${esc(it.podOblast)}</span>`:''}${it.quickGroup?`<span class="pill">🏷️ ${esc(it.quickGroup)}</span>`:''}<span class="pill">🏷️ ${esc(code||'bez MKB-10')}</span><span class="pill">🎵 ${(it.frekvencije||[]).length} frekvencija</span></div>
-    <div class="detail-block"><div class="detail-copy">${esc(it.opis||'Opis nije popunjen za ovu stavku.')}</div></div>
-    <div class="detail-block"><h4 style="margin:0 0 8px 0;">🏷️ MKB-10</h4><div class="detail-copy">${esc(name || 'MKB-10 opis nije povezan za ovu stavku.')}</div></div>
-    ${it.preporuka?`<div class="detail-block"><h4 style="margin:0 0 8px 0;">💡 Preporuka</h4><div class="detail-copy">${esc(it.preporuka)}</div></div>`:''}
-    <div class="detail-block"><h4 style="margin:0 0 8px 0;">🎵 Frekvencije</h4>${freqs.length?freqs.map(f=>`<div class="freq"><strong>${esc(f.naziv || ((f.value??f.hz)+' Hz'))}</strong>${f.opis?`<div style="margin-top:6px; color:#475569;">${esc(f.opis)}</div>`:''}</div>`).join(''):'<div class="detail-copy">Ovaj simptom trenutno nema povezane frekvencije.</div>'}</div>
-    <div class="actions">
-      <button class="a-catalog" onclick="sendBridge('catalog', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">📖 Otvori</button>
-      <button class="a-list" onclick="sendBridge('playlist', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">➕ U listu</button>
-      <button class="a-fav" onclick="sendBridge('favorite', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">⭐ Favorit</button>
-      <button class="a-my" onclick="sendBridge('mysymptoms', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">🧬 Moje</button>
-      <button class="a-proto" onclick="sendBridge('protocol', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">📑 Protokol</button>
-      <button class="a-ai" onclick="sendBridge('ai', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom||'')})">🤖 AI</button>
-      <button class="a-copy" onclick="copyText(${JSON.stringify(it.simptom||'')})">📋 Kopiraj naziv</button>
+  updateBreadcrumb();
+  if (!it) {
+    $('detail').innerHTML = '<div class="detail-copy">Atlas je brzi pregled oblasti i simptoma. Klik na simptom ili “📖 Otvori u Katalogu” otvara isti kompletan prozor kao u Katalogu: opis, MKB-10, frekvencije i sva dugmad za rad.</div>';
+    return;
+  }
+  const code = mkbCode(it);
+  const name = mkbDesc(it);
+  const freqCount = (it.frekvencije || []).length;
+  $('detail').innerHTML = `<h3 class="detail-title">${esc(it.simptom || '(bez naziva)')}</h3>
+    <div class="detail-copy" style="margin-bottom:12px;">Atlas sada koristi isti detalj kao Katalog. Klikom ispod prelaziš direktno na poznati katalog prozor sa svim akcijama.</div>
+    <div class="pills"><span class="pill">📂 ${esc(it.oblast || 'Ostalo')}</span><span class="pill">🏷️ ${esc(code || 'bez MKB-10')}</span><span class="pill">🎵 ${freqCount} frekvencija</span>${name ? `<span class="pill">🩺 ${esc(short(name, 48))}</span>` : ''}</div>
+    <div class="actions" style="margin-top:12px;">
+      <button class="a-catalog" onclick="sendBridge('catalog', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">📖 OTVORI DETALJ U KATALOGU</button>
+      <button class="a-list" onclick="sendBridge('playlist', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">➕ U LISTU</button>
+      <button class="a-fav" onclick="sendBridge('favorite', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">⭐ FAVORIT</button>
+      <button class="a-my" onclick="sendBridge('mysymptoms', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">🧬 MOJE</button>
+      <button class="a-proto" onclick="sendBridge('protocol', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">📑 PROTOKOL</button>
+      <button class="a-ai" onclick="sendBridge('ai', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">🤖 AI</button>
     </div>`;
 }
+
 function applyMode(mode){
   state.mode = mode || 'all';
-  if(state.query){ doSearch(); return; }
-  if(state.oblast){ state.filtered = filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); }
-  else { state.filtered = []; state.selected=''; }
+  if (state.query) { doSearch(); return; }
+  if (state.oblast) {
+    state.filtered = filteredBase().sort((a,b) => String(a.simptom || '').localeCompare(String(b.simptom || ''), 'sr', {sensitivity:'base'}));
+    state.selected = state.filtered[0]?.id || '';
+  } else {
+    state.filtered = [];
+    state.selected = '';
+  }
   $('status').textContent = statusText(state.filtered.length || filteredBase().length);
   render();
 }
-function openOblast(oblast){ state.oblast=oblast; state.query=''; $('q').value=''; state.filtered=filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
-function selectItem(id){ state.selected=id; renderDetail((listItems().find(it=>it.id===id)||state.items.find(it=>it.id===id))); renderList(listItems()); }
-function doSearch(){ const raw=$('q').value.trim(); const q=norm(raw); state.query=raw; state.oblast=''; if(!q){ state.filtered=[]; state.selected=''; $('status').textContent='Prvo izaberi oblast ili unesi pojam.'; render(); return; } const base=filteredBase(); const scored=base.map(it=>({it,s:score(it,q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s||String(a.it.simptom||'').localeCompare(String(b.it.simptom||''),'sr',{sensitivity:'base'})); state.filtered=scored.map(x=>x.it); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
-function openAll(){ state.query=''; state.oblast=''; $('q').value=''; state.filtered=filteredBase().sort((a,b)=>String(a.simptom||'').localeCompare(String(b.simptom||''),'sr',{sensitivity:'base'})); state.selected=state.filtered[0]?.id||''; $('status').textContent=statusText(state.filtered.length); render(); }
-function render(){ renderOblasti(); const items=listItems(); renderList(items); renderDetail(items.find(it=>it.id===state.selected)||null); }
-function copyText(txt){ navigator.clipboard?.writeText(String(txt||'')); $('status').textContent='Naziv simptoma je kopiran.'; }
-function sendBridge(action,id,symptom){ localStorage.setItem('sinet_atlas_bridge', JSON.stringify({action,id,symptom,query:symptom})); location.href='index.html'; }
-function resetAtlas(){ state.query=''; state.oblast=''; state.filtered=[]; state.selected=''; state.mode='all'; $('q').value=''; $('status').textContent='Prvo izaberi oblast ili unesi pojam.'; render(); }
+
+function openOblast(oblast){
+  state.oblast = oblast;
+  state.query = '';
+  $('q').value = '';
+  state.filtered = filteredBase().sort((a,b) => String(a.simptom || '').localeCompare(String(b.simptom || ''), 'sr', {sensitivity:'base'}));
+  state.selected = '';
+  $('status').textContent = state.filtered.length ? `Otvorena oblast: ${oblast} • ${state.filtered.length} simptoma. Sledeći korak: izaberi simptom.` : `Otvorena oblast: ${oblast} • nema simptoma za prikaz.`;
+  render();
+}
+
+function selectItem(id, action = 'catalog'){
+  state.selected = id;
+  const it = (listItems().find((it) => it.id === id) || state.items.find((it) => it.id === id));
+  renderDetail(it);
+  renderList(listItems());
+  $('status').textContent = it ? `Otvoren izbor za simptom: ${it.simptom || id}. Kompletan detalj se otvara u Katalogu.` : 'Simptom nije pronađen.';
+  revealDetail();
+  if (it && action) sendBridge(action, it.id, it.simptom || '');
+}
+
+function doSearch(){
+  const raw = $('q').value.trim();
+  const q = norm(raw);
+  state.query = raw;
+  state.oblast = '';
+  if (!q) {
+    state.filtered = [];
+    state.selected = '';
+    $('status').textContent = 'Prvo izaberi oblast ili unesi pojam.';
+    render();
+    return;
+  }
+  const base = filteredBase();
+  const scored = base.map((it) => ({ it, s: score(it, q) }))
+    .filter((x) => x.s > 0)
+    .sort((a,b) => b.s - a.s || String(a.it.simptom || '').localeCompare(String(b.it.simptom || ''), 'sr', {sensitivity:'base'}));
+  state.filtered = scored.map((x) => x.it);
+  state.selected = '';
+  $('status').textContent = statusText(state.filtered.length) + (state.filtered.length ? ' • Izaberi simptom iz liste.' : '');
+  render();
+}
+
+function openAll(){
+  state.query = '';
+  state.oblast = '';
+  $('q').value = '';
+  state.filtered = filteredBase().sort((a,b) => String(a.simptom || '').localeCompare(String(b.simptom || ''), 'sr', {sensitivity:'base'}));
+  state.selected = '';
+  $('status').textContent = statusText(state.filtered.length) + (state.filtered.length ? ' • Izaberi simptom iz liste.' : '');
+  render();
+}
+
+function render(){
+  renderOblasti();
+  const items = listItems();
+  renderList(items);
+  renderDetail(items.find((it) => it.id === state.selected) || null);
+  updateBreadcrumb();
+}
+
+async function copyText(txt){
+  try {
+    await navigator.clipboard?.writeText(String(txt || ''));
+    $('status').textContent = 'Naziv simptoma je kopiran.';
+  } catch(_) {
+    $('status').textContent = 'Kopiranje nije uspelo na ovom uređaju.';
+  }
+}
+
+
+function currentSelectedSymptomName(){
+  const it = (listItems().find((x) => x.id === state.selected) || state.items.find((x) => x.id === state.selected));
+  return String(it?.simptom || state.query || '');
+}
+
+function atlasBack(){
+  try {
+    if (state.selected) {
+      state.selected = '';
+      render();
+      $('status').textContent = state.oblast ? `Otvorena oblast: ${state.oblast}. Izaberi drugi simptom ili se vrati.` : 'Izaberi oblast ili unesi pojam.';
+      return;
+    }
+    if (state.oblast || state.query) {
+      resetAtlas();
+      return;
+    }
+  } catch(_) {}
+  try {
+    if (window.history.length > 1) { window.history.back(); return; }
+  } catch(_) {}
+  sendBridge('catalog_only', '', '');
+}
+
+function atlasHome(){
+  sendBridge('home', '', '');
+}
+
+function atlasOpenCatalog(){
+  const symptom = currentSelectedSymptomName();
+  sendBridge('catalog_only', state.selected || '', symptom);
+}
+
+function sendBridge(action, id, symptom){
+  try {
+    localStorage.setItem('sinet_atlas_bridge', JSON.stringify({
+      action,
+      id,
+      symptom,
+      query: symptom,
+      oblast: state.oblast || '',
+      mode: state.mode || 'all',
+      from: 'atlas',
+      ts: Date.now()
+    }));
+  } catch(_) {}
+  location.href = 'index.html';
+}
+
+function resetAtlas(){
+  state.query = '';
+  state.oblast = '';
+  state.filtered = [];
+  state.selected = '';
+  state.mode = 'all';
+  $('q').value = '';
+  $('status').textContent = 'Prvo izaberi oblast ili unesi pojam.';
+  render();
+}
+
+
+function bindAtlasInteractions(){
+  $('oblastGrid').addEventListener('click', (e) => {
+    const card = e.target.closest('[data-oblast]');
+    if (!card) return;
+    const oblast = String(card.getAttribute('data-oblast') || '').trim();
+    if (!oblast) return;
+    openOblast(oblast);
+  });
+  $('atlasList').addEventListener('click', (e) => {
+    const actionBtn = e.target.closest('[data-action]');
+    if (actionBtn) {
+      const id = String(actionBtn.getAttribute('data-id') || '').trim();
+      const action = String(actionBtn.getAttribute('data-action') || 'catalog').trim();
+      if (!id) return;
+      const it = (listItems().find((x) => x.id === id) || state.items.find((x) => x.id === id));
+      if (!it) return;
+      state.selected = id;
+      renderDetail(it);
+      renderList(listItems());
+      sendBridge(action, it.id, it.simptom || '');
+      return;
+    }
+    const trigger = e.target.closest('[data-open-item]');
+    const row = e.target.closest('[data-id]');
+    const id = String((trigger?.getAttribute('data-open-item')) || (row?.getAttribute('data-id')) || '').trim();
+    if (!id) return;
+    selectItem(id, 'catalog');
+  });
+}
+
 async function init(){
-  const res=await fetch('./data/SINET_CATALOG.json');
-  const data=await res.json();
-  state.items=(data.items||[]).filter(it=>String(it.status||'active')!=='archived');
+  const res = await fetch('./data/SINET_CATALOG.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Atlas catalog load failed: ${res.status}`);
+  const data = await res.json();
+  state.items = mergeLiveCatalog(data.items || []);
   updateKpis(state.items);
   renderOblasti();
   renderList([]);
-  $('searchBtn').onclick=doSearch;
-  $('allBtn').onclick=openAll;
-  $('resetBtn').onclick=resetAtlas;
-  $('q').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); doSearch();}});
-  document.querySelectorAll('[data-filter]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const type=btn.getAttribute('data-filter');
-      const value=btn.getAttribute('data-value') || '';
-      if(type==='term'){ $('q').value=value; doSearch(); }
-      if(type==='mode'){ applyMode(value); }
+  renderDetail(null);
+  updateBreadcrumb();
+
+  const entry = getEntryContext();
+  if (entry.mode && ['all','freq','mkb'].includes(entry.mode)) state.mode = entry.mode;
+  if (entry.oblast) {
+    state.entryApplied = true;
+    openOblast(entry.oblast);
+  } else if (entry.q) {
+    state.entryApplied = true;
+    $('q').value = entry.q;
+    doSearch();
+  }
+  clearEntryContext();
+
+  bindAtlasInteractions();
+  $('searchBtn').onclick = doSearch;
+  $('allBtn').onclick = openAll;
+  $('resetBtn').onclick = resetAtlas;
+  if (!state.entryApplied) $('status').textContent = 'Izaberi oblast ili unesi pojam. Atlas prikazuje živi katalog sa MKB-10 i frekvencijama.';
+  $('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+  document.querySelectorAll('[data-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const type = btn.getAttribute('data-filter');
+      const value = btn.getAttribute('data-value') || '';
+      if (type === 'term') { $('q').value = value; doSearch(); }
+      if (type === 'mode') { applyMode(value); }
     });
   });
 }
-init().catch(err=>{ $('status').textContent='Greška pri učitavanju Atlasa.'; console.error(err); });
-window.openOblast=openOblast; window.selectItem=selectItem; window.sendBridge=sendBridge; window.copyText=copyText;
+
+init().catch((err) => {
+  console.error(err);
+  $('status').textContent = 'Greška pri učitavanju Atlasa. Pokreni aplikaciju preko servera i proveri data/SINET_CATALOG.json.';
+});
+
+window.openOblast = openOblast;
+window.selectItem = selectItem;
+window.sendBridge = sendBridge;
+window.copyText = copyText;
 </script>
 </body>
 </html>
