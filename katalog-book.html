@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SINET Katalog Book • 5682 simptoma</title>
+  <title>SINET Katalog Book • Runtime katalog simptoma</title>
   <meta name="description" content="Korisnički vodič kroz SINET katalog simptoma, oblasti, MKB-10 šifre, preporuke, frekvencije i holistički pristup." />
   <style>
     :root {
@@ -461,7 +461,7 @@
           <div class="brand-badge">📘</div>
           <div>
             <div class="title">SINET Katalog Book</div>
-            <div class="subtitle">Knjiga kataloga: 5682 simptoma sa direktnim putem ka poznatoj kartici aplikacije</div>
+            <div class="subtitle" id="bookSubtitle">Knjiga kataloga sa direktnim putem ka poznatoj kartici aplikacije.</div>
           </div>
         </div>
 
@@ -471,19 +471,19 @@
 
         <div class="quick-stats">
           <div class="stat">
-            <div class="n" id="statTotal">5619</div>
+            <div class="n" id="statTotal">…</div>
             <div class="l">Ukupno simptoma</div>
           </div>
           <div class="stat">
-            <div class="n" id="statAreas">177</div>
+            <div class="n" id="statAreas">…</div>
             <div class="l">Oblasti</div>
           </div>
           <div class="stat">
-            <div class="n" id="statMkb">5619</div>
+            <div class="n" id="statMkb">…</div>
             <div class="l">Sa MKB-10</div>
           </div>
           <div class="stat">
-            <div class="n" id="statFreq">5619</div>
+            <div class="n" id="statFreq">…</div>
             <div class="l">Sa frekvencijama</div>
           </div>
         </div>
@@ -603,7 +603,7 @@
 
   
   <script>
-    const DATA_URLS = ['./data/SINET_CATALOG.json', './SINET_CATALOG.json', './data/SINET_CATALOG_normativni_5619_plus_okcipitalna_bundles.json'];
+    const DATA_URLS = ['./data/SINET_CATALOG.json', './SINET_CATALOG.json'];
     const UI_STATE_KEY = 'sinet_book_ui_state_v2';
     const UI_HISTORY_KEY = 'sinet_book_ui_history_v2';
     const SELECTION_KEY = 'sinet_book_selection';
@@ -902,6 +902,9 @@
       if (!Array.isArray(loaded)) {
         els.list.innerHTML = '<div class="empty">Katalog nije učitan. Postavi ovaj HTML pored fajla <strong>SINET_CATALOG.json</strong> i otvori ga preko servera aplikacije.</div>';
         els.resultsMeta.textContent = 'Katalog nije učitan';
+        document.title = 'SINET Katalog Book • katalog nije učitan';
+        const subtitleEl = document.getElementById('bookSubtitle');
+        if (subtitleEl) subtitleEl.textContent = 'Katalog nije učitan. Pokreni aplikaciju preko servera i proveri data/SINET_CATALOG.json.';
         return renderEmptyDetails('Katalog nije učitan.');
       }
       state.items = loaded.map((item, idx) => {
@@ -938,6 +941,9 @@
       document.getElementById('statAreas').textContent = String(counts.size);
       document.getElementById('statMkb').textContent = String(state.items.filter(it => it._mkb).length);
       document.getElementById('statFreq').textContent = String(state.items.filter(it => (it._enabledFreqs || []).length).length);
+      document.title = `SINET Katalog Book • ${state.items.length} simptoma`;
+      const subtitleEl = document.getElementById('bookSubtitle');
+      if (subtitleEl) subtitleEl.textContent = `Knjiga kataloga: ${state.items.length} simptoma sa direktnim putem ka poznatoj kartici aplikacije.`;
 
       const entry = getEntryContext();
       const stored = loadUiState();

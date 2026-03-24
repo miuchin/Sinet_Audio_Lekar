@@ -1,4 +1,4 @@
-const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.29';
+const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.31';
 const CORE_ASSETS = [
   './',
   './index.html',

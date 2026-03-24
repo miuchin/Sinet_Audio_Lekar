@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SINET Mobile QA v16.0.0.118.29</title>
+  <title>SINET Mobile QA v16.0.0.118.31</title>
   <style>
     :root{--primary:#4A90E2;--dark:#203247;--bg:#f4f8fc;--card:#ffffff;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;--muted:#64748b;}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -48,7 +48,7 @@
     <div class="topline">
       <div>
         <div class="title">📱 SINET Mobile QA / Test prikaza</div>
-        <div class="sub">Brzi pregled ekrana bez DevTools-a • v16.0.0.118.29</div>
+        <div class="sub">Brzi pregled ekrana bez DevTools-a • v16.0.0.118.31</div>
       </div>
       <div class="actions">
         <button class="btn white" onclick="goBack()">⬅ Nazad</button>
@@ -167,7 +167,7 @@
       const fail = results.filter(r=>r.status==='fail').length;
       const summary = fail>0 ? 'problem_detected' : (warn>0 ? 'partial' : (pass===steps.length ? 'all_ok' : 'in_progress'));
       return {
-        app:'SINET Mobile QA v1', version:'16.0.0.118.29', created_at:new Date().toISOString(),
+        app:'SINET Mobile QA v1', version:'16.0.0.118.31', created_at:new Date().toISOString(),
         viewport:{width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio||1},
         screen:{width:screen.width,height:screen.height},
         orientation: window.innerWidth>window.innerHeight?'landscape':'portrait',

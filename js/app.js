@@ -1,7 +1,7 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.30 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
+  Version: 16.0.0.118.31 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
   Author: miuchins | Co-author: SINET AI
 */
 
@@ -10,7 +10,7 @@ import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
 import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
 import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.30";
+const SINET_APP_VERSION = "16.0.0.118.31";
 
 
 
