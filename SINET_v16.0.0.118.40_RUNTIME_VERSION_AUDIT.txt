@@ -1,0 +1,43 @@
+== VERSION MARKERS ==
+index.html:6:  <title>SINET Audio Lekar v16.0.0.118.40</title>
+index.html:261:      /* v16.0.0.118.40: Mobile catalog header relief for older phones */
+index.html:352:      window.SINET_BUILD_VERSION = '16.0.0.118.40';
+index.html:469:                <span data-sinet-build-version>v16.0.0.118.40</span> <span data-sinet-build-label>APP VERSION</span><br>miuchins &amp; SINET AI
+index.html:492:                  <span data-sinet-build-version>v16.0.0.118.40</span>
+index.html:1867:    <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+index.html:1868:    <script type="module" src="js/app.js?v=16.0.0.118.40"></script>
+index-nosw.html:6:  <title>SINET Audio Lekar v16.0.0.118.40 (NO-SW)</title>
+index-nosw.html:323:                <span data-sinet-build-version>v16.0.0.118.40</span> <span data-sinet-build-label>APP VERSION</span><br>miuchins &amp; SINET AI
+index-nosw.html:345:                  <span data-sinet-build-version>v16.0.0.118.40</span>
+index-nosw.html:1420:      window.SINET_BUILD_VERSION = '16.0.0.118.40';
+index-nosw.html:1495:    <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+index-nosw.html:1496:    <script type="module" src="js/app.js?v=16.0.0.118.40"></script>
+atlas.html:6:  <title>SINET Atlas simptoma v16.0.0.118.40</title>
+atlas.html:74:  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+atlas.html:75:  <script src="js/sinet-area-export.js?v=16.0.0.118.40"></script>
+atlas.html:87:      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.40</div>
+anamneza.html:6:    <title>Anamneza · Dijagnostički vodič v16.0.0.118.40 (srpski)</title>
+anamneza.html:38:        <span class="navbar-brand"><i class="fas fa-notes-medical me-2"></i>Anamneza · Dijagnostika <span class="badge bg-light text-dark ms-2">v16.0.0.118.40</span></span>
+anamneza.html:893:<script src="js/sinet-anamneza-export.js?v=16.0.0.118.40" defer></script>
+service-worker.js:1:const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.40';
+katalog-book.html:445:  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+katalog-book.html:446:  <script src="js/sinet-area-export.js?v=16.0.0.118.40"></script>
+pages/anamneza-print.html:1:<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SINET Anamneza • Print / Export v16.0.0.118.40</title><style>:root{--bg:#f7fbff;--line:#d9e7f5;--ink:#14324a;--muted:#5f7288}.empty{padding:24px;border:1px dashed var(--line);border-radius:14px;background:#fff;color:var(--muted)} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.actions{display:flex;gap:8px;flex-wrap:wrap}button,a.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;text-decoration:none;color:var(--ink);font-weight:700}.page{padding:14px;max-width:1500px;margin:0 auto}</style></head><body><div class="topbar"><div><div style="font-weight:800;">SINET Anamneza • Print / Export</div><div style="color:var(--muted);">v16.0.0.118.40</div></div><div class="actions"><a class="btn" href="../anamneza.html">🩺 Anamneza</a><button onclick="history.back()">⬅️ Nazad</button><button onclick="exportAnamHtml()">⬇ HTML</button><button onclick="exportAnamTxt()">⬇ TXT</button><button onclick="exportAnamMd()">⬇ MD</button><button onclick="window.print()">🖨️ Štampaj</button></div></div><div class="page"><div id="app" class="empty">Učitavam anamnezu…</div></div><script src="../js/sinet-anamneza-export.js?v=16.0.0.118.40"></script><script>const params=new URLSearchParams(location.search);const autoprint=params.get('autoprint')==='1';(async()=>{ try{ window.__sinetAnamRecords=await window.SINET_AnamnezaExport.renderPage({ host: document.getElementById('app'), dataPath:'../data/anamneza.json' }); if(autoprint) setTimeout(()=>{ try{ window.print(); }catch(_){} },220);}catch(e){ document.getElementById('app').innerHTML=`<div class="empty">Greška pri učitavanju: ${String(e?.message || e)}</div>`; }})();function exportAnamHtml(){ const r=window.__sinetAnamRecords || window.SINET_AnamnezaExport.loadPersisted()?.records || []; window.SINET_AnamnezaExport.exportHTML(r); } function exportAnamTxt(){ const r=window.__sinetAnamRecords || window.SINET_AnamnezaExport.loadPersisted()?.records || []; window.SINET_AnamnezaExport.exportTXT(r); } function exportAnamMd(){ const r=window.__sinetAnamRecords || window.SINET_AnamnezaExport.loadPersisted()?.records || []; window.SINET_AnamnezaExport.exportMD(r); }</script></body></html>
+pages/area-print.html:6:  <title>SINET Oblasti • Print / Export v16.0.0.118.40</title>
+pages/area-print.html:22:    <div id="pageMeta" style="color:var(--muted);">v16.0.0.118.40</div>
+pages/area-print.html:25:    <a class="btn" href="../index.html?v=16.0.0.118.40">🏠 Početna</a>
+pages/area-print.html:34:<script src="../js/sinet-area-export.js?v=16.0.0.118.40"></script>
+pages/area-print.html:36:const VERSION = '16.0.0.118.40';
+pages/symptom-print-card.html:5:  <title>SINET Print kartica simptoma v16.0.0.118.40</title>
+pages/symptom-print-card.html:63:<div class="topbar"><div><div class="brand">SINET Print kartica simptoma</div><div class="muted">v16.0.0.118.40 • A4 landscape • 2 kolone • 10133 runtime spreman</div></div><div class="actions"><a class="btn" href="../index.html">🏠 Početna</a><button onclick="history.back()">⬅️ Nazad</button><button onclick="exportPrintCardHtml()">⬇ HTML</button><button onclick="exportPrintCardTxt()">⬇ TXT</button><button onclick="exportPrintCardMd()">⬇ MD</button><button onclick="window.print()">🖨️ Štampaj</button></div></div>
+pages/symptom-print-card.html:65:<script src="../js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+pages/symptom-print-card.html:67:const VERSION='16.0.0.118.40';
+js/sinet-area-export.js:2:  const VERSION = "16.0.0.118.40";
+js/sinet-symptom-card.js:2:  const VERSION = "16.0.0.118.40";
+js/sinet-anamneza-export.js:2:  const VERSION = "16.0.0.118.40";
+js/app.js:4:  Version: 16.0.0.118.40 (SYMPTOM CARD HOTFIX + VERSION/CACHE SYNC + SAME-WINDOW PRINT)
+js/app.js:13:const SINET_APP_VERSION = "16.0.0.118.40";
+js/app.js:15428:/* ===================== v16.0.0.118.40 — Symptom Card Hotfix + Version/Cache Sync + Same-window Print ===================== */
+
+== NO OLD MARKERS FOUND IN RUNTIME FILES ==
+OK: nema 118.35/118.36 u aktivnim runtime fajlovima.

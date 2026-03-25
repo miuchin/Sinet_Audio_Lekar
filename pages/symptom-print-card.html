@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SINET Print kartica simptoma v16.0.0.118.40</title>
+  <style>
+    :root{--bg:#f7fbff;--card:#ffffff;--line:#d9e7f5;--ink:#14324a;--muted:#5f7288;--soft:#eef6ff;--ok:#edf8f0;--warn:#fff7e8;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+    .brand{font-weight:800}.muted{color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}
+    button,a.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;text-decoration:none;color:var(--ink);font-weight:700}
+    .page{padding:14px;max-width:1500px;margin:0 auto}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 24px rgba(20,50,74,.08)}
+    #app .header{display:grid;grid-template-columns:1.55fr 1fr;gap:12px;margin-bottom:12px}
+    #app .title{font-size:30px;line-height:1.12;font-weight:800;margin:0 0 8px 0}
+    #app .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    #app .meta-chip{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+    #app .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;font-weight:700}
+    #app .value{font-size:14px;font-weight:700}
+    #app .screen-cols{display:grid;grid-template-columns:1.02fr 1.15fr 1.15fr;gap:12px;align-items:start}
+    #app .block{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid}
+    #app .block h3{margin:0 0 8px 0;font-size:16px}
+    #app .list{display:grid;gap:8px}
+    #app .item{padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fcfeff;break-inside:avoid;page-break-inside:avoid}
+    #app .hz{font-weight:800}
+    #app .small{font-size:12px;color:var(--muted)}
+    #app .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:12px;font-weight:700;margin:0 6px 6px 0}
+    #app .footer{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    #app .ok{background:var(--ok)}
+    #app .warn{background:var(--warn)}
+    #app .compact-text{line-height:1.42}
+    #app .empty{color:var(--muted);font-style:italic}
+    @media (max-width:1080px){#app .header,#app .screen-cols,#app .footer{grid-template-columns:1fr}#app .title{font-size:24px}#app .meta-grid{grid-template-columns:1fr}}
+    @page{size:A4 landscape;margin:7mm}
+    @media print{
+      body{background:#fff;font-size:9pt;color:#1d2d3a}
+      .topbar{display:none}
+      .page{padding:0;max-width:none}
+      .sheet{border:none;box-shadow:none;border-radius:0;padding:0}
+      #app .header{grid-template-columns:1.35fr 1fr;gap:4mm;margin-bottom:4mm}
+      #app .title{font-size:16pt;margin-bottom:2mm}
+      #app .muted{font-size:8pt}
+      #app .meta-grid{gap:1.6mm}
+      #app .meta-chip{padding:2mm 2.4mm;border-radius:7px}
+      #app .label{font-size:7.3pt;margin-bottom:.8mm}
+      #app .value{font-size:8.3pt}
+      #app .screen-cols{display:block;column-count:2;column-gap:5mm;column-fill:auto}
+      #app .screen-cols > div{break-inside:avoid-column}
+      #app .block{display:inline-block;width:100%;padding:2.1mm 2.4mm;margin:0 0 2.6mm;border-radius:7px;border:1px solid #bcd1e4}
+      #app .block h3{font-size:9pt;margin:0 0 1.4mm}
+      #app .list{display:block}
+      #app .item{padding:1.6mm 1.8mm;border-radius:6px;margin:0 0 1.5mm}
+      #app .small{font-size:7.3pt}
+      #app .badge{font-size:7.1pt;padding:.9mm 1.6mm;margin:0 .8mm .8mm 0}
+      #app .compact-text{line-height:1.16}
+      #app .footer{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:1mm}
+      a{color:inherit;text-decoration:none}
+    }
+</style>
+</head>
+<body>
+<div class="topbar"><div><div class="brand">SINET Print kartica simptoma</div><div class="muted">v16.0.0.118.40 • A4 landscape • 2 kolone • 10133 runtime spreman</div></div><div class="actions"><a class="btn" href="../index.html">🏠 Početna</a><button onclick="history.back()">⬅️ Nazad</button><button onclick="exportPrintCardHtml()">⬇ HTML</button><button onclick="exportPrintCardTxt()">⬇ TXT</button><button onclick="exportPrintCardMd()">⬇ MD</button><button onclick="window.print()">🖨️ Štampaj</button></div></div>
+<div class="page"><div id="app" class="sheet"><div class="empty">Učitavam karticu simptoma…</div></div></div>
+<script src="../js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+<script>
+const VERSION='16.0.0.118.40';
+const app=document.getElementById('app');
+const params=new URLSearchParams(location.search);
+const itemId=params.get('id')||'';
+const autoprint=params.get('autoprint')==='1';
+(async()=>{
+  try {
+    const item = await window.SINET_SymptomCard.renderPage({ host: app, id: itemId, catalogPath: '../data/SINET_CATALOG.json' });
+    window.__sinetPrintItem = item || null;
+    if (autoprint) setTimeout(() => { try { window.print(); } catch(_) {} }, 220);
+  } catch (e) {
+    app.innerHTML = `<div class="empty">Greška pri učitavanju kartice: ${String(e?.message || e)}</div>`;
+  }
+})();
+function exportPrintCardHtml(){ const item = window.__sinetPrintItem || window.SINET_SymptomCard.loadPersisted(); if (item) window.SINET_SymptomCard.exportHTML(item); }
+function exportPrintCardTxt(){ const item = window.__sinetPrintItem || window.SINET_SymptomCard.loadPersisted(); if (item) window.SINET_SymptomCard.exportTXT(item); }
+function exportPrintCardMd(){ const item = window.__sinetPrintItem || window.SINET_SymptomCard.loadPersisted(); if (item) window.SINET_SymptomCard.exportMD(item); }
+</script></body></html>

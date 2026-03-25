@@ -1,4 +1,4 @@
-const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.31';
+const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.40';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -22,6 +22,9 @@ const CORE_ASSETS = [
   './js/sinet-item-shell.js',
   './js/sinet-page-nav.js',
   './js/sinet-export-renderer.js',
+  './js/sinet-anamneza-export.js',
+  './js/sinet-area-export.js',
+  './js/sinet-symptom-card.js',
   './data/SINET_CATALOG.json',
   './data/SINET_STL.json',
   './data/mkb10_sr.json',
@@ -31,6 +34,11 @@ const CORE_ASSETS = [
   './DS-Generator.html',
   './pages/integrativna_biblioteka.html',
   './pages/integrativni_vodic.html',
+  './pages/symptom-print-card.html',
+  './katalog-book.html',
+  './atlas.html',
+  './pages/anamneza-print.html',
+  './pages/area-print.html',
   './pages/tai_chi.html',
   './pages/narodne_metode.html',
   './docs/protokoli/27_NARODNE_METODE_v1.0_SR.html',

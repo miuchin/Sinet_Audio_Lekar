@@ -442,6 +442,8 @@
     }
 
   </style>
+  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+  <script src="js/sinet-area-export.js?v=16.0.0.118.40"></script>
 </head>
 <body>
   <div class="mobile-bar">
@@ -510,6 +512,8 @@
           <div class="top-actions">
             <button class="btn primary" id="exportSelectionBtn">Izvezi moj izbor</button>
             <button class="btn" id="copyAreaBtn">Kopiraj aktivnu oblast</button>
+            <button class="btn secondary" id="printAreasBtn">🖨 Oblasti</button>
+            <button class="btn ghost" id="printAreaDetailsBtn">📚 Oblast + simptomi</button>
             <button class="btn soft" id="scrollTopBtn">Na vrh</button>
           </div>
         </div>
@@ -594,6 +598,10 @@
         <button class="sheet-btn" data-action="add-selection"><strong>Dodaj u moj izbor</strong><small>Lokalna selekcija za izdvajanje i eksport.</small></button>
         <button class="sheet-btn" data-action="copy-name"><strong>Kopiraj naziv</strong><small>Brzo kopiranje naziva simptoma.</small></button>
         <button class="sheet-btn" data-action="copy-json"><strong>Kopiraj JSON zapis</strong><small>Ceo zapis za proveru ili obradu.</small></button>
+        <button class="sheet-btn" data-action="print-card"><strong>🖨 Print kartica</strong><small>Otvori A4 landscape karticu simptoma.</small></button>
+        <button class="sheet-btn" data-action="export-html"><strong>⬇ HTML kartica</strong><small>Izvoz kartice simptoma kao HTML.</small></button>
+        <button class="sheet-btn" data-action="export-txt"><strong>⬇ TXT kartica</strong><small>Izvoz kartice simptoma kao TXT.</small></button>
+        <button class="sheet-btn" data-action="export-md"><strong>⬇ MD kartica</strong><small>Izvoz kartice simptoma kao MD.</small></button>
       </div>
       <button class="btn" id="closeSheetBtn">Zatvori</button>
     </div>
@@ -682,6 +690,8 @@
       scrollTopBtn: document.getElementById('scrollTopBtn'),
       copyAreaBtn: document.getElementById('copyAreaBtn'),
       exportSelectionBtn: document.getElementById('exportSelectionBtn'),
+      printAreasBtn: document.getElementById('printAreasBtn'),
+      printAreaDetailsBtn: document.getElementById('printAreaDetailsBtn'),
       backdrop: document.getElementById('backdrop'),
       sheet: document.getElementById('sheet'),
       sheetTitle: document.getElementById('sheetTitle'),
@@ -1156,6 +1166,10 @@
           </div>
           <div class="route-grid route-grid-premium">
             <button class="btn primary" id="routeOpenCatalog">📖 Otvori karticu</button>
+            <button class="btn secondary" id="routePrintCard">🖨 Print</button>
+            <button class="btn secondary" id="routeExportHtml">⬇ HTML</button>
+            <button class="btn secondary" id="routeExportTxt">⬇ TXT</button>
+            <button class="btn secondary" id="routeExportMd">⬇ MD</button>
             <button class="btn" id="routeAddPlaylist">➕ U listu</button>
             <button class="btn" id="routeFavorite">⭐ Favorit</button>
             <button class="btn" id="routeMySymptoms">🧬 Moji simptomi</button>
@@ -1196,6 +1210,10 @@
       document.getElementById('detailToFreq')?.addEventListener('click', () => document.getElementById('detailFreqSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
       document.getElementById('detailToAppRoute')?.addEventListener('click', () => document.getElementById('detailAppRouteSection')?.scrollIntoView({ behavior:'smooth', block:'start' }));
       document.getElementById('routeOpenCatalog')?.addEventListener('click', () => sendBridge('catalog', item));
+      document.getElementById('routePrintCard')?.addEventListener('click', () => window.SINET_SymptomCard && window.SINET_SymptomCard.openPrint(item, { pagePath:'pages/symptom-print-card.html' }));
+      document.getElementById('routeExportHtml')?.addEventListener('click', () => window.SINET_SymptomCard && window.SINET_SymptomCard.exportHTML(item));
+      document.getElementById('routeExportTxt')?.addEventListener('click', () => window.SINET_SymptomCard && window.SINET_SymptomCard.exportTXT(item));
+      document.getElementById('routeExportMd')?.addEventListener('click', () => window.SINET_SymptomCard && window.SINET_SymptomCard.exportMD(item));
       document.getElementById('routeAddPlaylist')?.addEventListener('click', () => sendBridge('playlist', item));
       document.getElementById('routeFavorite')?.addEventListener('click', () => sendBridge('favorite', item));
       document.getElementById('routeMySymptoms')?.addEventListener('click', () => sendBridge('mysymptoms', item));
@@ -1243,6 +1261,18 @@
       const blob = new Blob([JSON.stringify(selected, null, 2)], {type:'application/json'});
       const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'SINET_moj_izbor.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); toast('Izvezen JSON za moj izbor.');
     }
+
+    function exportAreasOnly(){
+      const api = window.SINET_AreaExport; if (!api) return toast('Izvoz oblasti nije dostupan.');
+      const base = getFilteredItems();
+      api.openPage({ items: base.length ? base : state.items, mode: 'areas', sameWindow: false });
+    }
+    function exportAreaWithSymptoms(){
+      const api = window.SINET_AreaExport; if (!api) return toast('Izvoz oblasti + simptomi nije dostupan.');
+      const base = state.activeArea !== 'Sve oblasti' ? state.items.filter(item => item._area === state.activeArea) : (getFilteredItems().length ? getFilteredItems() : state.items);
+      api.openPage({ items: base.length ? base : state.items, mode: 'area-symptoms', oblast: state.activeArea !== 'Sve oblasti' ? state.activeArea : '', sameWindow: false });
+    }
+
     function openAtlasWithContext() {
       try {
         localStorage.setItem('sinet_atlas_entry_bridge', JSON.stringify({ oblast: state.activeArea !== 'Sve oblasti' ? state.activeArea : '', q: state.query || '', mode: 'all', ts: Date.now() }));
@@ -1299,6 +1329,8 @@
     els.contextJumpSelectedBtn?.addEventListener('click', scrollActiveCardIntoView);
     els.copyAreaBtn?.addEventListener('click', () => copyText(state.activeArea, 'Aktivna oblast kopirana.'));
     els.exportSelectionBtn?.addEventListener('click', exportSelection);
+    els.printAreasBtn?.addEventListener('click', exportAreasOnly);
+    els.printAreaDetailsBtn?.addEventListener('click', exportAreaWithSymptoms);
     els.backdrop?.addEventListener('click', closeSheet);
     els.closeSheetBtn?.addEventListener('click', closeSheet);
     els.bookBackBtn?.addEventListener('click', goBookBack);

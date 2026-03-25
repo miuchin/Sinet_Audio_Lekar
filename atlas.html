@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SINET Atlas simptoma v16.0.0.118.31</title>
+  <title>SINET Atlas simptoma v16.0.0.118.40</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./css/main.css">
   <style>
@@ -71,6 +71,8 @@
     @media (max-width: 1180px){.atlas-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.atlas-layout{grid-template-columns:1fr}.atlas-list{max-height:none}.atlas-meta-grid{grid-template-columns:1fr}}
     @media (max-width: 760px){.atlas-wrap{padding:10px}.atlas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.atlas-grid{grid-template-columns:1fr}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.legend{grid-template-columns:1fr}.atlas-top{align-items:stretch}.atlas-actions{width:100%}.atlas-actions .atlas-btn{flex:1}}
   </style>
+  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
+  <script src="js/sinet-area-export.js?v=16.0.0.118.40"></script>
 </head>
 <body>
   <div class="atlas-wrap">
@@ -79,8 +81,10 @@
         <button class="atlas-btn ghost" onclick="atlasBack()">← NAZAD</button>
         <button class="atlas-btn primary" onclick="atlasOpenCatalog()">📚 KATALOG</button>
         <button class="atlas-btn ok" onclick="atlasHome()">🏠 POČETAK</button>
+        <button class="atlas-btn warn" onclick="atlasAreaPrint()">🖨 OBLASTI</button>
+        <button class="atlas-btn purple" onclick="atlasAreaWithSymptoms()">📚 OBLAST + SIMPTOMI</button>
       </div>
-      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.31</div>
+      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.40</div>
     </div>
 
     <section class="atlas-hero">
@@ -453,7 +457,7 @@ function renderList(items){
     const name = mkbDesc(it) || '';
     const freqCount = (it.frekvencije || []).length;
     const mine = String(it.id || '').startsWith('usr-') || it._sourceBucket === 'mysymptoms';
-    return `<div class="item ${state.selected === it.id ? 'active' : ''}" data-id="${esc(it.id)}"><div class="item-head"><div><div class="item-title">${esc(it.simptom || '(bez naziva)')}</div><div class="item-desc">${esc(short(it.opis || 'Opis nije popunjen.', 160))}</div></div><button type="button" class="item-open" data-open-item="${esc(it.id)}">📖 Otvori u Katalogu</button></div><div class="pills"><span class="pill">📂 ${esc(it.oblast || 'Ostalo')}</span><span class="pill">🏷️ ${esc(code)}</span><span class="pill">🎵 ${freqCount}</span>${mine ? '<span class="pill">🧬 Moji simptomi</span>' : ''}</div>${name ? `<div class="item-desc" style="margin-top:8px; font-size:.88rem; color:#64748b;">${esc(short(name, 180))}</div>` : ''}<div class="actions" style="margin-top:10px;grid-template-columns:repeat(3,minmax(0,1fr));"><button class="a-catalog" data-action="catalog" data-id="${esc(it.id)}">📖 Detalj</button><button class="a-list" data-action="playlist" data-id="${esc(it.id)}">➕ U listu</button><button class="a-fav" data-action="favorite" data-id="${esc(it.id)}">⭐ Favorit</button><button class="a-my" data-action="mysymptoms" data-id="${esc(it.id)}">🧬 Moje</button><button class="a-proto" data-action="protocol" data-id="${esc(it.id)}">📑 Protokol</button><button class="a-ai" data-action="ai" data-id="${esc(it.id)}">🤖 AI</button></div></div>`;
+    return `<div class="item ${state.selected === it.id ? 'active' : ''}" data-id="${esc(it.id)}"><div class="item-head"><div><div class="item-title">${esc(it.simptom || '(bez naziva)')}</div><div class="item-desc">${esc(short(it.opis || 'Opis nije popunjen.', 160))}</div></div><button type="button" class="item-open" data-open-item="${esc(it.id)}">📖 Otvori u Katalogu</button></div><div class="pills"><span class="pill">📂 ${esc(it.oblast || 'Ostalo')}</span><span class="pill">🏷️ ${esc(code)}</span><span class="pill">🎵 ${freqCount}</span>${mine ? '<span class="pill">🧬 Moji simptomi</span>' : ''}</div>${name ? `<div class="item-desc" style="margin-top:8px; font-size:.88rem; color:#64748b;">${esc(short(name, 180))}</div>` : ''}<div class="actions" style="margin-top:10px;grid-template-columns:repeat(3,minmax(0,1fr));"><button class="a-catalog" data-action="catalog" data-id="${esc(it.id)}">📖 Detalj</button><button class="a-list" data-action="playlist" data-id="${esc(it.id)}">➕ U listu</button><button class="a-fav" data-action="favorite" data-id="${esc(it.id)}">⭐ Favorit</button><button class="a-my" data-action="mysymptoms" data-id="${esc(it.id)}">🧬 Moje</button><button class="a-proto" data-action="protocol" data-id="${esc(it.id)}">📑 Protokol</button><button class="a-ai" data-action="ai" data-id="${esc(it.id)}">🤖 AI</button><button class="a-catalog" data-action="print" data-id="${esc(it.id)}">🖨 Print</button><button class="a-catalog" data-action="html" data-id="${esc(it.id)}">⬇ HTML</button><button class="a-catalog" data-action="txt" data-id="${esc(it.id)}">⬇ TXT</button><button class="a-catalog" data-action="md" data-id="${esc(it.id)}">⬇ MD</button></div></div>`;
   }).join('');
 }
 
@@ -475,7 +479,7 @@ function renderDetail(it){
       <button class="a-fav" onclick="sendBridge('favorite', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">⭐ FAVORIT</button>
       <button class="a-my" onclick="sendBridge('mysymptoms', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">🧬 MOJE</button>
       <button class="a-proto" onclick="sendBridge('protocol', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">📑 PROTOKOL</button>
-      <button class="a-ai" onclick="sendBridge('ai', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">🤖 AI</button>
+      <button class="a-ai" onclick="sendBridge('ai', ${JSON.stringify(it.id)}, ${JSON.stringify(it.simptom || '')})">🤖 AI</button><button class="a-catalog" onclick="atlasSymptomPrint(${JSON.stringify(it.id)})">🖨 PRINT</button><button class="a-catalog" onclick="atlasSymptomExport('html', ${JSON.stringify(it.id)})">⬇ HTML</button><button class="a-catalog" onclick="atlasSymptomExport('txt', ${JSON.stringify(it.id)})">⬇ TXT</button><button class="a-catalog" onclick="atlasSymptomExport('md', ${JSON.stringify(it.id)})">⬇ MD</button>
     </div>`;
 }
 
@@ -503,6 +507,21 @@ function openOblast(oblast){
   render();
 }
 
+
+function getAtlasItemById(id){
+  return (state.items || []).find((it) => String(it.id || '') === String(id || '')) || null;
+}
+function atlasSymptomPrint(id){
+  const it = getAtlasItemById(id);
+  if (it && window.SINET_SymptomCard) window.SINET_SymptomCard.openPrint(it, { pagePath:'pages/symptom-print-card.html' });
+}
+function atlasSymptomExport(fmt, id){
+  const it = getAtlasItemById(id);
+  if (!it || !window.SINET_SymptomCard) return;
+  if (fmt === 'html') window.SINET_SymptomCard.exportHTML(it);
+  else if (fmt === 'txt') window.SINET_SymptomCard.exportTXT(it);
+  else if (fmt === 'md') window.SINET_SymptomCard.exportMD(it);
+}
 function selectItem(id, action = 'catalog'){
   state.selected = id;
   const it = (listItems().find((it) => it.id === id) || state.items.find((it) => it.id === id));
@@ -666,6 +685,18 @@ function sendBridge(action, id, symptom){
   location.href = 'index.html';
 }
 
+
+function atlasAreaPrint(){
+  const api = window.SINET_AreaExport; if (!api) return;
+  const base = filteredBase();
+  api.openPage({ items: base.length ? base : state.items, mode: 'areas', sameWindow: false });
+}
+function atlasAreaWithSymptoms(){
+  const api = window.SINET_AreaExport; if (!api) return;
+  const base = state.oblast ? state.items.filter((it) => (it.oblast || 'Ostalo') === state.oblast) : (state.filtered.length ? state.filtered : filteredBase());
+  api.openPage({ items: base.length ? base : state.items, mode: 'area-symptoms', oblast: state.oblast || '', sameWindow: false });
+}
+
 function resetAtlas(){
   state.query = '';
   state.oblast = '';
@@ -697,6 +728,10 @@ function bindAtlasInteractions(){
       state.selected = id;
       renderDetail(it);
       renderList(listItems());
+      if (action === 'print') return atlasSymptomPrint(id);
+      if (action === 'html') return atlasSymptomExport('html', id);
+      if (action === 'txt') return atlasSymptomExport('txt', id);
+      if (action === 'md') return atlasSymptomExport('md', id);
       sendBridge(action, it.id, it.simptom || '');
       return;
     }

@@ -1,7 +1,7 @@
 /* 
   🚩 START: iOS Rendered Track (WAV in RAM) — Web-only background workaround
   File: js/audio/ios-rendered-track.js
-  Version: 1.1 (SINET v15.6.5)
+  Version: 1.2 (SINET v15.6.5)
   Author: miuchins | Co-author: SINET AI
 
   Purpose:
@@ -28,6 +28,8 @@ export function estimateWavBytes(totalSeconds, sampleRate=22050, channels=1, bit
 }
 
 function _clamp(x, lo=-1, hi=1) { return Math.max(lo, Math.min(hi, x)); }
+function _carrierForSubHz(hz, fallback=210){ const x = Math.max(0, Number(hz)||0); if (x < 8) return 200; if (x < 12) return 205; if (x < 20) return 210; if (x < 32) return 215; if (x > 0) return 220; return fallback; }
+function _toneNormalizationGain(hz, threshold=50){ const f = (hz > 0 && hz < threshold) ? _carrierForSubHz(hz) : Math.max(1, Number(hz)||0); let g = 1; if (f < 90) g = 1.55; else if (f < 140) g = 1.38; else if (f < 200) g = 1.22; else if (f < 260) g = 1.10; else if (f < 700) g = 1.0; else if (f < 1600) g = 0.94; else if (f < 3200) g = 0.88; else g = 0.82; return Math.max(0.65, Math.min(1.65, g)); }
 
 function _writeString(view, offset, str) {
   for (let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i));
@@ -56,9 +58,10 @@ export async function renderProtocolToWavBlobURL(opts = {}) {
   const totalSec = Math.max(0, Number(opts.totalSec) || 0);
   const sr = Math.max(8000, Number(opts.sampleRate) || 22050);
   const ch = Math.max(1, Number(opts.channels) || 1);
-  const gain = _clamp(Number(opts.gain) || 0.25, 0, 1);
-  const subCarrierHz = Math.max(40, Number(opts.subCarrierHz) || 200);
+  const gain = _clamp(Number(opts.gain) || 0.45, 0, 1.2);
+  const subCarrierHz = Math.max(40, Number(opts.subCarrierHz) || 210);
   const subThresholdHz = Math.max(1, Number(opts.subThresholdHz) || 50);
+  const normalizePerceivedLoudness = opts.normalizePerceivedLoudness !== false;
   const fadeMs = Math.max(0, Number(opts.fadeMs) || 12);
   const signal = opts.signal || null;
 
@@ -130,7 +133,9 @@ export async function renderProtocolToWavBlobURL(opts = {}) {
     const inc = twoPi * hz / sr;
 
     let useAM = (hz < subThresholdHz);
-    const incCarrier = twoPi * subCarrierHz / sr;
+    const carrierHz = useAM ? _carrierForSubHz(hz, subCarrierHz) : subCarrierHz;
+    const incCarrier = twoPi * carrierHz / sr;
+    const toneGain = normalizePerceivedLoudness ? _toneNormalizationGain(hz, subThresholdHz) : 1;
     const incMod = twoPi * hz / sr;
 
     for (let n=0;n<stepSamples;n++) {
@@ -158,7 +163,7 @@ export async function renderProtocolToWavBlobURL(opts = {}) {
       if (phase > 1e9) phase = phase % twoPi;
       if (phaseMod > 1e9) phaseMod = phaseMod % twoPi;
 
-      const out = _clamp(val * gain * env, -1, 1);
+      const out = _clamp(val * gain * toneGain * env, -1, 1);
       const pcm = (out < 0) ? Math.floor(out * 32768) : Math.floor(out * 32767);
 
       for (let c=0;c<ch;c++) {

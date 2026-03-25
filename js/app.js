@@ -1,7 +1,7 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.31 (SYMPTOM IMPORT STICKY MY SYMPTOMS + SESSION ENTRY + SEARCH SUBMIT + SESSION FALLBACK)
+  Version: 16.0.0.118.40 (SYMPTOM CARD HOTFIX + VERSION/CACHE SYNC + SAME-WINDOW PRINT)
   Author: miuchins | Co-author: SINET AI
 */
 
@@ -10,7 +10,7 @@ import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
 import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
 import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.31";
+const SINET_APP_VERSION = "16.0.0.118.40";
 
 
 
@@ -93,7 +93,7 @@ class App {
 
 
     // Audio Engine v2 prefs
-    this.audioPrefs = { master: 0.55, boost: false, wave: "sine" };
+    this.audioPrefs = { master: 0.75, boost: false, normalize: true, wave: "sine" };
     try {
       const p = JSON.parse(localStorage.getItem("sinet_audio_prefs_v1") || "null");
       if (p && typeof p === "object") this.audioPrefs = { ...this.audioPrefs, ...p };
@@ -223,14 +223,20 @@ class App {
       this.applyAudioPrefs();
       const vol = document.getElementById("p-vol");
       if (vol) {
-        vol.value = String(Math.round((Number(this.audioPrefs?.master)||0.55)*100));
+        vol.value = String(Math.round((Number(this.audioPrefs?.master)||0.75)*100));
+        const volLbl = document.getElementById("p-vol-lbl");
+        if (volLbl) volLbl.innerText = `${Math.round((Number(this.audioPrefs?.master)||0.75)*100)}%`;
         vol.addEventListener("input", (e)=>{
           const v = Number(e.target.value||0)/100;
           this.setMasterVolumeUI(v);
+          const volLbl = document.getElementById("p-vol-lbl");
+          if (volLbl) volLbl.innerText = `${Math.round(v*100)}%`;
         });
       }
       const boostBtn = document.getElementById("p-boost");
       if (boostBtn) boostBtn.innerText = `⚡ Boost: ${this.audioPrefs?.boost ? "ON" : "OFF"}`;
+      const normBtn = document.getElementById("p-normalize");
+      if (normBtn) normBtn.innerText = `🎚 Ujednači: ${this.audioPrefs?.normalize !== false ? "ON" : "OFF"}`;
       const wave = document.getElementById("p-wave");
       if (wave) {
         wave.value = String(this.audioPrefs?.wave || "sine");
@@ -866,9 +872,10 @@ _showIosDiag(detail) {
         totalSec: seg.segTotalSec,
         sampleRate: 22050,
         channels: 1,
-        gain: (this.audio?.masterGain?.gain?.value) ? Math.max(0.05, Math.min(0.9, this.audio.masterGain.gain.value)) : 0.25,
-        subCarrierHz: this.audio?.subCarrierHz || 200,
+        gain: (this.audio?.masterGain?.gain?.value) ? Math.max(0.12, Math.min(1.0, this.audio.masterGain.gain.value * 0.88)) : 0.45,
+        subCarrierHz: this.audio?.subCarrierHz || 210,
         subThresholdHz: this.audio?.subCarrierThresholdHz || 50,
+        normalizePerceivedLoudness: this.audio?.normalizeLoudness !== false,
         fadeMs: 12,
         signal
       });
@@ -3532,8 +3539,9 @@ closeAcupressureViewer(){
     try {
       const p = this.audioPrefs || {};
       if (p.wave) this.audio.setOscType(p.wave);
-      if (typeof p.master !== "undefined") this.audio.setMasterVolume(Number(p.master) || 0.55);
+      if (typeof p.master !== "undefined") this.audio.setMasterVolume(Number(p.master) || 0.75);
       this.audio.setBoostEnabled(!!p.boost);
+      if (typeof this.audio.setNormalizeLoudness === "function") this.audio.setNormalizeLoudness(p.normalize !== false);
     } catch(_) {}
   }
 
@@ -3542,7 +3550,7 @@ closeAcupressureViewer(){
   }
 
   setMasterVolumeUI(val01) {
-    const v = Math.min(1, Math.max(0, Number(val01)));
+    const v = Math.min(1.6, Math.max(0, Number(val01)));
     this.audioPrefs.master = v;
     try { this.audio.setMasterVolume(v); } catch(_) {}
     this.saveAudioPrefs();
@@ -3661,7 +3669,7 @@ closeAcupressureViewer(){
             <small style="color:#777;">${item.userPerFreqMin||5} min/freq • ukupno: ${item.userTotalMin||0} min</small>
             ${mkbLine}
           </div>
-          <button onclick="app.removeFromPlaylist('${item.uid}')" style="background:none; border:none; color:#C0392B; font-weight:bold; font-size:1.2rem;">✕</button>
+          <div style="display:flex; gap:8px; align-items:center;"><button class="cat-mini-btn" style="margin:0;" onclick="event.stopPropagation(); app.openSymptomPrintCard('${this.escapeJsString(item.id)}')">🖨 Kartica</button><button onclick="app.removeFromPlaylist('${item.uid}')" style="background:none; border:none; color:#C0392B; font-weight:bold; font-size:1.2rem;">✕</button></div>
         </div>
       `;
     }).join("");
@@ -4570,6 +4578,7 @@ _repeatSteps(steps, loops) {
               <button class="btn-add-playlist" title="Dodaj u listu" onclick="event.stopPropagation(); app.quickAddToPlaylist('${this.escapeJsString(it.id)}')">➕ <span class="btn-label">U listu</span></button>
               <button class="cat-mini-btn" title="Dodaj u Moje simptome" onclick="event.stopPropagation(); app.quickAddToMySymptoms('${this.escapeJsString(it.id)}')">🧬 <span class="btn-label">Moji</span></button>
               <button class="cat-mini-btn" title="Sačuvaj kao protokol" onclick="event.stopPropagation(); app.quickCreateProtocolFromItem('${this.escapeJsString(it.id)}')">📑 <span class="btn-label">Protokol</span></button>
+              <button class="cat-mini-btn" title="Print / Export kartica" onclick="event.stopPropagation(); app.openSymptomPrintCard('${this.escapeJsString(it.id)}')">🖨 <span class="btn-label">Kartica</span></button>
               <button class="cat-mini-btn" title="Ukloni iz favorita" onclick="event.stopPropagation(); app.toggleFavoriteQuick('${this.escapeJsString(it.id)}', this)">✖ <span class="btn-label">Ukloni</span></button>
             </div>
           </div>
@@ -6857,7 +6866,10 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
               <div class="cat-title">${isUser ? "🧩 " : ""}${this.escapeHtml(it.simptom)} ${mkbBadge}${isFav ? `<span class="mkb-badge" style="background:#fff8d6; color:#8a5a00;">⭐ favorit</span>` : ''}</div>
               <div class="cat-sub cat-sub-compact">${compactMeta}</div>
             </div>
-            <div class="cat-compact-arrow" aria-hidden="true">›</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="cat-mini-btn" style="margin:0;" title="Print / Export kartica" onclick="event.stopPropagation(); app.openSymptomPrintCard('${this.escapeJsString(it.id)}')">🖨</button>
+              <div class="cat-compact-arrow" aria-hidden="true">›</div>
+            </div>
           </div>
         `;
       }
@@ -6876,6 +6888,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
             <button class="cat-mini-btn btn-fav" title="${isFav ? "Ukloni iz favorita" : "Dodaj u favorite"}" aria-label="Favorit" aria-pressed="${isFav ? "true" : "false"}" onclick="event.stopPropagation(); app.toggleFavoriteQuick('${this.escapeJsString(it.id)}', this)">${isFav ? "⭐" : "☆"} <span class="btn-label">Favorit</span></button>
             <button class="cat-mini-btn" title="Dodaj u Moje simptome" onclick="event.stopPropagation(); app.quickAddToMySymptoms('${this.escapeJsString(it.id)}')">🧬 <span class="btn-label">Moje</span></button>
             <button class="cat-mini-btn" title="Napravi protokol" onclick="event.stopPropagation(); app.quickCreateProtocolFromItem('${this.escapeJsString(it.id)}')">📑 <span class="btn-label">Protokol</span></button>
+            <button class="cat-mini-btn" title="Print / Export kartica" onclick="event.stopPropagation(); app.openSymptomPrintCard('${this.escapeJsString(it.id)}')">🖨 <span class="btn-label">Kartica</span></button>
             ${isUser ? `<button class="cat-mini-btn" title="Izmeni" onclick="event.stopPropagation(); app.editUserSymptom('${this.escapeJsString(it.id)}')">✎ <span class="btn-label">Edit</span></button>` : `<button class="cat-mini-btn" title="AI upitnik" onclick="event.stopPropagation(); app.prefillAI('${this.escapeJsString(it.simptom)}', '${this.escapeJsString(short)}'); nav('ai');">🤖 <span class="btn-label">AI</span></button>`}
           </div>
         </div>
@@ -7772,6 +7785,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
             <button class="btn-add-playlist" title="Dodaj u listu" onclick="event.stopPropagation(); app.quickAddToPlaylist('${this.escapeJsString(normalized.id)}')">➕ <span class="btn-label">U listu</span></button>
             <button class="cat-mini-btn btn-fav" title="${app.isFavoriteId && app.isFavoriteId(normalized.id) ? "Ukloni iz favorita" : "Dodaj u favorite"}" aria-label="Favorit" aria-pressed="${app.isFavoriteId && app.isFavoriteId(normalized.id) ? "true":"false"}" onclick="event.stopPropagation(); app.toggleFavoriteQuick('${this.escapeJsString(normalized.id)}', this)">${app.isFavoriteId && app.isFavoriteId(normalized.id) ? "⭐":"☆"} <span class="btn-label">Favorit</span></button>
             <button class="cat-mini-btn" title="Sačuvaj kao protokol" onclick="event.stopPropagation(); app.quickCreateProtocolFromItem('${this.escapeJsString(normalized.id)}')">📑 <span class="btn-label">Protokol</span></button>
+            <button class="cat-mini-btn" title="Print / Export kartica" onclick="event.stopPropagation(); app.openSymptomPrintCard('${this.escapeJsString(normalized.id)}')">🖨 <span class="btn-label">Kartica</span></button>
             <button class="cat-mini-btn" title="Izmeni" onclick="event.stopPropagation(); app.editUserSymptom('${this.escapeJsString(normalized.id)}')">✎ <span class="btn-label">Edit</span></button>
             <button class="cat-mini-btn" title="Obriši" onclick="event.stopPropagation(); app.deleteUserSymptom('${this.escapeJsString(normalized.id)}')">🗑</button>
           </div>
@@ -15407,5 +15421,56 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     } catch(_) {
       window.location.href = 'katalog-book.html';
     }
+  };
+})();
+
+
+/* ===================== v16.0.0.118.40 — Symptom Card Hotfix + Version/Cache Sync + Same-window Print ===================== */
+(function(){
+  if (typeof App === 'undefined') return;
+
+  App.prototype._findSymptomItemAny = function(id) {
+    const key = String(id || this.currentModalId || this.selectedItem?.id || '').trim();
+    const pools = [this.catalogItems || [], this.userSymptoms || [], this.playlist || [], this.lastCatalogViewItems || []];
+    for (const pool of pools) { const hit = (pool || []).find(it => String(it?.id || '') === key); if (hit) return hit; }
+    return this._modalItem || this.selectedItem || null;
+  };
+
+  App.prototype._symptomCardApi = function() { return window.SINET_SymptomCard || null; };
+
+  App.prototype.openSymptomPrintCard = function(id) {
+    const item = this._findSymptomItemAny(id);
+    const api = this._symptomCardApi();
+    if (!item || !api) return alert('Kartica simptoma nije dostupna.');
+    api.openPrint(item, { pagePath: 'pages/symptom-print-card.html', sameWindow: true });
+    try { this.log('USER', 'Symptom Card Print Open', String(item.id || '')); } catch(_) {}
+  };
+
+  App.prototype.printSymptomCard = function(id) { return this.openSymptomPrintCard(id); };
+
+  App.prototype.exportSymptomHtml = function(id) {
+    const item = this._findSymptomItemAny(id); const api = this._symptomCardApi();
+    if (!item || !api) return alert('HTML export nije dostupan.');
+    api.exportHTML(item); try { this.log('USER', 'Symptom Card Export HTML', String(item.id || '')); } catch(_) {}
+  };
+  App.prototype.exportSymptomTxt = function(id) {
+    const item = this._findSymptomItemAny(id); const api = this._symptomCardApi();
+    if (!item || !api) return alert('TXT export nije dostupan.');
+    api.exportTXT(item); try { this.log('USER', 'Symptom Card Export TXT', String(item.id || '')); } catch(_) {}
+  };
+  App.prototype.exportSymptomMd = function(id) {
+    const item = this._findSymptomItemAny(id); const api = this._symptomCardApi();
+    if (!item || !api) return alert('MD export nije dostupan.');
+    api.exportMD(item); try { this.log('USER', 'Symptom Card Export MD', String(item.id || '')); } catch(_) {}
+  };
+
+  App.prototype.toggleAudioNormalization = function() {
+    this.audioPrefs = this.audioPrefs || {};
+    const next = !(this.audioPrefs.normalize !== false);
+    this.audioPrefs.normalize = !next;
+    try { this.audio.setNormalizeLoudness(this.audioPrefs.normalize); } catch(_) {}
+    try { this.saveAudioPrefs(); } catch(_) {}
+    try { const btn = document.getElementById('p-normalize'); if (btn) btn.innerText = `🎚 Ujednači: ${this.audioPrefs.normalize ? 'ON' : 'OFF'}`; } catch(_) {}
+    this.showToast(this.audioPrefs.normalize ? '🎚 Ujednačavanje jačine tonova uključeno.' : '🎚 Ujednačavanje jačine tonova isključeno.');
   };
 })();
