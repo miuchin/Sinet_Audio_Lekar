@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Archive · v16.0.0.118.40.23</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sinet-quickbar.css?v=v16.0.0.118.40.23">
+  <link rel="stylesheet" href="css/sinet-medical-runtime.css?v=v16.0.0.118.40.23">
+  <script defer src="js/sinet-page-nav.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/db/indexed-db.js"></script>
+  <script defer src="js/core/id-service.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-store.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-archive-backup.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/audit-service.js?v=v16.0.0.118.40.23"></script>
+</head>
+<body class="sinet-medical-page">
+<div class="sinet-shell">
+  <div class="sinet-page-hero">
+    <h1>🗄 Archive</h1>
+    <p>Retention arhiviranje audit događaja, pregled batch-eva i čitanje sadržaja iz arhive po SINET logici.</p>
+    <span class="sinet-version-badge">v16.0.0.118.40.23</span>
+  </div>
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Aktivno retention pravilo</h2>
+      <div id="archive-rule-box" class="sinet-empty">Učitavanje…</div>
+      <div class="sinet-actions">
+        <button class="sinet-btn orange" id="btn-run-active-archive">🗃 Pokreni arhiviranje po aktivnom pravilu</button>
+        <button class="sinet-btn secondary" id="btn-run-zero-archive">⚡ Arhiviraj sve aktivne audit događaje sada</button>
+      </div>
+    </div>
+    <div class="sinet-card">
+      <h2>Brze veze</h2>
+      <div class="sinet-actions">
+        <button class="sinet-btn secondary" onclick="location.href='audit_center.html'">📜 Audit Center</button>
+        <button class="sinet-btn secondary" onclick="location.href='backup_restore.html'">💾 Backup / Restore</button>
+        <button class="sinet-btn secondary" onclick="location.href='zdravstveni_karton.html'">🗂 Karton</button>
+      </div>
+      <div id="archive-summary" class="sinet-notice mt-3">Učitavanje…</div>
+    </div>
+  </div>
+  <div class="sinet-grid-2">
+    <div class="sinet-card">
+      <h2>Arhivni batch-evi</h2>
+      <div id="archive-batch-list" class="sinet-empty">Učitavanje…</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Detalj batch-a</h2>
+      <div id="archive-batch-detail" class="sinet-empty">Izaberi batch da vidiš sadržaj.</div>
+    </div>
+  </div>
+</div>
+<script>
+  const store = new window.SinetMedicalRuntimeStore();
+  const audit = new window.SinetAuditService(store);
+  let currentRuleId = '';
+  let currentBatchId = '';
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+  function fmtJson(v){ try { return JSON.stringify(v, null, 2); } catch(_) { return String(v); } }
+  function statNotice(total, active){ return `Arhivnih batch-eva: <strong>${total}</strong><br>Aktivnih audit događaja: <strong>${active}</strong>`; }
+  async function render(){
+    const retention = await store.get('retention_rules') || {};
+    const rules = Array.isArray(retention.rules) ? retention.rules : [];
+    const activeRule = rules.find(r => String(r.rule_id) === String(retention.active_rule_id)) || rules[0] || null;
+    currentRuleId = activeRule ? activeRule.rule_id : '';
+    document.getElementById('archive-rule-box').innerHTML = activeRule ? `
+      <div class="sinet-kv">
+        <div>Naziv</div><div>${esc(activeRule.name)}</div>
+        <div>Retencija</div><div>${esc(activeRule.retention_days)} dana</div>
+        <div>Target</div><div>${esc(activeRule.target)}</div>
+        <div>Destinacija</div><div>${esc(activeRule.archive_destination)}</div>
+      </div>` : '<div class="sinet-empty">Nema retention pravila.</div>';
+    const archiveIndex = await store.getArchiveIndex();
+    const activeAudit = await store.getCollection('audit_events_active') || [];
+    const batches = Array.isArray(archiveIndex.batches) ? archiveIndex.batches : [];
+    document.getElementById('archive-summary').innerHTML = statNotice(batches.length, activeAudit.length);
+    document.getElementById('archive-batch-list').innerHTML = batches.length ? batches.map(b => `
+      <button class="sinet-mini-row sinet-selectable-row" data-batch-id="${esc(b.batch_id)}" style="width:100%;text-align:left;background:#fff;">
+        <div>
+          <strong>${esc(b.batch_id)}</strong>
+          <div class="sinet-muted">${esc(b.created_at)} · rule: ${esc(b.rule_id)}</div>
+        </div>
+        <div>
+          <span class="sinet-pill info">${esc(b.events_count)} događaja</span>
+        </div>
+      </button>`).join('') : '<div class="sinet-empty">Još nema arhivnih batch-eva.</div>';
+    document.querySelectorAll('[data-batch-id]').forEach(btn => btn.addEventListener('click', async () => { currentBatchId = btn.getAttribute('data-batch-id'); await renderBatchDetail(); }));
+    await renderBatchDetail();
+  }
+  async function renderBatchDetail(){
+    if (!currentBatchId) { document.getElementById('archive-batch-detail').innerHTML = '<div class="sinet-empty">Izaberi batch da vidiš sadržaj.</div>'; return; }
+    const batch = await store.getArchiveBatch(currentBatchId);
+    if (!batch) { document.getElementById('archive-batch-detail').innerHTML = '<div class="sinet-empty">Batch nije pronađen.</div>'; return; }
+    const preview = Array.isArray(batch.events_inline) ? batch.events_inline.slice(0, 8) : [];
+    document.getElementById('archive-batch-detail').innerHTML = `
+      <div class="sinet-kv mb-2">
+        <div>Batch</div><div>${esc(batch.batch_id)}</div>
+        <div>Period</div><div>${esc(batch.range_from)} → ${esc(batch.range_to)}</div>
+        <div>Putanja</div><div>${esc(batch.archive_path)}</div>
+        <div>Status</div><div>${esc(batch.status)}</div>
+      </div>
+      <div class="sinet-actions compact mb-2">
+        <button class="sinet-btn secondary" id="btn-export-batch-json">⬇️ JSON</button>
+        <button class="sinet-btn secondary" id="btn-export-batch-txt">⬇️ TXT</button>
+      </div>
+      <pre class="sinet-pre">${esc(fmtJson(preview))}</pre>`;
+    document.getElementById('btn-export-batch-json').addEventListener('click', () => downloadText(`${batch.batch_id}.json`, fmtJson(batch), 'application/json;charset=utf-8'));
+    document.getElementById('btn-export-batch-txt').addEventListener('click', () => downloadText(`${batch.batch_id}.txt`, fmtJson(batch), 'text/plain;charset=utf-8'));
+  }
+  function downloadText(filename, text, type='text/plain;charset=utf-8'){
+    const blob = new Blob([text], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+  document.getElementById('btn-run-active-archive').addEventListener('click', async () => {
+    const result = await store.runAuditRetentionArchive(currentRuleId || '');
+    alert(result.moved_count ? `Arhivirano događaja: ${result.moved_count}` : 'Nema događaja starijih od aktivne retencije.');
+    await render();
+  });
+  document.getElementById('btn-run-zero-archive').addEventListener('click', async () => {
+    const retention = await store.get('retention_rules') || {};
+    const rules = Array.isArray(retention.rules) ? retention.rules.slice() : [];
+    let activeRule = rules.find(r => String(r.rule_id) === String(retention.active_rule_id));
+    if (!activeRule) { alert('Nema aktivnog retention pravila.'); return; }
+    const clone = JSON.parse(JSON.stringify(retention));
+    const target = clone.rules.find(r => String(r.rule_id) === String(activeRule.rule_id));
+    if (target) target.retention_days = 0;
+    await store.put('retention_rules', clone);
+    const result = await store.runAuditRetentionArchive(activeRule.rule_id);
+    await store.put('retention_rules', retention);
+    alert(result.moved_count ? `Arhivirano sve aktivno: ${result.moved_count} događaja.` : 'Nema aktivnih događaja za arhiviranje.');
+    await render();
+  });
+  (async function init(){
+    await store.ensureBootstrap();
+    await audit.log('archive','page_opened','page','archive',{path:'archive.html'});
+    await render();
+  })();
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SINET · Integrativni vodič (generator)</title>
+  <title>SINET · Integrativni vodič (generator) · v16.0.0.118.40.10</title>
     <link rel="stylesheet" href="../css/sinet-quickbar.css?v=15.7.7.7">
     <script defer src="../js/sinet-quickbar.js?v=15.7.7.7"></script>
     <script defer src="../js/sinet-profiles-core.js?v=16.0.0.1"></script>
@@ -59,9 +59,63 @@
     .hr{ height:1px; background:#eadfd2; border:0; margin:18px 0; }
     label.chk{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid #eadfd2; border-radius:14px; margin:8px 0; }
     label.chk:hover{ background:#faf6f1; }
-    @media print{ .no-print{ display:none !important; } body{ background:#fff; } }
+    .summary-strip{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:14px 0 16px; }
+    .mini-stat{ background:#f8fbff; border:1px solid #d9e7f5; border-radius:16px; padding:12px 14px; }
+    .mini-stat .k{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6b6b6b; margin-bottom:6px; font-weight:700; }
+    .mini-stat .v{ font-size:18px; font-weight:800; color:#1e4660; line-height:1.15; }
+    .anchor-nav{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0; }
+    .anchor-nav a{ display:inline-block; text-decoration:none; color:#1e4660; background:#eef6ff; border:1px solid #d9e7f5; border-radius:999px; padding:7px 10px; font-size:13px; font-weight:700; }
+    .lead-box{ background:#f7fbff; border:1px solid #d9e7f5; border-radius:16px; padding:12px 14px; margin-top:10px; }
+    .lead-box strong{ color:#1e4660; }
+    .section-intro{ margin:8px 0 0; color:#526375; }
+    .hero-card{ background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); border:1px solid #d9e7f5; }
+    .hero-title{ margin:8px 0 0; color:#1e4660; font-size:1.9rem; }
+    .hero-sub{ color:#526375; margin:6px 0 0; }
+    .meta-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:14px 0 0; }
+    .meta-cell{ background:#fff; border:1px solid #e2ecf7; border-radius:16px; padding:12px 14px; }
+    .meta-cell .k{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#6b6b6b; margin-bottom:6px; font-weight:700; }
+    .meta-cell .v{ font-size:16px; font-weight:800; color:#1e4660; line-height:1.2; }
+    .meta-cell .s{ font-size:12px; color:#6d7b8c; margin-top:6px; }
+    .section-card{ background:#fff; border:1px solid #e8dfd3; border-radius:20px; padding:18px; box-shadow:0 5px 20px rgba(0,20,30,0.06); margin:16px 0; }
+    .section-card > h2{ margin-top:0; }
+    .soft-box{ background:#fcf8f3; border:1px solid #e8dfd3; border-radius:16px; padding:12px 14px; }
+    .section-kicker{ display:inline-flex; align-items:center; gap:8px; background:#eef6ff; border:1px solid #d9e7f5; color:#1e4660; font-weight:700; border-radius:999px; padding:6px 10px; font-size:12px; margin-bottom:10px; }
+    .print-break-before{ break-before:page; page-break-before:always; }
+    .keep-together, .card, .protocol-box, .mini-stat, .meta-cell, .soft-box, .section-card, .folk-box, .soul-box, .warning-box, .lead-box{ break-inside:avoid; page-break-inside:avoid; }
+    @page{ size:A4 portrait; margin:12mm; }
+    #printShell{ display:none; }
+    .print-doc{ background:#fff; color:#1f3040; }
+    .print-page-title{ margin:0 0 6px; font-size:22pt; line-height:1.1; color:#1e4660; }
+    .print-subtitle{ margin:0 0 10px; color:#5e6d78; font-size:11pt; }
+    .print-banner{ border:1px solid #d7dee6; border-left:5px solid #1e4660; border-radius:12px; padding:12px 14px; margin:0 0 12px; }
+    .print-warning{ border-left-color:#c28700; background:#fffdf5; }
+    .print-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .print-block{ border:1px solid #dde5ec; border-radius:12px; padding:12px 14px; margin:0 0 10px; break-inside:avoid; page-break-inside:avoid; }
+    .print-block h2{ margin:0 0 8px; border-bottom:1px solid #d7dee6; padding-bottom:6px; font-size:14pt; }
+    .print-block h3{ margin:0 0 6px; font-size:11.5pt; color:#214d69; }
+    .print-meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:0 0 12px; }
+    .print-chip{ border:1px solid #dde5ec; border-radius:12px; padding:9px 10px; }
+    .print-chip .k{ display:block; font-size:8.8pt; color:#6b7280; text-transform:uppercase; letter-spacing:.04em; }
+    .print-chip .v{ display:block; font-weight:700; font-size:11pt; color:#1f3040; }
+    .print-list{ margin:0; padding-left:18px; }
+    .print-list li{ margin:0 0 5px; }
+    .print-note{ color:#6b7280; font-size:9.5pt; }
+    .print-two-col{ columns:2; column-gap:18px; }
+    .print-two-col > li{ break-inside:avoid; }
+    .print-empty{ padding:18px 20px; border:2px dashed #d7dee6; border-radius:16px; background:#fbfcfe; }
+    .print-footer-note{ margin-top:10px; font-size:9.3pt; color:#677786; }
+    @page{ size:A4 portrait; margin:11mm 10mm 12mm; }
+    @media print{
+      body > *{ display:none !important; }
+      #printShell{ display:block !important; }
+      body{ background:#fff; margin:0; padding:0; max-width:none; font-size:10.5pt; line-height:1.35; }
+      .print-page-title{ font-size:20pt; }
+      .print-grid{ grid-template-columns:1fr 1fr; }
+      .print-meta{ grid-template-columns:repeat(4,1fr); }
+      .print-block,.print-banner,.print-chip{ box-shadow:none !important; }
+    }
   </style>
-<script defer src="../js/sinet-page-nav.js?v=16.0.0.18"></script>
+<script defer src="../js/sinet-page-nav.js?v=16.0.0.118.40.9"></script>
 </head>
 <body>
 
@@ -72,12 +126,12 @@
       <button class="btn btn-ghost" id="btnTXT">TXT</button>
       <button class="btn btn-primary" id="btnMD">📋 Kopiraj (.md)</button>
       <button class="btn btn-ghost" id="btnHTML">HTML</button>
-      <button class="btn btn-ghost" onclick="window.print()">🖨️ Štampaj</button>
+      <button class="btn btn-ghost" onclick="printGuideClean()">🖨️ Štampaj</button>
       <button class="btn btn-ghost" id="btnEmail">✉️ E-mail</button>
       <button class="btn btn-danger" id="btnInsert">🎵 Ubaci u SINET</button>
     </div>
     <div class="row">
-      <div class="pill small"><span id="tplBadge">Template: SINET_TEMPLATE_v2</span></div>
+      <div class="pill small"><span id="tplBadge">Template: SINET_TEMPLATE_v2 · ${GUIDE_SOURCE_MARKER}</span></div>
       <div class="pill small"><span id="freqBadge">Frekvencije: 0</span></div>
       <div class="pill small"><span>miuchins</span><span class="muted">&</span><span>SINET AI</span></div>
     </div>
@@ -106,6 +160,8 @@
   </div>
 
   <div id="sinetChooser" class="card no-print" style="margin-top:14px; display:none;"></div>
+
+  <div id="printShell" aria-hidden="true"></div>
 
   <script>
     // ===================== Helpers =====================
@@ -137,6 +193,7 @@
     let selectedIds = new Set();
     let candidateIds = [];
     let patient = null;
+    let narodneDb = null;
 
     function showMkbSuggestions(list){
       const box = document.getElementById('mkbSuggest');
@@ -183,6 +240,403 @@
       const isGeneric = /^Simptom\s*\d+$/i.test(n) || /^Simptom\s*\d+$/i.test(s);
       if(o && (isGeneric || !n)) return o;
       return (s || n || o || String(it?.id||'')).trim();
+    }
+
+
+    function textOf(){
+      for(const v of arguments){
+        const s = String(v ?? '').trim();
+        if(s) return s;
+      }
+      return '';
+    }
+
+    function uniqueBy(list, keyFn){
+      const out = [];
+      const seen = new Set();
+      for(const item of (Array.isArray(list) ? list : [])){
+        const key = String(keyFn(item) || '').trim();
+        if(!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push(item);
+      }
+      return out;
+    }
+
+
+    const CODE_TOPIC_HINTS = {
+      'M05.9': {
+        title: 'Reumatoidni artritis (seropozitivni) — integrativni vodič',
+        summary: 'Reumatoidni artritis je hronična autoimuna upalna bolest zglobova, često izražena na šakama i prstima kroz jutarnju ukočenost, otok, bol, smanjenu funkciju i zamor hvata. Vodič treba da ostane strogo u temi: reumatologija, autoimune tegobe i funkcija šaka/zglobova.',
+        keywords: ['reumatoidni artritis','reumatoidni','artritis','autoimune','zglobovi','sake','prsti','rucni zglobovi','jutarnja ukocenost','otok','otoci','bolovi zglobova','hvata'],
+        preferredAreas: ['reumatologija','autoimune','reumatoidni','sake, prsti i rucni zglobovi','saka i prsti','sake i hvat','ramena, ruke i sake','otoci saka i rucnih zglobova']
+      },
+      'M06.9': {
+        title: 'Reumatoidni artritis — integrativni vodič',
+        summary: 'Reumatoidni artritis traži dosledan fokus na upalu zglobova, ukočenost, bol, funkciju šaka i jutarnji obrazac simptoma. Generator ne sme mešati nepovezane digestivne, urološke ili ORL teme kada je fokus reumatologija i šake.',
+        keywords: ['reumatoidni artritis','reumatoidni','artritis','autoimune','zglobovi','sake','prsti','rucni zglobovi','jutarnja ukocenost','otok','otoci','bolovi zglobova','hvata'],
+        preferredAreas: ['reumatologija','autoimune','reumatoidni','sake, prsti i rucni zglobovi','saka i prsti','sake i hvat','ramena, ruke i sake','otoci saka i rucnih zglobova']
+      },
+      'M13.0': {
+        title: 'Poliartritis, nespecificiran — integrativni vodič',
+        summary: 'Poliartritis traži fokus na više zglobova, upalni obrazac, bol, ukočenost, otok i funkcionalna ograničenja. Tematski izbor treba da ostane u zglobnoj i reumatološkoj temi, bez uvlačenja nepovezanih sistema.',
+        keywords: ['poliartritis','artritis','zglobovi','ukocenost','otok','otoci','reumatologija','sake','kolena','zglobni bol'],
+        preferredAreas: ['reumatologija','autoimune','reumatoidni','bolovi','sake, prsti i rucni zglobovi','noge, kolena, stopala i hod']
+      }
+    };
+
+    const GENERIC_DX_TOKENS = new Set(['arthritis','rheumatoides','seropositiva','seropozitivno','specificata','non','alia','druga','drugaa','drugi','drugaa','reum','zapalj','zgloba','neoznc','other','unspecified','joint','pain','stiffness','swelling','opis','tema','vodica','morbiditatis','symptomata','signa']);
+
+    function getAllItemCodes(it){
+      const raw = [];
+      const pushRaw = (v) => {
+        if(!v) return;
+        if(typeof v === 'string') raw.push(v);
+        else if(typeof v === 'object') raw.push(v.sifra, v.code);
+      };
+      pushRaw(it?.mkb10);
+      pushRaw(it?.mkb10_obj);
+      const shortlist = (it?.mkb10_obj?.shortlist || it?.shortlist || []);
+      for(const s of shortlist){
+        if(typeof s === 'string') raw.push(s);
+        else if(s && typeof s === 'object') raw.push(s.code, s.sifra);
+      }
+      const out = [];
+      const seen = new Set();
+      for(const c0 of raw){
+        const c = String(c0 || '').toUpperCase().trim();
+        if(!c || seen.has(c)) continue;
+        seen.add(c);
+        out.push(c);
+      }
+      return out;
+    }
+
+    function extractGuideTokens(text){
+      return Array.from(new Set(
+        norm(text || '')
+          .replace(/[^a-z0-9\s]/g, ' ')
+          .split(/\s+/)
+          .map(x => x.trim())
+          .filter(x => x.length >= 4 && !STOP_SR.has(x) && !GENERIC_DX_TOKENS.has(x) && !/^\d+$/.test(x))
+      ));
+    }
+
+    function getTopicHintsForSelection(code, entryTitle, label){
+      const hints = CODE_TOPIC_HINTS[String(code || '').toUpperCase()] || null;
+      const baseKeywords = [];
+      const baseAreas = [];
+      if(hints){
+        baseKeywords.push(...(Array.isArray(hints.keywords) ? hints.keywords : []));
+        baseAreas.push(...(Array.isArray(hints.preferredAreas) ? hints.preferredAreas : []));
+      }
+      if(/^M05\./.test(String(code||'').toUpperCase()) || /^M06\./.test(String(code||'').toUpperCase())){
+        baseKeywords.push('reumatoidni artritis','reumatoidni','artritis','autoimune','zglobovi','sake','prsti','rucni zglobovi','jutarnja ukocenost','otok');
+        baseAreas.push('reumatologija','autoimune','reumatoidni','sake, prsti i rucni zglobovi','saka i prsti','sake i hvat');
+      }
+      for(const t of extractGuideTokens(`${entryTitle||''} ${label||''}`)) baseKeywords.push(t);
+      const keywords = [];
+      const seenK = new Set();
+      for(const k0 of baseKeywords){
+        const k = norm(k0);
+        if(!k || seenK.has(k)) continue;
+        seenK.add(k);
+        keywords.push(k);
+      }
+      const areas = [];
+      const seenA = new Set();
+      for(const a0 of baseAreas){
+        const a = norm(a0);
+        if(!a || seenA.has(a)) continue;
+        seenA.add(a);
+        areas.push(a);
+      }
+      return {
+        title: hints?.title || '',
+        summary: hints?.summary || '',
+        keywords,
+        preferredAreas: areas
+      };
+    }
+
+    function scoreItemForGuide(it, targetCode, hints){
+      if(!it) return null;
+      const titleNorm = norm(bestName(it));
+      const areaNorm = norm(`${it?.oblast || ''} ${it?.podOblast || ''}`);
+      const bodyNorm = norm(`${it?.opis || ''} ${it?.naziv || ''} ${it?.simptom || ''} ${it?.oblast || ''} ${it?.podOblast || ''} ${(it?.mkb10_obj?.naziv || '')}`);
+      const codes = getAllItemCodes(it);
+      let score = 0;
+      let exact = false;
+      const hits = new Set();
+      const areaHits = new Set();
+
+      if(targetCode && codes.includes(targetCode)){
+        score += 180;
+        exact = true;
+      } else if(/^M05\./.test(targetCode) && codes.some(c => /^M0[56]\./.test(c))){
+        score += 95;
+      } else if(/^M06\./.test(targetCode) && codes.some(c => /^M0[56]\./.test(c))){
+        score += 95;
+      } else if(targetCode && codeKey(targetCode) && codes.some(c => inRange(c, `${targetCode[0]}00`, `${targetCode[0]}99`))){
+        score += 16;
+      }
+
+      for(const kw of (hints?.keywords || [])){
+        if(!kw) continue;
+        if(titleNorm.includes(kw)){
+          score += (kw.includes(' ') ? 26 : 16);
+          hits.add(kw);
+        } else if(bodyNorm.includes(kw)){
+          score += (kw.includes(' ') ? 10 : 6);
+          hits.add(kw);
+        }
+      }
+
+      for(const area of (hints?.preferredAreas || [])){
+        if(area && areaNorm.includes(area)){
+          score += 18;
+          areaHits.add(area);
+        }
+      }
+      if(areaNorm.includes('autoimune')){ score += 14; areaHits.add('autoimune'); }
+      if(areaNorm.includes('reumatologija')){ score += 18; areaHits.add('reumatologija'); }
+      if(areaNorm.includes('sake') || areaNorm.includes('saka i prsti') || areaNorm.includes('rucni zglobovi')){ score += 14; areaHits.add('sake'); }
+
+      const strongHits = hits.size + areaHits.size + (exact ? 2 : 0);
+      if(!exact && strongHits < 2) return null;
+      if(!exact && score < 28) return null;
+
+      const hasConflictingPrimary = codes.some(c => {
+        const head = String(c||'').toUpperCase();
+        return head && !/^M/.test(head) && !/^R/.test(head) && !/^Z/.test(head) && !/^H/.test(head);
+      });
+      if(hasConflictingPrimary && !exact && strongHits < 3) score -= 20;
+      if(score < 28) return null;
+      return { score, exact, strongHits, codes };
+    }
+
+    function getDxMeta(items){
+      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
+      const dx = dxIndex && selectedICD ? dxIndex[selectedICD] : null;
+      const hints = getTopicHintsForSelection(selectedICD, entry?.title, selectedLabel);
+      const mkbObjFromItems = (Array.isArray(items) ? items : []).map(it => (it && typeof it.mkb10_obj === 'object') ? it.mkb10_obj : null).filter(Boolean);
+      const title = textOf(dx?.title, hints?.title, entry?.title, mkbObjFromItems[0]?.naziv, selectedLabel, selectedICD);
+      const shortDesc = textOf(dx?.summary, dx?.opis, hints?.summary, mkbObjFromItems[0]?.opis, (Array.isArray(items) && items[0]) ? items[0].opis : '', 'Opis za ovu MKB-10 šifru još nije posebno izvučen iz centralnog MKB sloja; trenutno koristimo opis iz najbližeg SINET unosa.');
+      const refs = Array.isArray(dx?.sinet_refs) ? dx.sinet_refs : [];
+      return { entry, dx, title, shortDesc, refs, hints };
+    }
+
+    const GUIDE_AUDIO_WHITELISTS = {
+      'M05.9': [5, 10, 20, 40, 55, 72, 95, 110, 174, 220, 285, 432],
+      'M06.9': [5, 10, 20, 40, 55, 72, 95, 110, 174, 220, 285, 432],
+      'M13.0': [10, 20, 40, 55, 72, 95, 110, 174, 220, 285, 432]
+    };
+
+
+    const GUIDE_ITEM_LIMITS = {
+      'M05.9': 12,
+      'M06.9': 12,
+      'M13.0': 10
+    };
+
+    const GUIDE_STRICT_REF_CODES = new Set(['M05.9','M06.9','M13.0']);
+
+    function hzNear(a, b, tol){
+      return Math.abs(Number(a || 0) - Number(b || 0)) <= Number(tol || 0.35);
+    }
+
+    function hzKeyGuide(hz){
+      return String(Math.round(Number(hz || 0) * 100) / 100);
+    }
+
+    function collectFrequencyRows(ids){
+      const rows = [];
+      let rowIndex = 0;
+      ids.forEach((id, sourceIndex)=>{
+        const it = byId[String(id)];
+        if(!it) return;
+        const perMin = Math.max(1, Number(it.trajanjePoFrekvencijiMin || it.trajanjeMin || 5) || 5);
+        const freqs = Array.isArray(it.frekvencije) ? it.frekvencije : [];
+        freqs.forEach((f, freqIndex)=>{
+          if(!f || f.enabled === false) return;
+          const hz = Number(f.value ?? f.hz);
+          if(!hz || !isFinite(hz)) return;
+          const name = textOf(f.naziv, `${hz} Hz`);
+          const desc = textOf(f.opis, f.funkcija, f.svrha, f.desc, 'Bez dodatnog opisa frekvencije.');
+          rows.push({
+            hz,
+            minutes: perMin,
+            src: bestName(it),
+            name,
+            desc,
+            itemId: String(it.id || ''),
+            sourceIndex,
+            freqIndex,
+            rowIndex: rowIndex++,
+            rawFreq: JSON.parse(JSON.stringify(f))
+          });
+        });
+      });
+      return rows;
+    }
+
+    function reduceFrequencyRows(rows){
+      const code = String(selectedICD || '').toUpperCase();
+      const whitelist = GUIDE_AUDIO_WHITELISTS[code] || null;
+
+      if(whitelist && whitelist.length){
+        const chosen = [];
+        const usedHz = new Set();
+        const pool = rows.filter(r => r && Number.isFinite(Number(r.hz)) && Number(r.hz) > 0 && Number(r.hz) <= 432);
+        for(const target of whitelist){
+          const matches = pool.filter(r => !usedHz.has(hzKeyGuide(r.hz)) && hzNear(r.hz, target, 0.4));
+          if(!matches.length) continue;
+          matches.sort((a,b)=>
+            (Math.abs(Number(a.hz) - target) - Math.abs(Number(b.hz) - target)) ||
+            (a.sourceIndex - b.sourceIndex) ||
+            (a.freqIndex - b.freqIndex) ||
+            (a.rowIndex - b.rowIndex)
+          );
+          const pick = matches[0];
+          usedHz.add(hzKeyGuide(pick.hz));
+          chosen.push(pick);
+        }
+        if(chosen.length) return chosen;
+      }
+
+      const dedup = [];
+      const seen = new Set();
+      for(const row of rows){
+        const key = hzKeyGuide(row.hz);
+        if(seen.has(key)) continue;
+        seen.add(key);
+        dedup.push(row);
+      }
+      return dedup.slice(0, 18);
+    }
+
+    function buildFrequencyRowsDetailed(ids){
+      return reduceFrequencyRows(collectFrequencyRows(ids));
+    }
+
+    function buildAlternativeRows(items){
+      const rows = [];
+      for(const it of (Array.isArray(items) ? items : [])){
+        const src = bestName(it);
+        const list = Array.isArray(it.alternativne_metode) ? it.alternativne_metode : [];
+        for(const m of list){
+          if(!m) continue;
+          rows.push({
+            title: textOf(m.naziv, m.name, m.id, 'Metoda'),
+            evidence: textOf(m.evidenceTier, m.evidence, ''),
+            desc: textOf(m.opis, m.summary, m.desc, 'Bez dodatnog opisa metode.'),
+            src
+          });
+        }
+      }
+      return uniqueBy(rows, r => `${r.title}|${r.desc}`);
+    }
+
+
+    const STOP_SR = new Set(['i','ili','u','na','za','od','do','sa','bez','kod','zbog','kao','koji','koja','koje','ovo','ono','taj','ta','to','prvi','drugi','treci','cetvrti','simptom','simptoma','tegoba','tegobe','bolest','stanje','podrska','pomocni','mere','metode','narodni','lekovi','metoda','lecenja','lecenje','narodnih']);
+
+    function tokenizeSr(text){
+      return Array.from(new Set(
+        norm(text || '')
+          .replace(/[^a-z0-9\s]/g, ' ')
+          .split(/\s+/)
+          .map(x => x.trim())
+          .filter(x => x.length >= 4 && !STOP_SR.has(x) && !/^\d+$/.test(x))
+      ));
+    }
+
+    function getFolkTextForItem(it){
+      const h = it?.holisticki || it?.holistika || {};
+      return textOf(h?.saveti?.narodno, h?.narodni_lek?.opis, h?.narodni_lek?.tekst, it?.narodni_lek?.opis, it?.narodni_lek?.tekst);
+    }
+
+    function getFolkSourceForItem(it){
+      const h = it?.holisticki || it?.holistika || {};
+      const src = h?.narodni_lek?.izvor || it?.narodni_lek?.izvor || null;
+      if(!src) return '';
+      return textOf(src.autor, src.delo, src.url, src.izvor, src.source);
+    }
+
+    function isGenericFolkText(text){
+      const n = norm(text || '');
+      return (
+        n.includes('alternativni pristup je pomocni sloj') ||
+        n.includes('pomocne mere mogu biti korisne kao podrska') ||
+        n.includes('kod akutnih stanja pomocne mere su samo podrska') ||
+        n.includes('frekvencije su podrzne/informativne') ||
+        n.includes('ovaj sloj ne zamenjuje pregled')
+      );
+    }
+
+    function flattenNarodneDb(){
+      if(!narodneDb || typeof narodneDb !== 'object') return [];
+      const buckets = ['tegobe','biljke_i_namirnice','opsti_saveti','recepti_protokoli'];
+      const rows = [];
+      for(const bucket of buckets){
+        const arr = Array.isArray(narodneDb[bucket]) ? narodneDb[bucket] : [];
+        for(const item of arr){
+          if(item) rows.push({ ...item, _bucket: bucket });
+        }
+      }
+      return rows;
+    }
+
+    function buildNarodniRows(items){
+      const rows = [];
+      for(const it of (Array.isArray(items) ? items : [])){
+        const desc = getFolkTextForItem(it);
+        if(!desc) continue;
+        rows.push({
+          title: bestName(it),
+          desc,
+          src: bestName(it),
+          source: getFolkSourceForItem(it),
+          generic: isGenericFolkText(desc),
+          lane: 'catalog'
+        });
+      }
+      const uniq = uniqueBy(rows, r => `${norm(r.desc)}|${norm(r.title)}`);
+      uniq.sort((a,b)=> Number(a.generic) - Number(b.generic) || a.title.localeCompare(b.title, 'sr', { sensitivity:'base' }));
+      return uniq;
+    }
+
+    function buildNarodniCandidates(items, dxMeta){
+      const db = flattenNarodneDb().filter(x => x && x.strict_import_ready !== false);
+      if(!db.length) return [];
+      const seeds = [dxMeta?.title || '', selectedLabel || '', selectedICD || ''];
+      for(const it of (Array.isArray(items) ? items : []).slice(0, 10)){
+        seeds.push(bestName(it), it?.oblast || '', it?.podOblast || '');
+      }
+      const tokens = tokenizeSr(seeds.join(' ')).slice(0, 14);
+      if(!tokens.length) return [];
+      const scored = [];
+      for(const rec of db){
+        const titleNorm = norm(rec.naziv || '');
+        const hay = norm(`${rec.naziv || ''} ${rec.opis_kratak || ''} ${(rec.tagovi || []).join(' ')} ${rec.sekcija_knjige || ''}`);
+        let score = 0;
+        for(const t of tokens){
+          if(titleNorm.includes(t)) score += 4;
+          else if(hay.includes(t)) score += 1;
+        }
+        if(score < 4) continue;
+        scored.push({
+          title: textOf(rec.naziv, 'Narodna metoda'),
+          desc: textOf(rec.opis_kratak, 'Bez kratkog opisa.'),
+          src: 'Enciklopedija narodnih metoda lečenja',
+          pages: Array.isArray(rec.strane) ? rec.strane.join(', ') : (rec.raspon_strana || ''),
+          tip: rec.tip || rec._bucket || '',
+          score,
+          quality: Number(rec.quality_score || 0),
+          lane: 'review-first'
+        });
+      }
+      scored.sort((a,b)=> b.score - a.score || b.quality - a.quality || a.title.localeCompare(b.title, 'sr', { sensitivity:'base' }));
+      return uniqueBy(scored, r => `${norm(r.title)}|${norm(r.desc)}`).slice(0, 6);
     }
 
     function codeKey(code){
@@ -306,68 +760,157 @@
     }
 
     function buildFrequencyRows(ids){
-      const rows = [];
-      for(const id of ids){
-        const it = byId[String(id)];
-        if(!it) continue;
-        const perMin = Math.max(1, Number(it.trajanjePoFrekvencijiMin || it.trajanjeMin || 5) || 5);
-        const freqs = Array.isArray(it.frekvencije) ? it.frekvencije : [];
-        for(const f of freqs){
-          if(!f || f.enabled === false) continue;
-          const hz = Number(f.value ?? f.hz);
-          if(!hz || !isFinite(hz)) continue;
-          rows.push({ hz, minutes: perMin, src: bestName(it) });
-        }
+      return buildFrequencyRowsDetailed(ids).map(r => ({ hz: r.hz, minutes: r.minutes, src: r.src }));
+    }
+
+    function getEffectiveGuideIds(ids){
+      const limit = GUIDE_ITEM_LIMITS[String(selectedICD || '').toUpperCase()] || 12;
+      const seen = new Set();
+      const out = [];
+      for(const id of (Array.isArray(ids) ? ids : [])){
+        const sid = String(id || '').trim();
+        if(!sid || seen.has(sid) || !byId[sid]) continue;
+        seen.add(sid);
+        out.push(sid);
+        if(out.length >= limit) break;
       }
-      return rows;
+      return out;
+    }
+
+
+    function getActiveGuideIds(){
+      const base = candidateIds && candidateIds.length ? candidateIds : Array.from(selectedIds || []);
+      return getEffectiveGuideIds(base);
+    }
+
+    function enforceGuideCap(){
+      const ids = getActiveGuideIds();
+      selectedIds = new Set(ids);
+      candidateIds = ids.slice();
+      return ids;
     }
 
     function buildGuideHtml(){
-      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
-      const title = entry?.title || '';
+      const ids = enforceGuideCap();
+      const items = ids.map(id => byId[String(id)]).filter(Boolean);
+      const freqRows = buildFrequencyRowsDetailed(ids);
+      const altRows = buildAlternativeRows(items);
+      const dxMeta = getDxMeta(items);
+      const folkRows = buildNarodniRows(items);
+      const folkCandidates = buildNarodniCandidates(items, dxMeta);
       const chapter = chapterFor(selectedICD);
       const pSum = patientSummary(patient);
       const tests = guessTestsFor(selectedICD);
       const integrativeBlock = buildIntegrativeBlockHtml();
 
-      const ids = Array.from(selectedIds);
-      const items = ids.map(id => byId[String(id)]).filter(Boolean);
-      const freqRows = buildFrequencyRows(ids);
       const freqTable = freqRows.length ? `
         <table class="freq-table">
-          <thead><tr><th>Frekvencija</th><th>Trajanje</th><th>Izvor (SINET)</th></tr></thead>
+          <thead><tr><th>Frekvencija</th><th>Opis / svrha</th><th>Trajanje</th><th>Izvor (SINET)</th></tr></thead>
           <tbody>
-            ${freqRows.slice(0, 80).map(r=>`<tr><td><strong>${esc(r.hz)} Hz</strong></td><td>${esc(r.minutes)} min</td><td>${esc(r.src)}</td></tr>`).join('')}
+            ${freqRows.slice(0, 120).map(r=>`<tr><td><strong>${esc(r.hz)} Hz</strong></td><td><strong>${esc(r.name)}</strong><div class="muted small">${esc(r.desc)}</div></td><td>${esc(r.minutes)} min</td><td>${esc(r.src)}</td></tr>`).join('')}
           </tbody>
         </table>
-        ${freqRows.length>80?`<div class="muted small">Prikazano 80 od ${freqRows.length} frekvencija.</div>`:''}
+        ${freqRows.length>120?`<div class="muted small">Prikazano 120 od ${freqRows.length} frekvencija.</div>`:''}
       ` : `<div class="muted">Nema odabranih frekvencija. Označi SINET stavke ispod.</div>`;
 
-      const candList = items.length ? items.map(it=>`<li><strong>${esc(bestName(it))}</strong><br><span class="muted small">${esc(String(it.opis||'')).slice(0,220)}${String(it.opis||'').length>220?'…':''}</span></li>`).join('') : '<li class="muted">(Nema izabranih stavki)</li>';
+      const candList = items.length ? items.map(it=>`
+        <li>
+          <strong>${esc(bestName(it))}</strong>
+          <div class="muted small">${esc(String(it.opis||'')).slice(0,320)}${String(it.opis||'').length>320?'…':''}</div>
+          <div class="muted small">MKB-10: ${esc(textOf(it.mkb10, it.mkb10_obj?.sifra, selectedICD || '—'))}${textOf(it.mkb10_obj?.naziv) ? ` — ${esc(it.mkb10_obj.naziv)}` : ''}</div>
+        </li>`).join('') : '<li class="muted">(Nema izabranih stavki)</li>';
+
+      const altHtml = altRows.length ? `
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sekcija 4b</div>
+          <h2 id="alternativne-metode">🌿 Alternativne metode / podrške</h2>
+          <ul>
+            ${altRows.slice(0, 24).map(r=>`<li><strong>${esc(r.title)}</strong>${r.evidence ? ` <span class="badge">evidence ${esc(r.evidence)}</span>` : ''}<br><span class="muted small">${esc(r.desc)}</span><br><span class="muted small">Izvor: ${esc(r.src)}</span></li>`).join('')}
+          </ul>
+          ${altRows.length>24 ? `<div class="muted small">Prikazano 24 od ${altRows.length} metoda.</div>` : ''}
+        </div>
+      ` : '';
+
+
+      const folkHtml = (folkRows.length || folkCandidates.length) ? `
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sekcija 4c</div>
+          <h2 id="narodni-koraci">🌿 Narodni lekovi i kućni koraci</h2>
+          ${folkRows.length ? `
+            <div class="protocol-box">
+              <strong>Iz odabranih SINET stavki</strong>
+              <ul>
+                ${folkRows.slice(0, 12).map(r=>`<li><strong>${esc(r.title)}</strong>${r.generic ? ` <span class="badge">osnovni kućni koraci</span>` : ''}<br><span class="muted small">${esc(r.desc)}</span>${r.source ? `<br><span class="muted small">Izvor: ${esc(r.source)}</span>` : ''}</li>`).join('')}
+              </ul>
+              ${folkRows.length>12 ? `<div class="muted small">Prikazano 12 od ${folkRows.length} unosa.</div>` : ''}
+            </div>` : ''}
+          ${folkCandidates.length ? `
+            <div class="protocol-box" style="border-left-color:#2d6a4f; background:#f4fbf5;">
+              <strong>Review-first kandidati iz Enciklopedije narodnih metoda lečenja</strong>
+              <div class="muted small" style="margin-bottom:8px;">Informativno — za pažljiv ručni pregled pre jačeg in-app oslanjanja.</div>
+              <ul>
+                ${folkCandidates.map(r=>`<li><strong>${esc(r.title)}</strong>${r.tip ? ` <span class="badge">${esc(r.tip)}</span>` : ''}<br><span class="muted small">${esc(r.desc)}</span>${r.pages ? `<br><span class="muted small">Strane: ${esc(r.pages)}</span>` : ''}</li>`).join('')}
+              </ul>
+            </div>` : ''}
+        </div>
+      ` : '';
 
       const audioPlan = `
         <div class="protocol-box">
           <div><strong>Default:</strong> 5 min po frekvenciji (ili preporuka iz stavke) · Loop: 1 · Dnevno: 1 · Pauza: 0–3 dana (individualno).</div>
-          <div class="muted small">Napomena: početne vrednosti. Prilagodi prema toleranciji.</div>
+          <div class="muted small">Polirani audio standard: glasnoća ujednačena po sesiji; frekvencije ispod 120 Hz koriste čujnu podlogu (noseći 200 Hz) radi boljeg komfora na mobilnim i Bluetooth uređajima.</div>
         </div>
       `;
 
       const html = `
-        <div class="card" style="margin-bottom:14px;">
-          <div class="row" style="justify-content:space-between; align-items:flex-start;">
-            <div>
+        <div class="card hero-card" style="margin-bottom:14px;">
+          <div class="row" style="justify-content:space-between; align-items:flex-start; gap:14px;">
+            <div style="flex:1 1 560px; min-width:280px;">
+              <div class="section-kicker">SINET PRINT STANDARD · Integrativni vodič</div>
               <div class="badge">${esc(selectedICD || 'MKB-10')}</div>
-              <h2 style="margin:8px 0 0 0;">${esc(title || selectedLabel || selectedICD || 'Izaberi šifru')}</h2>
-              <div class="muted small">${esc(chapter)}</div>
+              <h2 class="hero-title">${esc(dxMeta.title || selectedLabel || selectedICD || 'Izaberi šifru')}</h2>
+              <div class="hero-sub">${esc(chapter)}</div>
             </div>
-            <div class="small" style="text-align:right;">
-              <div class="muted">Generisano: ${esc(new Date().toLocaleString('sr-RS'))}</div>
-              <div class="muted">Autor: miuchins &amp; SINET AI</div>
+            <div class="small soft-box keep-together" style="min-width:230px; max-width:320px;">
+              <div><strong>Generisano:</strong> ${esc(new Date().toLocaleString('sr-RS'))}</div>
+              <div><strong>Autor:</strong> miuchins &amp; SINET AI</div>
+              <div><strong>Template:</strong> SINET_TEMPLATE_v2 · GUIDE_FORCE_v12</div>
             </div>
+          </div>
+          <div class="lead-box">
+            <strong>Centralni opis teme:</strong> ${esc(dxMeta.shortDesc)}
+            <div class="section-intro">Generator sada odmah na vrhu pokazuje šta vodič sadrži: MKB osnovu, opis teme, broj izabranih SINET stavki, frekvencije, alternativne metode i narodni sloj — u formatu bližem SINET kartici simptoma i print/export standardu.</div>
+          </div>
+          <div class="meta-grid">
+            <div class="meta-cell"><div class="k">MKB-10</div><div class="v">${esc(selectedICD || '—')}</div><div class="s">Naziv / tema vodiča</div></div>
+            <div class="meta-cell"><div class="k">Izabrane SINET stavke</div><div class="v">${items.length}</div><div class="s">Osnova za frekvencije i preporuke</div></div>
+            <div class="meta-cell"><div class="k">Frekvencije / alternative</div><div class="v">${freqRows.length} / ${altRows.length}</div><div class="s">Audio + podržni sloj</div></div>
+            <div class="meta-cell"><div class="k">Narodni sloj</div><div class="v">${folkRows.length + folkCandidates.length}</div><div class="s">Kućni koraci i review-first kandidati</div></div>
+          </div>
+          <div class="anchor-nav">
+            <a href="#mkb-klasifikacija">MKB</a>
+            <a href="#opis-teme">Opis</a>
+            <a href="#pretrage-osnovno">Pretrage</a>
+            <a href="#standardna-medicina">Standardna medicina</a>
+            <a href="#psihosomatika-podrska">Psihosomatika</a>
+            <a href="#ishrana-navike">Ishrana</a>
+            <a href="#sinet-zvucna-terapija">Zvučna terapija</a>
+            <a href="#alternativne-metode">Alternative</a>
+            <a href="#narodni-koraci">Narodni lekovi</a>
+            <a href="#duhovna-podrska">Duhovna podrška</a>
           </div>
         </div>
 
         <div class="section-grid">
+          <div class="card">
+            <h3 id="mkb-klasifikacija">🏷️ MKB-10 i klasifikacija</h3>
+            <div class="protocol-box">
+              <div><strong>Šifra:</strong> ${esc(selectedICD || '—')}</div>
+              <div><strong>Naziv:</strong> ${esc(dxMeta.title || selectedLabel || 'Nije pronađen centralni naziv')}</div>
+              <div class="muted small" style="margin-top:8px;">${esc(dxMeta.shortDesc)}</div>
+            </div>
+            <div class="muted small">Ako centralni MKB sloj nema dovoljan opis, generator koristi najbliži SINET opis iz izabranih stavki.</div>
+          </div>
           <div class="card">
             <h3>🧑‍⚕️ Personalizovani sažetak</h3>
             <div class="muted small">Generator koristi poslednjeg izabranog pacijenta iz Anamneze (ako postoji).</div>
@@ -377,17 +920,31 @@
             </div>
             <div class="muted small">Ovaj vodič je okvir; uvek proveri kontraindikacije.</div>
           </div>
-          <div class="card">
-            <h3>🔬 Preporučene pretrage (osnovno)</h3>
-            <ul>${tests.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-            <div class="muted small">Snimanja/analize se određuju prema simptomima i nalazima.</div>
-          </div>
+        </div>
+
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sažetak teme</div>
+          <h2 id="opis-teme">📝 Opis simptoma / tema vodiča</h2>
+          <div class="muted small">Generator sažima opis iz aktivnog MKB sloja i izabranih SINET stavki, da u print/export izlazu ne ostane samo šifra bez smislenog teksta.</div>
+          <div class="protocol-box"><strong>Sažeti centralni opis:</strong> ${esc(dxMeta.shortDesc)}<br><span class="muted small">Izabrane stavke: ${items.length} · Frekvencije: ${freqRows.length} · Alternativne metode: ${altRows.length} · Narodni sloj: ${folkRows.length + folkCandidates.length}</span></div>
+          <ul>
+            ${items.slice(0, 8).map(it=>`<li><strong>${esc(bestName(it))}</strong> — ${esc(String(it.opis||'')).slice(0,260)}${String(it.opis||'').length>260?'…':''}</li>`).join('') || `<li>${esc(dxMeta.shortDesc)}</li>`}
+          </ul>
+        </div>
+
+        <div class="section-card keep-together">
+          <div class="section-kicker">Osnovna procena</div>
+          <h2 id="pretrage-osnovno">🔬 Preporučene pretrage (osnovno)</h2>
+          <ul>${tests.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+          <div class="muted small">Snimanja/analize se određuju prema simptomima i nalazima.</div>
         </div>
 
         ${integrativeBlock}
 
-        <h2>🔷 1) Standardna medicina (orijentacija)</h2>
-        <div class="two-col">
+        <div class="section-card print-break-before">
+          <div class="section-kicker">Sekcija 1</div>
+          <h2 id="standardna-medicina">🔷 1) Standardna medicina (orijentacija)</h2>
+          <div class="two-col">
           <div class="card">
             <h3>Šta obično radi lekar</h3>
             <ul>
@@ -405,20 +962,26 @@
               <li>Neuobičajen bol ili simptomi koji se brzo šire.</li>
             </ul>
           </div>
+          </div>
         </div>
 
-        <div class="soul-box">
-          <h2>🌀 2) Psihosomatika i stres (podrška)</h2>
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sekcija 2</div>
+          <div class="soul-box">
+          <h2 id="psihosomatika-podrska">🌀 2) Psihosomatika i stres (podrška)</h2>
           <ul>
             <li><strong>Stres → inflamacija:</strong> hronični stres često pogoršava simptome. Uvedi mikro-pauze (3–5 min) više puta dnevno.</li>
             <li><strong>Dnevnik simptoma:</strong> beleži okidače (hrana, san, emocije, napor).</li>
             <li><strong>Disanje:</strong> 4–6 sek udah / 6–8 sek izdah, 5 min, 2× dnevno.</li>
           </ul>
           <div class="protocol-box"><strong>Afirmacija:</strong> "Moje telo se umiruje. Biram mir, strpljenje i postepeno ozdravljenje."</div>
+          </div>
         </div>
 
-        <div class="folk-box">
-          <h2>🌿 3) Ishrana i podrška navikama</h2>
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sekcija 3</div>
+          <div class="folk-box">
+          <h2 id="ishrana-navike">🌿 3) Ishrana i podrška navikama</h2>
           <div class="two-col">
             <div>
               <h3>Osnovna pravila</h3>
@@ -437,27 +1000,38 @@
               <div class="muted small">Uvoditi postepeno — jedan po jedan.</div>
             </div>
           </div>
+          </div>
         </div>
 
-        <h2>🎵 4) SINET zvučna terapija (protokol)</h2>
-        <p class="muted">Na osnovu MKB-10 šifre biramo SINET stavke (katalog) i gradimo listu frekvencija. Izbor stavki menjaš ispod (ne ulazi u kopirani tekst).</p>
-        ${audioPlan}
-        ${freqTable}
-        <div class="card" style="margin-top:14px;">
+        <div class="section-card print-break-before">
+          <div class="section-kicker">Sekcija 4</div>
+          <h2 id="sinet-zvucna-terapija">🎵 4) SINET zvučna terapija (protokol)</h2>
+          <p class="muted">Na osnovu MKB-10 šifre biramo SINET stavke (katalog) i gradimo sažeti audio protokol. U clean print vodiču prikazujemo samo tematski najrelevantnije frekvencije, ne čitav zbir svih varijanti iz svih stavki.</p>
+          ${audioPlan}
+          ${freqTable}
+          <div class="card keep-together" style="margin-top:14px;">
           <h3>Izabrane SINET stavke</h3>
           <ol>${candList}</ol>
+          </div>
         </div>
 
-        <h2>🙏 5) Duhovna podrška</h2>
-        <div class="card">
+        ${altHtml}
+
+        ${folkHtml}
+
+        <div class="section-card keep-together">
+          <div class="section-kicker">Sekcija 5</div>
+          <h2 id="duhovna-podrska">🙏 5) Duhovna podrška</h2>
+          <div class="card keep-together">
           <div class="protocol-box" style="text-align:center; font-style:italic;">
             "Gospode, daruj mi mir, snagu i jasnoću. Pomozi mi da biram ono što mi koristi, uz mudrost i strpljenje."
             <div class="muted small">(Prilagodi prema svojoj tradiciji.)</div>
           </div>
+          </div>
         </div>
 
         <hr class="hr">
-        <div class="muted small">Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi <code>data/sinet_dx_index.json</code> i SINET katalog stavke.</div>
+        <div class="muted small">Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi <code>data/sinet_dx_index.json</code>, centralni MKB sloj i narodne metode sloj.</div>
       `;
       return html;
     }
@@ -465,9 +1039,11 @@
     function render(){
       document.getElementById('badgeIcd').textContent = selectedICD ? `MKB-10: ${selectedICD}` : 'MKB-10';
       document.title = selectedICD ? `SINET vodič · ${selectedICD}` : 'SINET · Integrativni vodič';
+      enforceGuideCap();
       document.getElementById('contentToCopy').innerHTML = buildGuideHtml();
       renderChooser();
       updateBadgesAndButtons();
+      syncPrintShell();
     }
 
     function computeCandidates(){
@@ -482,24 +1058,54 @@
         refs = dxIndex[selectedICD].sinet_refs.map(String);
       }
 
-      if(!refs.length && catalog && catalog.length){
-        const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
-        const keyText = `${selectedLabel||''} ${entry?.title||''}`.trim() || selectedICD;
-        const rawParts = norm(keyText).split(/\s+/).map(x=>x.replace(/[^a-z0-9]+/g,'')).filter(x=>x.length>=4 && !/^\d+$/.test(x));
-        const parts = Array.from(new Set(rawParts)).slice(0, 10);
+      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
+      const hints = getTopicHintsForSelection(selectedICD, entry?.title, selectedLabel);
+      const preferred = [];
+      const seenPreferred = new Set();
+      const pushPreferred = (id) => {
+        const sid = String(id || '').trim();
+        if(!sid || seenPreferred.has(sid) || !byId[sid]) return;
+        seenPreferred.add(sid);
+        preferred.push(sid);
+      };
+
+      for(const id of refs) pushPreferred(id);
+
+      const hardLimit = GUIDE_ITEM_LIMITS[selectedICD] || 18;
+      const strictRefs = GUIDE_STRICT_REF_CODES.has(selectedICD) && refs.length > 0;
+
+      if(catalog && catalog.length){
         const scored = [];
         for(const it of catalog){
-          const hay = norm(`${it.simptom||''} ${it.naziv||''} ${it.opis||''}`);
-          let score = 0;
-          for(const p of parts){ if(hay.includes(p)) score++; }
-          if(score>0) scored.push({ id: String(it.id), score });
+          const scoredItem = scoreItemForGuide(it, selectedICD, hints);
+          if(!scoredItem) continue;
+          scored.push({ id: String(it.id), score: scoredItem.score, exact: scoredItem.exact, strongHits: scoredItem.strongHits });
         }
-        scored.sort((a,b)=> b.score - a.score);
-        for(const x of scored.slice(0,24)) refs.push(x.id);
+        scored.sort((a,b)=> (Number(b.exact) - Number(a.exact)) || (b.score - a.score) || (b.strongHits - a.strongHits) || a.id.localeCompare(b.id, 'sr', { sensitivity:'base' }));
+        const strictPool = strictRefs
+          ? scored.filter(x => x.exact || x.strongHits >= 4 || x.score >= 120)
+          : scored;
+        const pool = strictPool.length ? strictPool : scored;
+        for(const x of pool.slice(0, hardLimit * 2)) pushPreferred(x.id);
       }
 
-      candidateIds = refs.slice(0, 30).map(String);
+      if(!preferred.length && catalog && catalog.length){
+        const keyText = `${selectedLabel||''} ${entry?.title||''}`.trim() || selectedICD;
+        const parts = extractGuideTokens(keyText).slice(0, 10);
+        const broad = [];
+        for(const it of catalog){
+          const hay = norm(`${it.simptom||''} ${it.naziv||''} ${it.opis||''} ${it.oblast||''} ${it.podOblast||''}`);
+          let score = 0;
+          for(const p of parts){ if(hay.includes(p)) score++; }
+          if(score > 1) broad.push({ id: String(it.id), score });
+        }
+        broad.sort((a,b)=> b.score - a.score);
+        for(const x of broad.slice(0, hardLimit)) pushPreferred(x.id);
+      }
+
+      candidateIds = preferred.slice(0, hardLimit);
       for(const id of candidateIds) selectedIds.add(String(id));
+      enforceGuideCap();
     }
 
     function renderChooser(){
@@ -512,7 +1118,7 @@
       }
       box.style.display = 'block';
 
-      const items = candidateIds.map(id=>byId[String(id)]).filter(Boolean);
+      const items = getActiveGuideIds().map(id=>byId[String(id)]).filter(Boolean);
       const list = items.map(it=>{
         const id = String(it.id);
         const checked = selectedIds.has(id) ? 'checked' : '';
@@ -647,73 +1253,59 @@
 
     // ===================== Unified export / template =====================
     const TEMPLATE_ID = 'SINET_TEMPLATE_v1';
+    const GUIDE_SOURCE_MARKER = 'GUIDE_CAP_v11';
 
     function buildGuideMarkdown(){
-      if(!selectedICD) return '# SINET vodič\n\n(Nije izabrana MKB-10 šifra.)\n';
-      const entry = mkb.find(e => String(e.code).toUpperCase() === selectedICD) || null;
-      const title = entry?.title || selectedLabel || selectedICD;
-      const chapter = chapterFor(selectedICD);
+      const ids = enforceGuideCap();
+      const items = ids.map(id => byId[String(id)]).filter(Boolean);
+      const freqRows = buildFrequencyRowsDetailed(ids);
+      const altRows = buildAlternativeRows(items);
+      const dxMeta = getDxMeta(items);
+      const folkRows = buildNarodniRows(items);
+      const folkCandidates = buildNarodniCandidates(items, dxMeta);
       const pSum = patientSummary(patient);
       const tests = guessTestsFor(selectedICD);
-      const integrative = getIntegrativeRecommendations();
-      const integrativePlan = getIntegrativePlan();
-
-      const ids = Array.from(selectedIds);
-      const items = ids.map(id => byId[String(id)]).filter(Boolean);
-      const freqRows = buildFrequencyRows(ids);
-
       const md = [];
       md.push(`# SINET integrativni vodič — ${selectedICD}`);
-      md.push(`**${title}**`);
-      md.push(`_${chapter}_`);
       md.push('');
-      md.push('> ⚠️ Informativno: nije zamena za lekarski pregled. Kod hitnih simptoma odmah potraži urgentnu pomoć.');
+      md.push(`- **Naziv / tema:** ${dxMeta.title || selectedLabel || selectedICD}`);
+      md.push(`- **MKB-10:** ${selectedICD}`);
+      md.push(`- **Poglavlje:** ${chapterFor(selectedICD)}`);
+      md.push(`- **Generisano:** ${new Date().toLocaleString('sr-RS')}`);
+      md.push(`- **Autori:** miuchins + SINET AI`);
+      md.push(`- **Izabrane SINET stavke:** ${items.length}`);
+      md.push(`- **Frekvencije:** ${freqRows.length}`);
+      md.push(`- **Alternativne metode:** ${altRows.length}`);
+      md.push(`- **Narodni sloj:** ${folkRows.length + folkCandidates.length}`);
       md.push('');
-      md.push(`Generisano: ${new Date().toLocaleString('sr-RS')}`);
-      md.push(`Autor: miuchins & SINET AI`);
-      md.push(`Template: ${TEMPLATE_ID}`);
+      md.push('## 🧭 Brzi pregled vodiča');
+      md.push(`- **Centralni opis:** ${dxMeta.shortDesc}`);
+      md.push('- **Sekcije:** uvodna meta kartica, MKB i klasifikacija, opis teme, pretrage, standardna medicina, psihosomatika, ishrana, zvučna terapija, alternative, narodni lekovi, duhovna podrška.');
+      md.push('');
+      md.push('## 🏷️ MKB-10 i klasifikacija');
+      md.push(`- **Šifra:** ${selectedICD || '—'}`);
+      md.push(`- **Naziv:** ${dxMeta.title || selectedLabel || 'Nije pronađen centralni naziv'}`);
+      md.push(`- **Opis:** ${dxMeta.shortDesc}`);
       md.push('');
       md.push('## 🧑‍⚕️ Personalizovani sažetak');
-      md.push(`**${pSum.title}**`);
-      if(pSum.lines.length) md.push(...pSum.lines.map(x=>`- ${x}`));
-      else md.push('- (nema dodatnih podataka)');
+      md.push(`- **Pacijent / profil:** ${pSum.title}`);
+      (pSum.lines.length ? pSum.lines : ['(nema dodatnih podataka)']).forEach(x => md.push(`- ${x}`));
+      md.push('');
+      md.push('## 📝 Opis simptoma / tema vodiča');
+      if(items.length){
+        items.slice(0, 12).forEach(it => md.push(`- **${bestName(it)}** — ${String(it.opis||'').replace(/\s+/g,' ').trim()}`));
+      } else {
+        md.push(`- ${dxMeta.shortDesc}`);
+      }
       md.push('');
       md.push('## 🔬 Preporučene pretrage (osnovno)');
-      md.push(...tests.map(x=>`- ${x}`));
+      tests.forEach(x => md.push(`- ${x}`));
       md.push('');
-      if(integrative && Array.isArray(integrative.recommendations) && integrative.recommendations.length){
-        md.push('## 🌿 Preporučene integrativne grane');
-        integrative.recommendations.slice(0,5).forEach(r=> md.push(`- ${r.emoji||'🌿'} ${r.title} — ${r.summary||''}`));
-        if(integrative.redFlags && integrative.redFlags.length) md.push(`- Oprez / red flags: ${integrative.redFlags.join(', ')}`);
-        md.push('');
-      }
-      if(integrativePlan && integrativePlan.today){
-        md.push('## 📅 Plan za danas');
-        md.push(`- Stil: ${integrativePlan.style || ''}`);
-        md.push(`- Ukupno približno: ${integrativePlan.today.totalMinutes || 0} min`);
-        (integrativePlan.today.items || []).forEach(it => md.push(`- ${it.slot}: ${it.title}${it.durationMin ? ` — ${it.durationMin} min` : ''} — ${it.instruction}`));
-        md.push('');
-      }
-      if(integrativePlan && integrativePlan.week && Array.isArray(integrativePlan.week.days)){
-        md.push('## 🗓️ Plan za 7 dana');
-        integrativePlan.week.days.forEach(day => {
-          md.push(`- ${day.label} (${day.focus}) — oko ${day.totalMinutes || 0} min`);
-          (day.items || []).slice(0,4).forEach(it => md.push(`  - ${it.title}${it.durationMin ? ` — ${it.durationMin} min` : ''}`));
-        });
-        md.push(`- Pravilo: ${integrativePlan.week.rule || ''}`);
-        md.push(`- Posle 7 dana: ${integrativePlan.week.pauseRule || ''}`);
-        md.push('');
-      }
       md.push('## 🔷 1) Standardna medicina (orijentacija)');
       md.push('- Potvrda dijagnoze (anamneza, pregled, pretrage) + procena težine.');
       md.push('- Plan terapije u skladu sa smernicama i rizicima.');
       md.push('- Kontrola i praćenje (simptomi, laboratorija, neželjeni efekti).');
       md.push('_Ne navodimo doziranja i recepte — to određuje lekar._');
-      md.push('');
-      md.push('**Kada hitno kod lekara**');
-      md.push('- Naglo pogoršanje, otežano disanje, bol u grudima, slabost, konfuzija.');
-      md.push('- Visoka temperatura, krvarenje, jaka dehidracija, znakovi sepse.');
-      md.push('- Neuobičajen bol ili simptomi koji se brzo šire.');
       md.push('');
       md.push('## 🌀 2) Psihosomatika i stres (podrška)');
       md.push('- **Stres → inflamacija:** uvedi mikro-pauze (3–5 min) više puta dnevno.');
@@ -728,12 +1320,11 @@
       md.push('');
       md.push('## 🎵 4) SINET zvučna terapija (protokol)');
       md.push('- Default: **5 min** po frekvenciji (ili preporuka iz stavke) · Loop: **1** · Dnevno: **1** · Pauza: **0–3 dana** (individualno).');
+      md.push('- Polirani audio standard: frekvencije ispod 120 Hz koriste čujnu podlogu (noseći 200 Hz) radi boljeg komfora na mobilnim i Bluetooth uređajima.');
       if(freqRows.length){
         md.push('');
         md.push('**Frekvencije**');
-        freqRows.slice(0,200).forEach(r=>{
-          md.push(`- ${r.hz} Hz — ${r.minutes} min — ${r.src}`);
-        });
+        freqRows.slice(0,200).forEach(r=> md.push(`- ${r.hz} Hz — ${r.name} — ${r.desc} — ${r.minutes} min — ${r.src}`));
         if(freqRows.length>200) md.push(`- … (prikazano 200 od ${freqRows.length})`);
       } else {
         md.push('- (Nema odabranih frekvencija — izaberi SINET stavke.)');
@@ -741,16 +1332,34 @@
       md.push('');
       md.push('**Izabrane SINET stavke**');
       if(items.length){
-        items.forEach(it=> md.push(`- ${bestName(it)} (#${it.id})`));
+        items.forEach(it=> md.push(`- ${bestName(it)} (#${it.id}) — ${String(it.opis||'').replace(/\s+/g,' ').trim()}`));
       } else {
         md.push('- (Nema izabranih stavki)');
+      }
+      if(altRows.length){
+        md.push('');
+        md.push('## 🌿 4b) Alternativne metode / podrške');
+        altRows.slice(0,40).forEach(r=> md.push(`- **${r.title}**${r.evidence ? ` (evidence ${r.evidence})` : ''} — ${r.desc} — Izvor: ${r.src}`));
+        if(altRows.length>40) md.push(`- … (prikazano 40 od ${altRows.length})`);
+      }
+      if(folkRows.length || folkCandidates.length){
+        md.push('');
+        md.push('## 🌿 4c) Narodni lekovi i kućni koraci');
+        if(folkRows.length){
+          md.push('- **Iz odabranih SINET stavki**');
+          folkRows.slice(0,16).forEach(r=> md.push(`  - **${r.title}**${r.generic ? ' (osnovni kućni koraci)' : ''} — ${r.desc}${r.source ? ` — Izvor: ${r.source}` : ''}`));
+          if(folkRows.length>16) md.push(`  - … (prikazano 16 od ${folkRows.length})`);
+        }
+        if(folkCandidates.length){
+          md.push('- **Review-first kandidati iz Enciklopedije narodnih metoda lečenja**');
+          folkCandidates.forEach(r=> md.push(`  - **${r.title}** — ${r.desc}${r.pages ? ` — Strane: ${r.pages}` : ''}`));
+        }
       }
       md.push('');
       md.push('## 🙏 5) Duhovna podrška');
       md.push('> "Gospode, daruj mi mir, snagu i jasnoću. Pomozi mi da biram ono što mi koristi, uz mudrost i strpljenje."');
       md.push('');
-      md.push('_Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi data/sinet_dx_index.json i SINET katalog._');
-
+      md.push('_Vodič se generiše lokalno (offline). Za bogatiji sadržaj po šifri — proširi data/sinet_dx_index.json, centralni MKB sloj i narodne metode sloj._');
       return md.join('\n');
     }
 
@@ -763,6 +1372,142 @@
         .replace(/\*\*(.*?)\*\*/g,'$1')
         .replace(/_([^_]+)_/g,'$1');
     }
+
+    function buildGuidePrintHtml(){
+      const ids = enforceGuideCap();
+      const items = ids.map(id => byId[String(id)]).filter(Boolean);
+      const freqRows = buildFrequencyRowsDetailed(ids);
+      const altRows = buildAlternativeRows(items);
+      const dxMeta = getDxMeta(items);
+      const folkRows = buildNarodniRows(items);
+      const folkCandidates = buildNarodniCandidates(items, dxMeta);
+      const tests = guessTestsFor(selectedICD);
+      const pSum = patientSummary(patient);
+      const generatedAt = new Date().toLocaleString('sr-RS');
+      if(!selectedICD){
+        return `
+          <div class="print-doc">
+            <div class="print-banner">
+              <h1 class="print-page-title">SINET integrativni vodič</h1>
+              <div class="print-subtitle">Print-optimizovan izlaz generatora · čista SINET varijanta za štampu/export</div>
+            </div>
+            <div class="print-empty">
+              <h2 style="margin-top:0;">Vodič još nije generisan</h2>
+              <p>Za reprezentativan SINET print prvo izaberi <strong>MKB-10 šifru ili temu</strong>, pa po potrebi potvrdi <strong>SINET stavke</strong> koje nose opis, frekvencije i alternativne metode.</p>
+              <ol class="print-list">
+                <li>Unesi MKB-10 šifru ili naziv teme.</li>
+                <li>Klikni <strong>Generiši</strong>.</li>
+                <li>Po potrebi koriguj izabrane SINET stavke.</li>
+                <li>Tek onda pokreni štampu/export.</li>
+              </ol>
+              <div class="print-footer-note">Prazan generator ne treba da se štampa kao konačan SINET dokument.</div>
+            </div>
+          </div>`;
+      }
+      const itemPreview = items.slice(0,10).map(it=>`<li><strong>${esc(bestName(it))}</strong> — ${esc(String(it.opis||'')).slice(0,220)}${String(it.opis||'').length>220?'…':''}</li>`).join('') || `<li>${esc(dxMeta.shortDesc)}</li>`;
+      const freqPreview = freqRows.length ? `<ul class="print-list print-two-col">${freqRows.slice(0,24).map(r=>`<li><strong>${esc(String(r.hz))} Hz</strong> — ${esc(r.name)} · ${esc(r.desc)} · ${esc(String(r.minutes))} min</li>`).join('')}</ul>${freqRows.length>24?`<div class="print-note">Prikazano 24 od ${freqRows.length} frekvencijska reda.</div>`:''}` : `<div class="print-note">Nema odabranih frekvencija. Prvo potvrdi SINET stavke za ovu MKB temu.</div>`;
+      const altPreview = altRows.length ? `<ul class="print-list">${altRows.slice(0,10).map(r=>`<li><strong>${esc(r.title)}</strong> — ${esc(r.kind)} · evidence ${esc(r.evidence)} · ${esc(r.desc)}</li>`).join('')}</ul>` : `<div class="print-note">Nema posebno izdvojenih alternativnih metoda za trenutni izbor.</div>`;
+      const folkPreview = (folkRows.length || folkCandidates.length) ? `<ul class="print-list">${[...folkRows.slice(0,6).map(r=>`<li><strong>${esc(r.title)}</strong> — ${esc(r.desc)}</li>`), ...folkCandidates.slice(0,4).map(r=>`<li><strong>${esc(r.title)}</strong> — ${esc(r.desc)}</li>`)].join('')}</ul>` : `<div class="print-note">Narodni sloj nije izdvojen za ovu kombinaciju teme i stavki.</div>`;
+      return `
+        <div class="print-doc">
+          <div class="print-banner">
+            <div class="print-subtitle">SINET PRINT STANDARD · Integrativni vodič</div>
+            <h1 class="print-page-title">${esc(dxMeta.title || selectedLabel || selectedICD)}</h1>
+            <div class="print-subtitle">Standardna medicina · opis teme · pretrage · integrativne grane · audio protokol · alternative · narodni i duhovni sloj</div>
+          </div>
+          <div class="print-banner print-warning"><strong>Upozorenje:</strong> Informativni vodič, nije zamena za lekarski pregled. Za naglo pogoršanje, jake bolove, gušenje, slabost jedne strane tela, krvarenje, visoku temperaturu ili sumnju na hitno stanje — odmah traži urgentnu pomoć.</div>
+          <div class="print-meta">
+            <div class="print-chip"><span class="k">MKB-10</span><span class="v">${esc(selectedICD)}</span></div>
+            <div class="print-chip"><span class="k">Izabrane stavke</span><span class="v">${items.length}</span></div>
+            <div class="print-chip"><span class="k">Frekvencije / alternative</span><span class="v">${freqRows.length} / ${altRows.length}</span></div>
+            <div class="print-chip"><span class="k">Narodni sloj</span><span class="v">${folkRows.length + folkCandidates.length}</span></div>
+          </div>
+          <div class="print-grid">
+            <section class="print-block">
+              <h2>MKB-10 i klasifikacija</h2>
+              <div><strong>Šifra:</strong> ${esc(selectedICD)}</div>
+              <div><strong>Naziv:</strong> ${esc(dxMeta.title || selectedLabel || 'Nije pronađen centralni naziv')}</div>
+              <div style="margin-top:8px;">${esc(dxMeta.shortDesc)}</div>
+            </section>
+            <section class="print-block">
+              <h2>Profil i kontekst</h2>
+              <div><strong>Sažetak:</strong> ${esc(pSum.title)}</div>
+              <ul class="print-list">${(pSum.lines.length?pSum.lines:['(nema dodatnih podataka)']).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+            </section>
+          </div>
+          <section class="print-block">
+            <h2>Opis simptoma / tema vodiča</h2>
+            <div style="margin-bottom:8px;">${esc(dxMeta.shortDesc)}</div>
+            <ul class="print-list">${itemPreview}</ul>
+          </section>
+          <div class="print-grid">
+            <section class="print-block">
+              <h2>Preporučene pretrage (osnovno)</h2>
+              <ul class="print-list">${tests.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+            </section>
+            <section class="print-block">
+              <h2>Standardna medicina (orijentacija)</h2>
+              <ul class="print-list">
+                <li>Potvrda dijagnoze: anamneza, pregled, pretrage i procena težine.</li>
+                <li>Plan terapije u skladu sa smernicama i rizicima.</li>
+                <li>Kontrola i praćenje: simptomi, laboratorija, neželjeni efekti.</li>
+                <li>Hitno: naglo pogoršanje, gušenje, bol u grudima, konfuzija, krvarenje, visoka temperatura.</li>
+              </ul>
+            </section>
+          </div>
+          <div class="print-grid">
+            <section class="print-block">
+              <h2>Psihosomatika i stres</h2>
+              <ul class="print-list">
+                <li>Uvedi mikro-pauze više puta dnevno.</li>
+                <li>Beleži okidače: hrana, san, emocije, napor.</li>
+                <li>Disanje 4–6 s udah / 6–8 s izdah, 5 min, 2× dnevno.</li>
+                <li>Afirmacija: „Moje telo se umiruje. Biram mir, strpljenje i postepeno ozdravljenje.“</li>
+              </ul>
+            </section>
+            <section class="print-block">
+              <h2>Ishrana i navike</h2>
+              <ul class="print-list">
+                <li>San 7–9 h, hidratacija, dnevna šetnja prema toleranciji.</li>
+                <li>Više: povrće, riba, maslinovo ulje, integralno; manje: ultra-prerađeno i šećer.</li>
+                <li>Suplementi postepeno i uz proveru interakcija.</li>
+              </ul>
+            </section>
+          </div>
+          <section class="print-block">
+            <h2>SINET zvučna terapija (protokol)</h2>
+            <div style="margin-bottom:8px;">Default: 5 min po frekvenciji ili preporuka iz stavke · Loop 1 · Dnevno 1 · Pauza 0–3 dana. Clean print vodič prikazuje sažeti protokol bez derivatnih i duplih serija; frekvencije ispod 120 Hz koriste noseći 200 Hz radi boljeg komfora na mobilnim i Bluetooth uređajima.</div>
+            ${freqPreview}
+          </section>
+          <div class="print-grid">
+            <section class="print-block">
+              <h2>Alternative</h2>
+              ${altPreview}
+            </section>
+            <section class="print-block">
+              <h2>Narodni lekovi i kućni koraci</h2>
+              ${folkPreview}
+            </section>
+          </div>
+          <section class="print-block">
+            <h2>Duhovna podrška</h2>
+            <div>„Gospode, daruj mi mir, snagu i jasnoću. Pomozi mi da biram ono što mi koristi, uz mudrost i strpljenje.“</div>
+          </section>
+          <div class="print-footer-note">Generisano: ${esc(generatedAt)} · Autor: miuchins & SINET AI · Template: SINET integrativni vodič / clean print</div>
+        </div>`;
+    }
+
+    function syncPrintShell(){
+      const shell = document.getElementById('printShell');
+      if(shell) shell.innerHTML = buildGuidePrintHtml();
+    }
+
+    function printGuideClean(){
+      syncPrintShell();
+      window.print();
+    }
+
+    window.addEventListener('beforeprint', syncPrintShell);
 
     function buildGuideFullHtml(){
       const contentHtml = document.getElementById('contentToCopy')?.innerHTML || '';
@@ -777,7 +1522,7 @@
       if(!window.SINET_TemplateV2 || typeof window.SINET_TemplateV2.buildDoc !== 'function'){
         // Fallback minimal
         const style = document.querySelector('style')?.innerHTML || '';
-        return `<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${style}</style><script defer src="../js/sinet-page-nav.js?v=16.0.0.18"></script>
+        return `<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>${style}</style><script defer src="../js/sinet-page-nav.js?v=16.0.0.118.40.9"><\/script>
 </head><body>${warningsHtml}<div id="contentToCopy">${contentHtml}</div></body></html>`;
       }
       return window.SINET_TemplateV2.buildDoc({
@@ -791,7 +1536,7 @@
         warningsHtml,
         contentHtml,
         anamnezaJson: patient || null,
-        badgesHtml: `<span class="badge">MKB: ${esc(selectedICD||'')}</span><span class="badge">Frekvencije: ${String(buildFrequencyRows(Array.from(selectedIds)).length)}</span>${integrative && integrative.recommendations && integrative.recommendations.length ? `<span class="badge">Integrativno: ${esc((window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.recommendationsToBadges) ? window.SINET_IntegrativeEngine.recommendationsToBadges(integrative) : integrative.recommendations.slice(0,3).map(r=>r.title).join(', '))}</span>` : ''}`
+        badgesHtml: `<span class="badge">MKB: ${esc(selectedICD||'')}</span><span class="badge">Frekvencije: ${String(buildFrequencyRowsDetailed(enforceGuideCap()).length)}</span><span class="badge">Narodno: ${String(buildNarodniRows(enforceGuideCap().map(id => byId[String(id)]).filter(Boolean)).length)}</span>${integrative && integrative.recommendations && integrative.recommendations.length ? `<span class="badge">Integrativno: ${esc((window.SINET_IntegrativeEngine && window.SINET_IntegrativeEngine.recommendationsToBadges) ? window.SINET_IntegrativeEngine.recommendationsToBadges(integrative) : integrative.recommendations.slice(0,3).map(r=>r.title).join(', '))}</span>` : ''}`
       });
     }
     function downloadText(content, filename, mime){
@@ -807,7 +1552,7 @@
     }
 
     function updateBadgesAndButtons(){
-      const freqCount = buildFrequencyRows(Array.from(selectedIds)).length;
+      const freqCount = buildFrequencyRowsDetailed(enforceGuideCap()).length;
       const fb = document.getElementById('freqBadge');
       if(fb) fb.textContent = `Frekvencije: ${freqCount}`;
       const canProtocol = freqCount > 0;
@@ -857,22 +1602,16 @@
 function buildSharePack(){
       if(!selectedICD) throw new Error('Nema MKB-10 šifre.');
       const ids = Array.from(selectedIds);
-      const steps = [];
-      for(const id of ids){
-        const it = byId[String(id)];
-        if(!it) continue;
-        const perMin = Math.max(1, Number(it.trajanjePoFrekvencijiMin || it.trajanjeMin || 5) || 5);
-        const freqs = Array.isArray(it.frekvencije) ? it.frekvencije : [];
-        for(const f of freqs){
-          if(!f || f.enabled === false) continue;
-          const hz = Number(f.value ?? f.hz) || 0;
-          if(!hz) continue;
-          const obj = JSON.parse(JSON.stringify(f));
-          obj.value = hz; obj.hz = hz;
-          obj._from = { symptomId: it.id, symptom: bestName(it) };
-          steps.push({ freq: obj, minutes: perMin });
-        }
-      }
+      const cleanedRows = buildFrequencyRowsDetailed(ids);
+      const steps = cleanedRows.map(r => {
+        const obj = JSON.parse(JSON.stringify(r.rawFreq || {}));
+        obj.value = Number(r.hz) || 0;
+        obj.hz = Number(r.hz) || 0;
+        obj.naziv = textOf(obj.naziv, r.name, `${r.hz} Hz`);
+        obj.opis = textOf(obj.opis, obj.funkcija, obj.svrha, r.desc);
+        obj._from = { symptomId: r.itemId, symptom: r.src };
+        return { freq: obj, minutes: r.minutes };
+      });
 
       if(!steps.length){
         throw new Error('Nema odabranih frekvencija. Izaberi bar jednu SINET stavku (desno) ili dodaj iz pretrage kataloga.');
@@ -888,7 +1627,7 @@ function buildSharePack(){
         loopCount: 1,
         createdAt: now,
         updatedAt: now,
-        _meta: { mkb10: selectedICD, dxLabel: selectedLabel || selectedICD, template: TEMPLATE_ID, integrativeRecommendations: getIntegrativeRecommendations(), integrativePlan: getIntegrativePlan() },
+        _meta: { mkb10: selectedICD, dxLabel: selectedLabel || selectedICD, template: TEMPLATE_ID, integrativeRecommendations: getIntegrativeRecommendations(), integrativePlan: getIntegrativePlan(), folkMethods: { selected: buildNarodniRows(ids.map(id => byId[String(id)]).filter(Boolean)).slice(0,12), candidates: buildNarodniCandidates(ids.map(id => byId[String(id)]).filter(Boolean), getDxMeta(ids.map(id => byId[String(id)]).filter(Boolean))).slice(0,6) } },
         _guideHtml: guideHtml,
         _guideMd: guideMd
       };
@@ -939,7 +1678,13 @@ function buildSharePack(){
       if(dx && typeof dx === 'object') dxIndex = dx;
 
       const cat = await loadJsonFirst(['../data/SINET_STL.json','/data/SINET_STL.json','./data/SINET_STL.json']);
-      try{ const fc = cat?.meta?.freq_catalog; if(fc && window.SINET_FrequencySchema?.setFreqCatalog) window.SINET_FrequencySchema.setFreqCatalog(fc); }catch(_){}
+      try{ const fc = cat?.meta?.freq_catalog; if(fc && window.SINET_FrequencySchema?.setFreqCatalog) window.SINET_FrequencySchema.setFreqCatalog(fc); }catch(_){ }
+
+      narodneDb = await loadJsonFirst([
+        '../data/narodne_metode/enciklopedija/sinet_ready_katalog.json',
+        '/data/narodne_metode/enciklopedija/sinet_ready_katalog.json',
+        './data/narodne_metode/enciklopedija/sinet_ready_katalog.json'
+      ]);
       if(Array.isArray(cat)) catalog = cat;
       else if(cat && Array.isArray(cat.simptomi)) catalog = cat.simptomi;
       else if(cat && Array.isArray(cat.items)) catalog = cat.items;
@@ -953,7 +1698,7 @@ function buildSharePack(){
         computeCandidates();
       }
 
-      st.textContent = `MKB=${mkb.length} • katalog=${catalog.length}`;
+      st.textContent = `MKB=${mkb.length} • katalog=${catalog.length} • narodno=${flattenNarodneDb().length}`;
       setupIcdAutocomplete();
       render();
       window.addEventListener('load', ()=>{ try{ render(); }catch(_){} });

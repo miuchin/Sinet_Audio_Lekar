@@ -1,16 +1,16 @@
 /*
   SINET Audio Lekar — App Core
   File: js/app.js
-  Version: 16.0.0.118.40 (SYMPTOM CARD HOTFIX + VERSION/CACHE SYNC + SAME-WINDOW PRINT)
+  Version: 16.0.0.118.40.23 (CATALOG POLISH PHASE 1 + GENERATOR PRINT SYNC + AUDIO NORMALIZATION)
   Author: miuchins | Co-author: SINET AI
 */
 
 // Cache-bust audio engine updates (NO-SW mode relies on browser cache)
-import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.3';
-import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.3';
+import { SinetAudioEngine } from './audio/audio-engine.js?v=16.0.0.118.5.4';
+import { renderProtocolToWavBlobURL, estimateWavBytes } from './audio/ios-rendered-track.js?v=16.0.0.118.5.4';
 import { normalizeCatalogPayload } from './catalog/stl-adapter.js?v=16.0.0.118.5.3';
 
-const SINET_APP_VERSION = "16.0.0.118.40";
+const SINET_APP_VERSION = "16.0.0.118.40.23";
 
 
 
@@ -93,7 +93,7 @@ class App {
 
 
     // Audio Engine v2 prefs
-    this.audioPrefs = { master: 0.75, boost: false, normalize: true, wave: "sine" };
+    this.audioPrefs = { master: 0.90, boost: false, normalize: true, wave: "sine" };
     try {
       const p = JSON.parse(localStorage.getItem("sinet_audio_prefs_v1") || "null");
       if (p && typeof p === "object") this.audioPrefs = { ...this.audioPrefs, ...p };
@@ -261,7 +261,7 @@ class App {
     this.overrides = {};
 
     // Nav helpers (elder-friendly)
-    this.currentPageId = 'home';
+    this.currentPageId = (window.__SINET_PRE_NAV_PAGE === 'catalog' ? 'catalog' : 'home');
     this.navStack = [];
     this._toastTimer = null;
 
@@ -872,9 +872,9 @@ _showIosDiag(detail) {
         totalSec: seg.segTotalSec,
         sampleRate: 22050,
         channels: 1,
-        gain: (this.audio?.masterGain?.gain?.value) ? Math.max(0.12, Math.min(1.0, this.audio.masterGain.gain.value * 0.88)) : 0.45,
+        gain: (this.audio?.masterGain?.gain?.value) ? Math.max(0.18, Math.min(1.08, this.audio.masterGain.gain.value * 1.00)) : 0.58,
         subCarrierHz: this.audio?.subCarrierHz || 210,
-        subThresholdHz: this.audio?.subCarrierThresholdHz || 50,
+        subThresholdHz: this.audio?.subCarrierThresholdHz || 120,
         normalizePerceivedLoudness: this.audio?.normalizeLoudness !== false,
         fadeMs: 12,
         signal
@@ -1697,7 +1697,7 @@ _restoreNavContext(ctx) {
     const idx = (stats?.currentIndex ?? 0) + 1;
     const total = stats?.totalItems ?? 0;
 
-    const isSub = hz > 0 && hz < 50;
+    const isSub = hz > 0 && hz < 120;
     const carrierNote = isSub ? ` <span class="muted">(noseći 200 Hz)</span>` : "";
 
         const naziv = (freqObj?.naziv || "").toString().trim();
@@ -1751,7 +1751,7 @@ _restoreNavContext(ctx) {
 
     const nextObj = (this.audio.currentSequence || [])[stats.currentIndex + 1];
     const nextHz = nextObj ? (Number(nextObj.value ?? nextObj.hz) || 0) : null;
-    const nextIsSub = nextHz !== null && nextHz > 0 && nextHz < 50;
+    const nextIsSub = nextHz !== null && nextHz > 0 && nextHz < 120;
 
     const nextDesc = nextObj ? (nextObj?.svrha || nextObj?.funkcija || nextObj?.desc || nextObj?.naziv || "").toString().trim() : "";
     const nextLine = nextHz !== null
@@ -3127,7 +3127,7 @@ addBox("AFIRMACIJA", "#16a085",
 addBox("MOLITVA", "#f39c12", h.molitva?.tekst || h.duhovnost?.tekst || "", h.molitva?.izvor || h.duhovnost?.izvor || "");
 
 // narodni lek
-addBox("NARODNI LEK", "#27ae60", h.narodni_lek?.opis || h.saveti?.narodno || "");
+addBox("NARODNI LEK", "#27ae60", h.saveti?.narodno || h.narodni_lek?.opis || h.narodni_lek?.tekst || "", h.narodni_lek?.izvor?.autor || h.narodni_lek?.izvor?.delo || h.narodni_lek?.izvor?.url || "");
 
 document.getElementById('m-holistic').innerHTML = html;
 
@@ -7057,7 +7057,7 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
         const psi = h.psihosomatika || {};
         const af  = h.afirmacija || {};
         const mol = h.molitva || h.duhovnost || {};
-        const narOpis = (h.narodni_lek && (h.narodni_lek.opis || h.narodni_lek.tekst)) ? (h.narodni_lek.opis || h.narodni_lek.tekst) : (h.saveti?.narodno || "");
+        const narOpis = (h.saveti?.narodno || ((h.narodni_lek && (h.narodni_lek.opis || h.narodni_lek.tekst)) ? (h.narodni_lek.opis || h.narodni_lek.tekst) : ""));
 
         const mkbLine = `MKB-10: code="${(mkbCode||"").toString().replace(/"/g,"'")}" | opis="${(mkbDesc||"").toString().replace(/"/g,"'")}" | url="${(mkbUrl||"").toString().replace(/"/g,"'")}"`;
 
@@ -7382,9 +7382,11 @@ if (!Array.isArray(this.catalogItems) || this.catalogItems.length === 0) {
     const psi = h.psihosomatika || {};
     const af  = h.afirmacija || {};
     const mol = h.molitva || h.duhovnost || {};
-    const nar = (h.narodni_lek?.opis !== undefined)
-      ? h.narodni_lek
-      : { opis: (h.saveti?.narodno || "") };
+    const nar = (h.saveti?.narodno)
+      ? { ...(h.narodni_lek || {}), opis: h.saveti.narodno }
+      : ((h.narodni_lek?.opis !== undefined || h.narodni_lek?.tekst !== undefined)
+        ? h.narodni_lek
+        : { opis: "" });
 
     // Frekvencije
     const perMin = Number(it.freq_duration_min ?? it.trajanjePoFrekvencijiMin ?? it.trajanje_po_frekvenciji_min ?? 0) || null;
@@ -11338,8 +11340,11 @@ async function __consumeAtlasBridgeIfAny(){
   };
 
   const goCatalog = async (preferItem = true) => {
-    a.nav('catalog');
-    await new Promise(r => setTimeout(r, 120));
+    try {
+      if (a.currentPageId !== 'catalog') a.nav('catalog', { replace:true, stack:false });
+      else a.nav('catalog', { replace:true, stack:false });
+    } catch(_) {}
+    await new Promise(r => setTimeout(r, 50));
     const item = preferItem ? resolveItem() : null;
     const input = document.getElementById('search-input');
     if (item?.oblast && typeof a.openOblast === 'function') {
@@ -11748,7 +11753,7 @@ window.importProtocols = () => window.app && window.app.importProtocolsPrompt();
       const settingsLink = Array.from(document.querySelectorAll('a.menu-link')).find(a => /Podešavanja/.test(a.textContent || ''));
       if (settingsLink && settingsLink.parentElement && settingsLink.parentElement.parentElement) {
         const li = document.createElement('li');
-        li.innerHTML = '<a id="menu-link-labs" class="menu-link" data-label="lab bridge laboratorija" href="#" onclick="nav(\'labs\'); closeMenu();">🧪 LAB Bridge</a>';
+        li.innerHTML = '<a id="menu-link-labs" class="menu-link" data-label="lab bookpro izvestaji laboratorija" href="#" onclick="nav(\'labs\'); closeMenu();">🧪 LAB / BookPro izveštaji</a>';
         settingsLink.parentElement.parentElement.insertBefore(li, settingsLink.parentElement);
       }
     }
@@ -12600,7 +12605,7 @@ window.importProtocols = () => window.app && window.app.importProtocolsPrompt();
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
         <h2 style="margin:0;">🗂 Zdravstveni Karton</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-mini" onclick="nav('labs')">🧪 LAB Bridge</button>
+          <button class="btn-mini" onclick="nav('labs')">🧪 LAB / BookPro</button>
           <button class="btn-mini" onclick="nav('home')">🏠 Početni ekran</button>
         </div>
       </div>
@@ -13506,7 +13511,7 @@ window.importProtocols = () => window.app && window.app.importProtocolsPrompt();
       <h3 style="margin:0 0 10px 0; color:var(--primary);">🩺 Zdravlje i nalazi</h3>
       <p style="margin:0 0 12px 0; color:#666;">Glavni tok: <b>LAB Bridge → Zdravstveni Karton → Anamneza</b>. Mobilno, brzo i bez traženja po meniju.</p>
       <div style="display:flex; flex-wrap:wrap; gap:10px;">
-        <button class="btn-full" style="flex:1; min-width:220px; padding:12px; background:#0f766e;" onclick="nav('labs')">🧪 LAB Bridge</button>
+        <button class="btn-full" style="flex:1; min-width:220px; padding:12px; background:#0f766e;" onclick="nav('labs')">🧪 LAB / BookPro izveštaji</button>
         <button class="btn-full" style="flex:1; min-width:220px; padding:12px; background:#2563eb;" onclick="nav('health-record')">🗂 Zdravstveni Karton</button>
         <button class="btn-full" style="flex:1; min-width:220px; padding:12px;" onclick="openQuickPage('anamneza.html',null,'🩺 Anamneza (Dijagnostika)')">🩺 Anamneza</button>
       </div>`;
@@ -14343,6 +14348,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
         link('antiparazitski program prva pomoc','🦠 ANTIPARAZITSKI PROGRAM', "openQuickPage('pages/antiparazitski.html','https://vera-srecko-analiza.netlify.app/','🦠 Antiparazitski (Prva pomoć)'); closeMenu(); return false;"),
         link('integrativna biblioteka','🧭 INTEGRATIVNA BIBLIOTEKA', "openQuickPage('pages/integrativna_biblioteka.html',null,'🧭 Integrativna biblioteka'); closeMenu(); return false;"),
         link('integrativni vodic ra sake','🧩 INTEGRATIVNI VODIČ - RA ŠAKE', "openQuickPage('pages/integrativni_vodic_RA_sake.html',null,'🧩 Integrativni vodič – RA šake'); closeMenu(); return false;"),
+        link('okcipitalna neuralgija','🧠 OKCIPITALNA NEURALGIJA', "openQuickPage('pages/occipitalna_neuralgija.html',null,'🧠 Okcipitalna neuralgija'); closeMenu(); return false;"),
         link('integrativni vodic generator','🧾 INTEGRATIVNI VODIČ - GENERATOR', "openQuickPage('pages/integrativni_vodic.html',null,'🧾 Integrativni vodič (generator)'); closeMenu(); return false;"),
         link('akupunktura','🪡 AKUPUNKTURA', "openQuickPage('pages/akupunktura.html',null,'🪡 Akupunktura (stručni modul)'); closeMenu(); return false;"),
         link('tai chi seniori','🧘 TAI CHI ZA SENIORE', "openQuickPage('pages/tai_chi.html',null,'🧘 Tai Chi (za seniore)'); closeMenu(); return false;"),
@@ -14592,7 +14598,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
         items: [
           { key:'anamneza', list:'🩺 ANAMNEZA', card:'🩺 Anamneza', desc:'Dijagnostika i unos anamneze.', color:'#ef4444', action: "openQuickPage('anamneza.html',null,'🩺 Anamneza (Dijagnostika)')" },
           { key:'health-record', list:'🗂 ZDRAVSTVENI KARTON', card:'🗂 Zdravstveni karton', desc:'Tvoj pregled zdravstvenih podataka.', color:'#8b5cf6', action: actionNav('health-record') },
-          { key:'labs', list:'🧪 LAB BRIDGE', card:'🧪 Lab Bridge', desc:'Laboratorija i tumačenje nalaza.', color:'#06b6d4', action: actionNav('labs') },
+          { key:'labs', list:'🧪 LAB / BOOKPRO IZVEŠTAJI', card:'🧪 LAB / BookPro izveštaji', desc:'Poseban modul: 4 koraka — učitaj, analiziraj, HTML report, print/export.', color:'#06b6d4', action: actionNav('labs') },
         ]
       },
       {
@@ -14938,7 +14944,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     if (goal && !String(goal.value || '').trim()) {
       goal.value = 'Povezati laboratorijski nalaz sa aktivnom anamnezom i preneti sažetak u Zdravstveni Karton.';
     }
-    this.showToast('Aktivna Anamneza preneta u LAB Bridge ✅');
+    this.showToast('Aktivna Anamneza preneta u LAB / BookPro modul ✅');
   };
 
   const prevImportAnam79 = App.prototype.importActiveAnamnezaIntoHealthRecord;
@@ -14964,8 +14970,8 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     card.className = 'welcome-card';
     card.style.textAlign = 'left';
     card.innerHTML = `
-      <h4 style="margin-top:0;">🧭 Medical workflow — gde ide LAB Bridge?</h4>
-      <p style="color:#666; margin-top:6px;">Redosled rada je sada jasan: <b>1) Anamneza</b> = istorija i glavni zdravstveni okvir, <b>2) Zdravstveni Karton</b> = vremenska linija događaja, terapija i snapshot-a, <b>3) LAB Bridge</b> = unos novog nalaza i njegovo povezivanje sa kartonom.</p>
+      <h4 style="margin-top:0;">🧭 Medical workflow — gde ide LAB / BookPro modul?</h4>
+      <p style="color:#666; margin-top:6px;">Redosled rada je sada jasan: <b>1) Anamneza</b> = istorija i glavni zdravstveni okvir, <b>2) Zdravstveni Karton</b> = vremenska linija događaja, terapija i snapshot-a, <b>3) LAB / BookPro izveštaji</b> = poseban modul za novi nalaz, AI analizu i HTML/print/export report.</p>
       <div class="lab-actions">
         <button class="lab-btn secondary" type="button" onclick="app.importActiveAnamnezaIntoLabBridge()">🩺 Uvezi aktivnu Anamnezu</button>
         <button class="lab-btn ghost" type="button" onclick="nav('health-record')">🗂 Otvori Zdravstveni Karton</button>
@@ -14988,13 +14994,13 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     card.style.textAlign = 'left';
     card.innerHTML = `
       <h4 style="margin-top:0;">🧭 Medical workflow — centar između Anamneze i LAB-a</h4>
-      <p style="color:#666; margin-top:6px;">U <b>Zdravstvenom Kartonu</b> držiš pregled po vremenu: događaji, terapije, Lab Snapshot-i, prilozi i specialist sažeci. Glavni redosled: <b>Anamneza → Zdravstveni Karton → LAB Bridge</b>.</p>
+      <p style="color:#666; margin-top:6px;">U <b>Zdravstvenom Kartonu</b> držiš pregled po vremenu: događaji, terapije, Lab Snapshot-i, prilozi i specialist sažeci. Glavni redosled: <b>Anamneza → Zdravstveni Karton → LAB / BookPro izveštaji</b>.</p>
       <div class="lab-actions">
         <button class="lab-btn secondary" type="button" onclick="app.importActiveAnamnezaIntoHealthRecord()">🩺 Uvezi aktivnu Anamnezu</button>
-        <button class="lab-btn dark" type="button" onclick="nav('labs')">🧪 Idi na LAB Bridge</button>
+        <button class="lab-btn dark" type="button" onclick="nav('labs')">🧪 Idi na LAB / BookPro</button>
         ${topDocButton('📘 Medical workflow vodič')}
       </div>
-      <div class="lab-inline-note">Ako imaš novi nalaz, idi na <b>LAB Bridge</b>. Ako imaš novu kontrolu, specijalistički izveštaj ili promenu terapije, upiši je ovde kao događaj ili terapijski zapis.</div>`;
+      <div class="lab-inline-note">Ako imaš novi nalaz, idi na <b>LAB / BookPro izveštaje</b>. Ako imaš novu kontrolu, specijalistički izveštaj ili promenu terapije, upiši je ovde kao događaj ili terapijski zapis.</div>`;
     const firstCard = page.querySelector('.welcome-card');
     if (firstCard && firstCard.parentElement) page.insertBefore(card, firstCard);
     else page.appendChild(card);
@@ -15021,7 +15027,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
           <b>Workflow status</b><br>
           Aktivna Anamneza: <b>${this.escapeHtml(active ? active.name : 'nije uvezena')}</b><br>
           Poslednji Lab Snapshot: <b>${this.escapeHtml(hr.current_snapshot?.last_report_date || 'nema')}</b><br>
-          Sledeći korak: ${this.escapeHtml(hr.lab_snapshots?.length ? 'ažuriraj događaje/terapije ili uporedi snapshot-e' : 'u LAB Bridge unesi prvi nalaz i napravi Snapshot')}`;
+          Sledeći korak: ${this.escapeHtml(hr.lab_snapshots?.length ? 'ažuriraj događaje/terapije ili uporedi snapshot-e' : 'u LAB / BookPro modulu unesi prvi nalaz i napravi Snapshot')}`;
       }
       const aiStatus = document.getElementById('hr-ai-anam-status');
       if (aiStatus) aiStatus.textContent = active ? `${active.name}${active.age ? ' • ' + active.age : ''}${active.sex ? ' • ' + active.sex : ''}` : 'Nije učitana.';
@@ -15036,7 +15042,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
       const card = document.getElementById('sinet-health-home-card');
       if (card) {
         const p = card.querySelector('p');
-        if (p) p.innerHTML = 'Glavni tok: <b>Anamneza → Zdravstveni Karton → LAB Bridge</b>. Prvo istorija i glavni slučaj, zatim karton/timeline, pa novi laboratorijski nalaz.';
+        if (p) p.innerHTML = 'Glavni tok: <b>Anamneza → Zdravstveni Karton → LAB / BookPro izveštaji</b>. Prvo istorija i glavni slučaj, zatim karton/timeline, pa novi laboratorijski nalaz i report.';
       }
     } catch(_) {}
     return out;
@@ -15425,7 +15431,7 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
 })();
 
 
-/* ===================== v16.0.0.118.40 — Symptom Card Hotfix + Version/Cache Sync + Same-window Print ===================== */
+/* ===================== v16.0.0.118.40.8 — Symptom Card Hotfix + Version/Cache Sync + Same-window Print ===================== */
 (function(){
   if (typeof App === 'undefined') return;
 
@@ -15472,5 +15478,487 @@ App.prototype._ensureControlCenterHomeEntryPoints39 = function() {
     try { this.saveAudioPrefs(); } catch(_) {}
     try { const btn = document.getElementById('p-normalize'); if (btn) btn.innerText = `🎚 Ujednači: ${this.audioPrefs.normalize ? 'ON' : 'OFF'}`; } catch(_) {}
     this.showToast(this.audioPrefs.normalize ? '🎚 Ujednačavanje jačine tonova uključeno.' : '🎚 Ujednačavanje jačine tonova isključeno.');
+  };
+})();
+
+
+/* ===================== v16.0.0.118.40.12 — LAB / BookPro 4-step flow + separate generator lane ===================== */
+(function(){
+  const LAB_4STEP_VERSION = '16.0.0.118.40.12';
+  const LAB_4STEP_LAST_KEY = 'SINET_LAB_LAST_REPORT_V1';
+
+  function byId(id){ return document.getElementById(id); }
+  function makeList(value){
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (value === null || value === undefined || value === '') return [];
+    return [value];
+  }
+
+  App.prototype._labGeneratorDefs = function(){
+    return [
+      {
+        key: 'bookpro_lab_v6',
+        label: '📘 Book/Pro laboratorijski izveštaj',
+        short_label: 'Book/Pro Lab v6',
+        family: 'bookpro',
+        mode: 'full_book',
+        prompt_version: 'LAB_BOOKPRO_MASTER_v6',
+        description: 'Za više fotografija, PDF nalaze i bogat SINET Book/Pro HTML sa mnogo sekcija.'
+      },
+      {
+        key: 'specialist_report_future',
+        label: '🩺 Specijalistički izveštaj — uskoro',
+        short_label: 'Specijalistički report',
+        family: 'future',
+        mode: 'placeholder',
+        prompt_version: 'FUTURE',
+        description: 'Rezervisan slot za budući prompt/generator.',
+        disabled: true
+      },
+      {
+        key: 'custom_report_future',
+        label: '🧩 Drugi SINET izveštaj — uskoro',
+        short_label: 'Drugi generator',
+        family: 'future',
+        mode: 'placeholder',
+        prompt_version: 'FUTURE',
+        description: 'Mesto za naredne specijalne izveštaje bez mešanja sa Integrativnim vodičem.',
+        disabled: true
+      }
+    ];
+  };
+
+  App.prototype._selectedLabGeneratorKey = function(){
+    return String(byId('lab_generator_select')?.value || 'bookpro_lab_v6');
+  };
+
+  App.prototype._selectedLabGeneratorDef = function(){
+    const defs = this._labGeneratorDefs();
+    const found = defs.find(d => d.key === this._selectedLabGeneratorKey());
+    return found || defs[0];
+  };
+
+  const prevEnsureLabStyles = App.prototype._ensureLabBridgeStyles;
+  App.prototype._ensureLabBridgeStyles = function(){
+    prevEnsureLabStyles.apply(this, arguments);
+    if (byId('lab-4step-styles')) return;
+    const st = document.createElement('style');
+    st.id = 'lab-4step-styles';
+    st.textContent = `
+      .lab-step-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:10px}
+      .lab-step-card{background:#f8fbff;border:1px solid #dce9f8;border-radius:16px;padding:12px}
+      .lab-step-card b{display:block;margin-bottom:4px;color:#17405f}
+      .lab-step-no{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:#0f766e;color:#fff;font-weight:900;margin-right:8px}
+      .lab-top-note{padding:14px;border:1px solid #dce9f8;border-radius:16px;background:linear-gradient(180deg,#f9fcff,#f2f9ff)}
+      .lab-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+      .lab-toolbar button{padding:10px 12px;border-radius:12px;border:1px solid #d6e2ef;background:#fff;font-weight:900;cursor:pointer}
+      .lab-archive-wrap details{border:1px solid #dce5ef;border-radius:16px;background:#fff;padding:12px}
+      .lab-section-kicker{font-size:.85rem;font-weight:900;color:#0f766e;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+      .lab-params-table{display:grid;gap:10px}
+      .lab-param-row{border:1px solid #e6edf5;border-radius:14px;background:#f9fbfd;padding:12px}
+      .lab-param-grid{display:grid;gap:8px}
+      @media(min-width:760px){.lab-param-grid{grid-template-columns:1.2fr .9fr .9fr 1.4fr}}
+      .lab-export-note{font-size:.92rem;color:#466}
+    `;
+    document.head.appendChild(st);
+  };
+
+  App.prototype._ensureLabBridgePage = function() {
+    const existing = byId('page-labs');
+    if (existing) existing.remove();
+    const main = document.querySelector('main');
+    if (!main) return null;
+    const page = document.createElement('div');
+    page.id = 'page-labs';
+    page.className = 'section';
+    const genOpts = this._labGeneratorDefs().map(def => `<option value="${this.escapeHtml(def.key)}" ${def.disabled ? 'disabled' : ''}>${this.escapeHtml(def.label)}</option>`).join('');
+    page.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
+        <h2 style="margin:0;">🧪 LAB / BookPro izveštaji</h2>
+        <button class="btn-mini" onclick="nav('home')">🏠 Početni ekran</button>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Poseban modul</div>
+        <h4 style="margin-top:0;">4 koraka — gotovo</h4>
+        <p style="color:#666; margin-top:6px;">Ovo je <b>poseban generator izveštaja</b> u okviru Audio Lekar aplikacije. <b>Integrativni vodič ostaje odvojen modul</b>. Ovde radimo: <b>1) učitaj/slikaj</b> → <b>2) analiziraj</b> → <b>3) generiši HTML report</b> → <b>4) print/export</b>.</p>
+        <div class="lab-step-grid">
+          <div class="lab-step-card"><b><span class="lab-step-no">1</span>Ulaz</b><div>fotografije, PDF, ručni unos, kontekst</div></div>
+          <div class="lab-step-card"><b><span class="lab-step-no">2</span>Analiza</b><div>SINET prompt / AI JSON</div></div>
+          <div class="lab-step-card"><b><span class="lab-step-no">3</span>HTML report</b><div>Book/Pro prikaz u aplikaciji</div></div>
+          <div class="lab-step-card"><b><span class="lab-step-no">4</span>Print / export</b><div>HTML, JSON, Snapshot, štampa</div></div>
+        </div>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Generator</div>
+        <h4 style="margin-top:0;">Izbor report generatora</h4>
+        <div class="lab-grid two">
+          <div>
+            <label><b>Aktivni generator</b></label>
+            <select id="lab_generator_select" class="lab-select" onchange="app.updateLabGeneratorHint()">${genOpts}</select>
+          </div>
+          <div>
+            <label><b>Opis</b></label>
+            <div id="lab-generator-hint" class="lab-top-note">Book/Pro laboratorijski izveštaj za bogat HTML, print i export sloj.</div>
+          </div>
+        </div>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Korak 1</div>
+        <h4 style="margin-top:0;">Učitaj / slikaj / nalepi nalaz</h4>
+        <div class="lab-grid two">
+          <div>
+            <label><b>Ime / oznaka pacijenta</b></label>
+            <input id="lab_patient_name" class="lab-input" type="text" placeholder="npr. Pacijent A / Interna oznaka" />
+          </div>
+          <div>
+            <label><b>Datum nalaza</b></label>
+            <input id="lab_report_date" class="lab-input" type="date" />
+          </div>
+          <div>
+            <label><b>Godine</b></label>
+            <input id="lab_age" class="lab-input" type="text" placeholder="npr. 44" />
+          </div>
+          <div>
+            <label><b>Pol</b></label>
+            <select id="lab_sex" class="lab-select"><option value="nebitno">nebitno</option><option value="ženski">ženski</option><option value="muški">muški</option></select>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="lab-filebox">
+          <label><b>Prilog nalaza</b></label>
+          <div class="lab-inline-note">Za sada: TXT/MD/HTML/JSON unos teksta i PDF referenca. Ovo je pravo mesto za budući foto/PDF parser.</div>
+          <input id="lab_file_input" type="file" accept=".txt,.md,.json,.html,.htm,.pdf,image/*" onchange="app.labHandleInputFiles(this)" style="margin-top:10px;" />
+          <div id="lab-file-meta" class="lab-inline-note">Nema učitanog priloga.</div>
+        </div>
+        <div style="height:10px"></div>
+        <label><b>Simptomi / razlog analize</b></label>
+        <textarea id="lab_symptoms" class="lab-textarea" placeholder="Šta pacijent oseća, zašto je urađena laboratorija, šta je cilj tumačenja..."></textarea>
+        <label><b>Anamneza / porodična anamneza / prethodni nalazi</b></label>
+        <textarea id="lab_anamnesis" class="lab-textarea" placeholder="Ranije bolesti, porodična anamneza, pritisak, težina, štitna, bubrezi..."></textarea>
+        <label><b>Terapija / suplementi / napomene</b></label>
+        <textarea id="lab_therapy" class="lab-textarea" placeholder="Lekovi, suplementi, vitamin D, metformin, gvožđe..."></textarea>
+        <label><b>Cilj korisnika</b></label>
+        <textarea id="lab_goal" class="lab-textarea" placeholder="npr. jasnije tumačenje, dalje dijagnostikovanje, plan kontrole, upozorenja..."></textarea>
+        <label><b>Sirovi tekst nalaza / ručni unos</b></label>
+        <textarea id="lab_raw_text" class="lab-textarea" style="min-height:180px;" placeholder="Nalepi tekst nalaza, izveštaj laboratorije ili prepis ključnih parametara sa referentnim vrednostima..."></textarea>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Korak 2</div>
+        <h4 style="margin-top:0;">Analiziraj — generiši SINET prompt i ubaci AI JSON</h4>
+        <div class="lab-actions">
+          <button class="lab-btn warn" type="button" onclick="app.generateLabPrompt()">🧠 Generiši SINET prompt</button>
+          <button class="lab-btn primary" type="button" onclick="app.copyLabPrompt()">📋 Kopiraj prompt</button>
+          <button class="lab-btn ghost" type="button" onclick="app.labLoadSampleFromLastPdf()">📄 Ubaci primer</button>
+        </div>
+        <textarea id="lab_prompt" class="lab-textarea lab-json-box" style="min-height:240px; margin-top:10px;" placeholder="Ovde će se pojaviti prompt za AI..."></textarea>
+        <label><b>AI rezultat (JSON)</b></label>
+        <textarea id="lab_ai_json" class="lab-textarea lab-json-box" style="min-height:220px;" placeholder='Nalepi strukturisani JSON iz AI-a. Preporuka: koristi SINET Book/Pro prompt i vrati validan JSON.'></textarea>
+        <div class="lab-actions">
+          <button class="lab-btn secondary" type="button" onclick="app.cleanLabJson()">🧹 Očisti JSON</button>
+          <button class="lab-btn ghost" type="button" onclick="app.copyCurrentLabJson()">📋 Kopiraj JSON</button>
+        </div>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Korak 3</div>
+        <h4 style="margin-top:0;">Generiši HTML report</h4>
+        <div class="lab-actions">
+          <button class="lab-btn dark" type="button" onclick="app.renderLabReportFromInput()">🪄 Renderuj izveštaj</button>
+          <button class="lab-btn primary" type="button" onclick="app.saveCurrentLabCase()">💾 Sačuvaj slučaj</button>
+          <button class="lab-btn ghost" type="button" onclick="app.openLabReportWindow()">🪟 Otvori puni izveštaj</button>
+        </div>
+        <div id="lab-report-preview" style="margin-top:12px;"></div>
+      </div>
+      <div class="welcome-card" style="text-align:left;">
+        <div class="lab-section-kicker">Korak 4</div>
+        <h4 style="margin-top:0;">Print / export</h4>
+        <div class="lab-export-note">Kada je report renderovan, ovde završavaš posao: pregled, štampa i izvoz.</div>
+        <div class="lab-actions">
+          <button class="lab-btn dark" type="button" onclick="app.printCurrentLabReport()">🖨 Print</button>
+          <button class="lab-btn secondary" type="button" onclick="app.downloadCurrentLabHtml()">⬇ HTML</button>
+          <button class="lab-btn ghost" type="button" onclick="app.exportCurrentLabJson()">⬇ JSON</button>
+          <button class="lab-btn primary" type="button" onclick="app.saveCurrentLabSnapshot()">🧩 Sačuvaj Lab Snapshot</button>
+        </div>
+      </div>
+      <div class="welcome-card lab-archive-wrap" style="text-align:left;">
+        <details>
+          <summary><b>Arhiva i Snapshot osnova</b></summary>
+          <div style="margin-top:12px;">
+            <h4 style="margin-top:0;">Istorija laboratorijskih izveštaja</h4>
+            <div id="lab-history-list"></div>
+            <div style="height:14px"></div>
+            <h4 style="margin-top:0;">Lab Snapshot osnova</h4>
+            <div class="lab-inline-note">Snapshot čuva kratak sažetak za buduću vezu sa Anamnezom i drugim modulima.</div>
+            <div id="lab-snapshot-list" style="margin-top:10px;"></div>
+          </div>
+        </details>
+      </div>`;
+    const helpPage = byId('page-help');
+    if (helpPage) main.insertBefore(page, helpPage);
+    else main.appendChild(page);
+    return page;
+  };
+
+  const prevEnsureLabEntry = App.prototype._ensureLabBridgeEntryPoints;
+  App.prototype._ensureLabBridgeEntryPoints = function(){
+    prevEnsureLabEntry.apply(this, arguments);
+    try {
+      const link = byId('menu-link-labs');
+      if (link) {
+        link.textContent = '🧪 LAB / BookPro izveštaji';
+        link.dataset.label = 'lab bookpro izvestaji';
+      }
+      document.querySelectorAll("button[onclick*=\"nav('labs')\"], a[onclick*=\"nav('labs')\"]").forEach((el) => {
+        if (/LAB Bridge/i.test(el.textContent || '')) {
+          el.textContent = (el.tagName === 'A') ? '🧪 LAB / BookPro izveštaji' : '🧪 LAB / BookPro';
+        }
+      });
+    } catch(_) {}
+  };
+
+  App.prototype.updateLabGeneratorHint = function(){
+    const def = this._selectedLabGeneratorDef();
+    const box = byId('lab-generator-hint');
+    if (box) {
+      box.innerHTML = `<b>${this.escapeHtml(def.short_label || def.label || 'Generator')}</b><br>${this.escapeHtml(def.description || '')}`;
+    }
+  };
+
+  const prevCollectLabInput = App.prototype.collectLabInput;
+  App.prototype.collectLabInput = function(){
+    const out = prevCollectLabInput.apply(this, arguments);
+    const def = this._selectedLabGeneratorDef();
+    out.generator = {
+      key: def.key,
+      label: def.label,
+      short_label: def.short_label,
+      family: def.family,
+      mode: def.mode,
+      prompt_version: def.prompt_version,
+      flow: ['1_upload_or_photo','2_analyze','3_generate_html','4_print_export']
+    };
+    return out;
+  };
+
+  App.prototype._labParametersTableHtml = function(rows) {
+    const items = makeList(rows).map((it) => (typeof it === 'string' ? { param: it } : (it || {}))).filter(Boolean);
+    if (!items.length) return '<div class="lab-empty">Puna tabela parametara još nije popunjena.</div>';
+    return `<div class="lab-params-table">${items.map((it) => `
+      <div class="lab-param-row">
+        <div class="lab-param-grid">
+          <div><b>Parametar</b><div>${this.escapeHtml(it.param || it.name || '-')}</div></div>
+          <div><b>Rezultat</b><div>${this.escapeHtml(it.result || it.value || '-')}</div></div>
+          <div><b>Status / ref.</b><div>${this.escapeHtml([it.status, it.reference, it.range].filter(Boolean).join(' • ') || '-')}</div></div>
+          <div><b>Kako čitati</b><div>${this.escapeHtml(it.how_to_read || it.howToRead || it.note || '-')}</div></div>
+        </div>
+      </div>`).join('')}</div>`;
+  };
+
+  const prevNormalizeLab = App.prototype._normalizeLabReportObject;
+  App.prototype._normalizeLabReportObject = function(obj, inputCtx) {
+    const report = prevNormalizeLab.apply(this, arguments);
+    const root = (obj && typeof obj === 'object' && obj.report && typeof obj.report === 'object') ? obj.report : obj;
+    const def = (inputCtx && inputCtx.generator) ? inputCtx.generator : this._selectedLabGeneratorDef();
+    report.full_parameters_table = makeList(pick(root, ['full_parameters_table','parameters_table','all_parameters','lab_table'], []));
+    report.further_diagnostics = makeList(pick(root, ['further_diagnostics','furtherDiagnostics'], []));
+    report.decision_algorithm = makeList(pick(root, ['decision_algorithm','decisionAlgorithm'], []));
+    report.print_package = makeList(pick(root, ['print_package','printPackage'], []));
+    report.export_section = makeList(pick(root, ['export_section','exportSection'], []));
+    report.document_notes = makeList(pick(root, ['document_notes','notes'], []));
+    report.metadata = Object.assign({}, report.metadata || {}, pick(root, ['metadata'], {}), {
+      generator_key: def?.key || 'bookpro_lab_v6',
+      generator_label: def?.label || 'Book/Pro laboratorijski izveštaj',
+      render_version: LAB_4STEP_VERSION
+    });
+    return report;
+  };
+
+  App.prototype._labReportBodyHtml = function(report) {
+    const patientLine = [report.patient?.name, report.patient?.age ? `${report.patient.age} god.` : '', report.patient?.sex, report.patient?.report_date].filter(Boolean).join(' • ');
+    const generatorLabel = report.metadata?.generator_label || report.generator?.label || 'Book/Pro laboratorijski izveštaj';
+    const qa = report?.qa || (this._labQaGate ? this._labQaGate(report || {}) : { status:'n/a', issues:[] });
+    return `
+      <div class="lab-report-shell">
+        <section class="lab-report-head">
+          <h2>${this.escapeHtml(report.title || 'SINET laboratorijski izveštaj')}</h2>
+          <p>${this.escapeHtml(report.subtitle || '')}</p>
+          ${patientLine ? `<div style="margin-top:10px; font-weight:700;">${this.escapeHtml(patientLine)}</div>` : ''}
+          <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="lab-pill">${this.escapeHtml(generatorLabel)}</span>
+            <span class="lab-pill">4 koraka: učitaj → analiziraj → HTML → print/export</span>
+            <span class="lab-pill">QA: ${this.escapeHtml(qa.status || 'n/a')}</span>
+          </div>
+        </section>
+        <section class="lab-report-section"><h3>Quick action kartice — šta je najracionalnije uraditi prvo</h3>${makeList(report.quick_actions).length ? `<div>${makeList(report.quick_actions).map(v => `<span class="lab-pill">${this.escapeHtml(String(v))}</span>`).join('')}</div>` : '<div class="lab-empty">Nema definisanih brzih akcija.</div>'}</section>
+        <section class="lab-report-section"><h3>Doctor summary</h3>${this._labParagraphsHtml(report.doctor_summary, 'Nema sažetka za lekara.')}</section>
+        <section class="lab-report-section"><h3>User summary</h3>${this._labParagraphsHtml(report.user_summary, 'Nema korisničkog sažetka.')}</section>
+        <section class="lab-report-section"><h3>Key findings</h3>${this._labFindingsHtml(report.key_findings)}</section>
+        <section class="lab-report-section"><h3>Detailed findings</h3>${this._labSectionsHtml(report.sections)}</section>
+        <section class="lab-report-section"><h3>Full parameters table</h3>${this._labParametersTableHtml(report.full_parameters_table)}</section>
+        <section class="lab-report-section"><h3>Further diagnostics</h3>${this._labListHtml(report.further_diagnostics.length ? report.further_diagnostics : report.next_steps, 'Nema predloženih narednih koraka.')}</section>
+        <section class="lab-report-section"><h3>Scenario guide</h3>${this._labListHtml(report.scenarios, 'Nema scenario vodiča.')}</section>
+        <section class="lab-report-section"><h3>Decision algorithm</h3>${this._labListHtml(report.decision_algorithm, 'Decision algorithm nije dodat.')}</section>
+        <section class="lab-report-section"><h3>Follow-up plan</h3>${this._labListHtml(report.monitoring_plan, 'Plan praćenja nije dodat.')}</section>
+        <section class="lab-report-section"><h3>FAQ</h3>${this._labFaqHtml(report.faq)}</section>
+        <section class="lab-report-section"><h3>Treatment / control</h3>${this._labListHtml(report.treatment_and_control, 'Nema definisanog plana lečenja/kontrole.')}</section>
+        <section class="lab-report-section"><h3>Alternative / support</h3>${this._labListHtml(report.alternative_support, 'Nema dodatne blage podrške.')}</section>
+        <section class="lab-report-section"><h3>Red flags</h3>${this._labListHtml(report.red_flags, 'Nema dodatih red flags stavki.')}</section>
+        <section class="lab-report-section"><h3>Print package</h3>${this._labListHtml(report.print_package, 'Print package nije dodat.')}</section>
+        <section class="lab-report-section"><h3>Export section</h3>${this._labListHtml(report.export_section, 'Export section nije dodat.')}</section>
+        <section class="lab-report-section"><h3>Document notes</h3>${this._labListHtml(report.document_notes.length ? report.document_notes : report.doctor_notes, 'Nema dodatih beleški.')}</section>
+        <section class="lab-report-section"><h3>Sources</h3>${this._labListHtml(report.sources, 'Izvori nisu upisani.')}</section>
+        <section class="lab-report-section">
+          <h3>Versioning + QA gate</h3>
+          <div class="lab-kpi">
+            <div class="lab-kpi-card"><b>QA status</b>${this.escapeHtml(qa.status || 'unknown')}</div>
+            <div class="lab-kpi-card"><b>prompt_version</b>${this.escapeHtml(report.metadata?.prompt_version || report.generator?.prompt_version || 'LAB_BOOKPRO_MASTER_v6')}</div>
+            <div class="lab-kpi-card"><b>schema_version</b>${this.escapeHtml(report.metadata?.schema_version || 'LAB_SCHEMA_BOOKPRO_V1')}</div>
+            <div class="lab-kpi-card"><b>render_version</b>${this.escapeHtml(report.metadata?.render_version || LAB_4STEP_VERSION)}</div>
+          </div>
+          ${makeList(qa.issues).length ? `<div style="margin-top:12px;">${this._labListHtml(qa.issues, 'QA bez napomena.')}</div>` : '<div class="lab-inline-note" style="margin-top:12px;">QA gate nije prijavio strukturne probleme.</div>'}
+        </section>
+        <section class="lab-report-section"><div class="lab-inline-note"><b>Napomena:</b> Ovaj izveštaj je medicinsko-informativan i ne zamenjuje pregled lekara, dijagnozu niti individualni terapijski plan.</div></section>
+      </div>`;
+  };
+
+  App.prototype._labReportDocument = function(report) {
+    const body = this._labReportBodyHtml(report);
+    return `<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${this.escapeHtml(report.title || 'SINET Lab Report')}</title><style>body{font-family:Arial,sans-serif;background:#f4f8fb;color:#193247;margin:0;padding:20px}.wrap{max-width:1024px;margin:0 auto}.topbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:14px}.topbar .actions{display:flex;gap:8px;flex-wrap:wrap}.topbar button{padding:10px 12px;border-radius:12px;border:1px solid #d6e2ef;background:#fff;font-weight:900;cursor:pointer}.lab-report-shell{display:grid;gap:14px}.lab-report-head{background:linear-gradient(135deg,#0f766e,#2563eb);color:#fff;border-radius:18px;padding:18px}.lab-report-head h2{margin:0 0 8px 0;font-size:1.65rem}.lab-report-section{background:#fff;border:1px solid #e9eef4;border-radius:16px;padding:16px;box-shadow:0 2px 6px rgba(15,23,42,.04)}.lab-report-section h3{margin:0 0 10px 0;color:#17405f}.lab-report-section h4{margin:12px 0 6px 0;color:#24557d}.lab-pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#eef6ff;border:1px solid #d7e6fb;color:#22415f;font-size:.85rem;font-weight:800;margin:0 8px 8px 0}.lab-card-list{display:grid;gap:10px}.lab-find-card{background:#f9fbfd;border:1px solid #e6edf5;border-radius:14px;padding:12px}.lab-prio-high{background:#fff2f0;border-color:#ffd0c8}.lab-prio-medium{background:#fff8e8;border-color:#ffe3a3}.lab-prio-low{background:#f2fbf5;border-color:#cdeed7}.lab-empty{padding:12px;border:1px dashed #d7e1eb;border-radius:12px;color:#678;background:#fbfdff}.lab-inline-note{font-size:.9rem;color:#456}details{border:1px solid #e7edf3;border-radius:12px;padding:10px 12px;background:#fcfeff;margin-bottom:10px}summary{cursor:pointer;font-weight:800}ul{line-height:1.55}p{line-height:1.6;margin:0 0 8px 0}.lab-kpi{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:10px}.lab-kpi-card{background:#f8fbff;border:1px solid #dce9f8;border-radius:14px;padding:12px}.lab-kpi-card b{display:block;color:#18466f;margin-bottom:4px}.lab-params-table{display:grid;gap:10px}.lab-param-row{border:1px solid #e6edf5;border-radius:14px;background:#f9fbfd;padding:12px}.lab-param-grid{display:grid;gap:8px}@media(min-width:760px){.lab-param-grid{grid-template-columns:1.2fr .9fr .9fr 1.4fr}}@media print{body{background:#fff;padding:0}.topbar{display:none}.wrap{max-width:none}}</style></head><body><div class="wrap"><div class="topbar"><div><b>SINET Book/Pro laboratorijski report</b><div style="font-size:.9rem;color:#567;">v${this.escapeHtml(report.metadata?.render_version || LAB_4STEP_VERSION)}</div></div><div class="actions"><button onclick="window.print()">🖨 Print</button><button onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆ Početak</button></div></div>${body}</div></body></html>`;
+  };
+
+  App.prototype.printCurrentLabReport = function(){
+    const report = this._labCurrentReport || safeParse(localStorage.getItem(LAB_4STEP_LAST_KEY) || 'null', null);
+    if (!report) return alert('Nema laboratorijskog izveštaja za print.');
+    const html = this._labReportDocument(report);
+    const w = window.open('', '_blank');
+    if (!w) return alert('Browser je blokirao novi prozor.');
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => { try { w.print(); } catch(_) {} }, 180);
+  };
+
+  App.prototype.generateLabPrompt = function() {
+    const input = this.collectLabInput();
+    const safeInput = this._sanitizeLabInputForPrompt ? this._sanitizeLabInputForPrompt(input) : input;
+    const generator = input.generator || this._selectedLabGeneratorDef();
+    const schema = {
+      title: 'string',
+      subtitle: 'string',
+      doctor_summary: ['string'],
+      user_summary: ['string'],
+      quick_actions: ['string'],
+      key_findings: [{ param: 'string', result: 'string', status: 'uredno|sniženo|povišeno|granično', importance: 'visoki|srednji|niski', why_it_matters: 'string' }],
+      sections: {
+        hematologija: ['string'],
+        glukoza_insulin: ['string'],
+        bubrezi: ['string'],
+        jetra: ['string'],
+        lipidi: ['string'],
+        vitamini_minerali: ['string'],
+        hormoni: ['string'],
+        urin: ['string'],
+        ostalo: ['string']
+      },
+      full_parameters_table: [{ param: 'string', result: 'string', reference: 'string', status: 'string', how_to_read: 'string' }],
+      further_diagnostics: ['string'],
+      scenarios: ['string'],
+      decision_algorithm: ['string'],
+      monitoring_plan: ['string'],
+      faq: [{ q: 'string', a: 'string' }],
+      treatment_and_control: ['string'],
+      alternative_support: ['string'],
+      red_flags: ['string'],
+      print_package: ['string'],
+      export_section: ['string'],
+      document_notes: ['string'],
+      sources: ['string'],
+      metadata: {
+        report_id: 'string',
+        prompt_version: generator.prompt_version || 'LAB_BOOKPRO_MASTER_v6',
+        schema_version: 'LAB_SCHEMA_BOOKPRO_V1',
+        render_version: LAB_4STEP_VERSION,
+        source_type: 'manual_text|local_upload|pdf_reference|photo_reference|unknown'
+      }
+    };
+    const prompt = `SINET Audio Lekar — POSEBAN MODUL ZA LAB / BOOKPRO IZVEŠTAJE\n\nOvo NIJE Integrativni vodič. Integrativni vodič ostaje poseban modul.\nAktivni generator: ${generator.label || 'Book/Pro laboratorijski izveštaj'}\nCilj: 4 koraka i gotovo — 1) učitaj/slikaj 2) analiziraj 3) generiši HTML report 4) print/export.\n\nULOGA SISTEMA\nTi si SINET laboratorijski analitičar + SINET Book/Pro generator + SINET print/export dizajner. Radiš ozbiljan, topao, profesionalan i vrlo detaljan izveštaj na srpskom jeziku (latinica).\n\nAPSOLUTNA PRAVILA\n- Ne izmišljaj vrednosti koje nisu vidljive ili nisu poslate.\n- Ne postavljaj konačnu dijagnozu samo iz laboratorije.\n- Ako nešto nije čitljivo ili nedostaje, jasno označi nesigurnost.\n- Ako je ulaz bogat, rezultat mora biti bogat.\n- Ne skraćuj važne sekcije.\n- Full parameters table se ne izostavlja kada podaci postoje.\n- Piši tako da dokument služi i korisniku i lekaru.\n- Vrati VALIDAN JSON i ništa van JSON-a.\n\nCANONICAL REDOSLED SEKCIJA\n1. doctor_summary\n2. user_summary\n3. key_findings\n4. sections\n5. full_parameters_table\n6. further_diagnostics\n7. scenarios\n8. decision_algorithm\n9. monitoring_plan\n10. faq\n11. treatment_and_control\n12. alternative_support\n13. red_flags\n14. print_package\n15. export_section\n16. document_notes\n17. sources\n\nJSON SCHEMA\n${JSON.stringify(schema, null, 2)}\n\nULAZNI PODACI (GDPR neutralisani za prompt)\n${JSON.stringify(safeInput, null, 2)}\n\nDODATNA UPUTSTVA\n- U full_parameters_table vrati sve parametre koje realno imaš.\n- U further_diagnostics objasni šta dalje ima racionalnog smisla.\n- U decision_algorithm vrati jasan sled odluke.\n- U print_package objasni šta treba da ostane pregledno u štampi.\n- U export_section objasni svrhu HTML / JSON / print izvoza.\n- Ako neki blok nije primenljiv, vrati prazan niz, bez izmišljanja.\n- Stil treba da bude SINET Book/Pro, spreman za HTML render u aplikaciji.`;
+    const out = byId('lab_prompt');
+    if (out) out.value = prompt;
+    this.showToast('SINET Book/Pro prompt generisan ✅', { timeoutMs: 3200 });
+    this.log('USER', 'Lab Prompt Generated v16.0.0.118.40.12', safeInput.patient?.display_name || 'LAB');
+  };
+
+  App.prototype.ensureVisibleLabBookProShortcut = function(){
+    try {
+      const page = document.getElementById('page-home');
+      if (!page) return;
+      let card = document.getElementById('home-lab-bookpro-card');
+      if (!card) {
+        card = document.createElement('div');
+        card.id = 'home-lab-bookpro-card';
+        card.className = 'welcome-card';
+        card.style.textAlign = 'left';
+        const anchor = page.querySelector('#home-version-card') || page.querySelector('.welcome-card');
+        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(card, anchor.nextSibling); else page.prepend(card);
+      }
+      card.innerHTML = `
+        <div class="lab-section-kicker">NOVI POSEBAN MODUL</div>
+        <h4 style="margin-top:0;">🧪 LAB / BookPro izveštaji</h4>
+        <p style="color:#666; margin-top:6px;"><b>4 koraka i gotovo:</b> 1) učitaj/slikaj, 2) analiziraj, 3) generiši HTML report, 4) print/export.</p>
+        <div class="lab-actions"><button class="lab-btn dark" type="button" onclick="nav('labs')">🧪 Otvori LAB / BookPro modul</button></div>`;
+    } catch(_) {}
+  };
+
+  const prevPrepareLabs = App.prototype.prepareLabBridgeUI;
+  App.prototype.prepareLabBridgeUI = function() {
+    prevPrepareLabs.apply(this, arguments);
+    try { this.updateLabGeneratorHint(); } catch(_) {}
+    try { this.ensureVisibleLabBookProShortcut(); } catch(_) {}
+  };
+})();
+
+/* ===================== v16.0.0.118.40.23 — LAB / BookPro visible home shortcut sync ===================== */
+(function(){
+  const prevInit = App.prototype.init;
+  App.prototype.init = async function(){
+    await prevInit.apply(this, arguments);
+    try { this.ensureVisibleLabBookProShortcut && this.ensureVisibleLabBookProShortcut(); } catch(_) {}
+  };
+  const prevNav = App.prototype.nav;
+  App.prototype.nav = function(pageId, opts={}){
+    const r = prevNav.apply(this, arguments);
+    if (pageId === 'home' || pageId === 'labs') { try { this.ensureVisibleLabBookProShortcut && this.ensureVisibleLabBookProShortcut(); } catch(_) {} }
+    return r;
+  };
+})();
+
+
+/* ===================== v16.0.0.118.40.23 — LAB / BookPro active page hotfix ===================== */
+(function(){
+  const prevEnsureLabPage = App.prototype._ensureLabBridgePage;
+  App.prototype._ensureLabBridgePage = function(){
+    const oldPage = document.getElementById('page-labs');
+    const wasActive = !!(oldPage && oldPage.classList && oldPage.classList.contains('active'));
+    const page = prevEnsureLabPage.apply(this, arguments);
+    try {
+      if (page && (wasActive || this.currentPageId === 'labs')) page.classList.add('active');
+      if (this.ui && this.ui.screens) this.ui.screens.labs = page;
+    } catch(_) {}
+    return page;
+  };
+
+  const prevPrepareLabUI = App.prototype.prepareLabBridgeUI;
+  App.prototype.prepareLabBridgeUI = function(){
+    const out = prevPrepareLabUI.apply(this, arguments);
+    try {
+      const page = document.getElementById('page-labs');
+      if (page && this.currentPageId === 'labs') {
+        Array.from(document.querySelectorAll('main .section')).forEach((el) => {
+          if (el && el.id !== 'page-labs') el.classList.remove('active');
+        });
+        page.classList.add('active');
+      }
+      if (this.ui && this.ui.screens) this.ui.screens.labs = page;
+    } catch(_) {}
+    return out;
   };
 })();

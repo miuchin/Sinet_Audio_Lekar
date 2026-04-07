@@ -118,6 +118,7 @@
       { id:'anti',  href: b + 'pages/antiparazitski.html', label:'🦠 Antiparazitski' },
       { id:'spk',   href: b + 'pages/speaker_clean_proof.html', label:'🔊 Zvučnik' },
       { id:'ra',    href: b + 'pages/integrativni_vodic_RA_sake.html', label:'🧩 RA šake' },
+      { id:'occ',   href: b + 'pages/occipitalna_neuralgija.html', label:'🧠 Okcipitalna' },
       { id:'lib',   href: b + 'pages/integrativna_biblioteka.html', label:'🧭 Biblioteka' }
     ];
   }

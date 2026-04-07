@@ -1,7 +1,7 @@
 /*
   SINET Audio Engine
   File: js/audio/audio-engine.js
-  Version: 4.8
+  Version: 4.9
   Notes:
     - Reliable oscillator play
     - Proper stats for timer UI
@@ -18,9 +18,9 @@ export class SinetAudioEngine {
     this.oscillators = [];
     this.isPlaying = false;
 
-    // v15.4.7 — audible carrier for sub-50Hz
-    this.subCarrierHz = Number(opts.subCarrierHz) || 210;
-    this.subCarrierThresholdHz = Number(opts.subCarrierThresholdHz) || 50;
+    // v16.0.0.118.40.10 — audible carrier bed for sub-120Hz
+    this.subCarrierHz = Number(opts.subCarrierHz) || 200;
+    this.subCarrierThresholdHz = Number(opts.subCarrierThresholdHz) || 120;
     this.normalizeLoudness = opts.normalizeLoudness !== false;
 
     this.currentSequence = [];
@@ -41,7 +41,7 @@ export class SinetAudioEngine {
     this.onSkip = opts.onSkip || null;
 
     // Desired output state; do not force-create AudioContext before a user gesture.
-    this._desiredMasterGain = Math.min(1.6, Math.max(0, Number(opts.masterGain) || 0.75));
+    this._desiredMasterGain = Math.min(1.8, Math.max(0, Number(opts.masterGain) || 0.90));
 
     // Skip/disable support
     this._disabled = new Set();
@@ -88,27 +88,24 @@ export class SinetAudioEngine {
 
   _carrierForSubHz(hz) {
     const x = Math.max(0, Number(hz) || 0);
-    if (x <= 0) return Math.max(40, Number(this.subCarrierHz) || 210);
-    if (x < 8) return 200;
-    if (x < 12) return 205;
-    if (x < 20) return 210;
-    if (x < 32) return 215;
-    return 220;
+    if (x <= 0) return Math.max(40, Number(this.subCarrierHz) || 200);
+    if (x < this.subCarrierThresholdHz) return 200;
+    return Math.max(40, Number(this.subCarrierHz) || 200);
   }
 
   _toneNormalizationGain(hz) {
     if (!this.normalizeLoudness) return 1;
     const f = (hz > 0 && hz < this.subCarrierThresholdHz) ? this._carrierForSubHz(hz) : Math.max(1, Number(hz) || 0);
     let gain = 1;
-    if (f < 90) gain = 1.55;
-    else if (f < 140) gain = 1.38;
-    else if (f < 200) gain = 1.22;
-    else if (f < 260) gain = 1.10;
-    else if (f < 700) gain = 1.0;
-    else if (f < 1600) gain = 0.94;
-    else if (f < 3200) gain = 0.88;
-    else gain = 0.82;
-    return Math.max(0.65, Math.min(1.65, gain));
+    if (f < 90) gain = 1.65;
+    else if (f < 140) gain = 1.52;
+    else if (f < 200) gain = 1.34;
+    else if (f < 260) gain = 1.18;
+    else if (f < 700) gain = 1.05;
+    else if (f < 1600) gain = 0.98;
+    else if (f < 3200) gain = 0.91;
+    else gain = 0.86;
+    return Math.max(0.72, Math.min(1.75, gain));
   }
 
   playFrequency(freq) {

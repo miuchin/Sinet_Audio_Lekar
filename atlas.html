@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SINET Atlas simptoma v16.0.0.118.40</title>
+  <title>SINET Atlas simptoma v16.0.0.118.40.10</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./css/main.css">
   <style>
@@ -71,8 +71,8 @@
     @media (max-width: 1180px){.atlas-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.atlas-layout{grid-template-columns:1fr}.atlas-list{max-height:none}.atlas-meta-grid{grid-template-columns:1fr}}
     @media (max-width: 760px){.atlas-wrap{padding:10px}.atlas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.atlas-grid{grid-template-columns:1fr}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.legend{grid-template-columns:1fr}.atlas-top{align-items:stretch}.atlas-actions{width:100%}.atlas-actions .atlas-btn{flex:1}}
   </style>
-  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40"></script>
-  <script src="js/sinet-area-export.js?v=16.0.0.118.40"></script>
+  <script src="js/sinet-symptom-card.js?v=16.0.0.118.40.10"></script>
+  <script src="js/sinet-area-export.js?v=16.0.0.118.40.10"></script>
 </head>
 <body>
   <div class="atlas-wrap">
@@ -84,7 +84,7 @@
         <button class="atlas-btn warn" onclick="atlasAreaPrint()">🖨 OBLASTI</button>
         <button class="atlas-btn purple" onclick="atlasAreaWithSymptoms()">📚 OBLAST + SIMPTOMI</button>
       </div>
-      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.40</div>
+      <div style="font-weight:700;color:#64748b;">SINET Atlas simptoma v16.0.0.118.40.10</div>
     </div>
 
     <section class="atlas-hero">
@@ -522,12 +522,14 @@ function atlasSymptomExport(fmt, id){
   else if (fmt === 'txt') window.SINET_SymptomCard.exportTXT(it);
   else if (fmt === 'md') window.SINET_SymptomCard.exportMD(it);
 }
-function selectItem(id, action = 'catalog'){
+function selectItem(id, action = ''){
   state.selected = id;
   const it = (listItems().find((it) => it.id === id) || state.items.find((it) => it.id === id));
   renderDetail(it);
   renderList(listItems());
-  $('status').textContent = it ? `Otvoren izbor za simptom: ${it.simptom || id}. Kompletan detalj se otvara u Katalogu.` : 'Simptom nije pronađen.';
+  $('status').textContent = it
+    ? `Izabran simptom: ${it.simptom || id}. Ostaješ u Atlasu; za kompletan prikaz klikni “📖 Otvori u Katalogu”.`
+    : 'Simptom nije pronađen.';
   revealDetail();
   if (it && action) sendBridge(action, it.id, it.simptom || '');
 }
@@ -682,7 +684,8 @@ function sendBridge(action, id, symptom){
     }));
     writeReturnHint({ url: currentAbsUrl(), page: 'atlas', sourcePage: 'atlas', oblast: state.oblast || '', q: state.query || '', symptomId: state.selected || '' });
   } catch(_) {}
-  location.href = 'index.html';
+  const target = action === 'home' ? 'home' : 'catalog';
+  location.href = `index.html#${target}`;
 }
 
 
@@ -739,7 +742,7 @@ function bindAtlasInteractions(){
     const row = e.target.closest('[data-id]');
     const id = String((trigger?.getAttribute('data-open-item')) || (row?.getAttribute('data-id')) || '').trim();
     if (!id) return;
-    selectItem(id, 'catalog');
+    selectItem(id, '');
   });
 }
 

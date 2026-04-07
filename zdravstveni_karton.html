@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Zdravstveni karton · v16.0.0.118.40.23</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sinet-quickbar.css?v=v16.0.0.118.40.23">
+  <link rel="stylesheet" href="css/sinet-medical-runtime.css?v=v16.0.0.118.40.23">
+  <script defer src="js/sinet-page-nav.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/db/indexed-db.js"></script>
+  <script defer src="js/core/bridge-runtime.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/id-service.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/renderers/lab-bookpro-renderer.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-store.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/audit-service.js?v=v16.0.0.118.40.23"></script>
+</head>
+<body class="sinet-medical-page">
+<div class="sinet-shell">
+  <div class="sinet-page-hero">
+    <h1>🗂 Zdravstveni karton</h1>
+    <p>Centralna medicinska arhiva i owner originala. Sada ima pregled po vremenskoj liniji, filtere i jasniji prelaz ka OCR/extract, LAB / BookPro i Anamnezi.</p>
+    <span class="sinet-version-badge">v16.0.0.118.40.23</span>
+  </div>
+
+  <div class="sinet-grid-4 mb-3" id="karton-stats"></div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Brze akcije</h2>
+      <div class="sinet-toolbar">
+        <input id="karton-file" class="sinet-file" type="file" multiple>
+        <button class="sinet-btn green" id="btn-import-files">📥 Dodaj izabrane fajlove</button>
+        <button class="sinet-btn secondary" id="btn-add-demo">➕ Dodaj demo dokument</button>
+      </div>
+      <div class="sinet-filter-grid mt-3">
+        <input id="filter-search" class="sinet-input" placeholder="Pretraga po naslovu, ID-u, tagu, MIME…">
+        <select id="filter-type" class="sinet-select">
+          <option value="">Svi tipovi</option>
+        </select>
+        <select id="filter-sort" class="sinet-select">
+          <option value="newest">Najnovije prvo</option>
+          <option value="oldest">Najstarije prvo</option>
+          <option value="title">Naslov A–Ž</option>
+        </select>
+      </div>
+    </div>
+    <div class="sinet-card">
+      <h2>Runtime storage status</h2>
+      <div id="storage-status" class="sinet-empty">Provera bridge sloja…</div>
+    </div>
+  </div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Vremenska linija dokumenata</h2>
+      <div id="karton-timeline" class="sinet-empty">Učitavanje…</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Pregled aktivnog filtera</h2>
+      <div id="karton-filter-summary" class="sinet-empty">Nema aktivnih filtera.</div>
+    </div>
+  </div>
+
+  <div class="sinet-table-wrap">
+    <table class="sinet-table">
+      <thead>
+        <tr>
+          <th>Naslov</th>
+          <th>Tip</th>
+          <th>Storage</th>
+          <th>OCR</th>
+          <th>Veze</th>
+          <th>Status</th>
+          <th>Akcije</th>
+        </tr>
+      </thead>
+      <tbody id="karton-body"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  const store = new window.SinetMedicalRuntimeStore();
+  const audit = new window.SinetAuditService(store);
+  let allDocsCache = [];
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+  function statCard(label, value, tone='info'){
+    return `<div class="sinet-card"><div class="sinet-pill ${tone}">${label}</div><div style="font-size:1.5rem;font-weight:900;margin-top:8px;color:#123d64;">${value}</div></div>`;
+  }
+  function getDocDate(doc){ return doc.document_date || doc.imported_at || ''; }
+  function docSearchText(doc){
+    return [doc.title, doc.document_id, doc.document_type, doc.mime_type, ...(doc.tags || []), doc.storage_mode, doc.status].filter(Boolean).join(' ').toLowerCase();
+  }
+  function getFilteredDocs(){
+    const search = (document.getElementById('filter-search').value || '').trim().toLowerCase();
+    const type = document.getElementById('filter-type').value || '';
+    const sort = document.getElementById('filter-sort').value || 'newest';
+    let docs = allDocsCache.slice();
+    if (search) docs = docs.filter(doc => docSearchText(doc).includes(search));
+    if (type) docs = docs.filter(doc => String(doc.document_type || '') === type);
+    docs.sort((a,b) => {
+      if (sort === 'title') return String(a.title || '').localeCompare(String(b.title || ''), 'sr');
+      const ad = new Date(getDocDate(a) || 0).getTime();
+      const bd = new Date(getDocDate(b) || 0).getTime();
+      return sort === 'oldest' ? ad - bd : bd - ad;
+    });
+    return docs;
+  }
+  async function renderStats(){
+    const stats = await store.getStats();
+    document.getElementById('karton-stats').innerHTML = [
+      statCard('Dokumenti', stats.documents, 'info'),
+      statCard('Extract', stats.extracts, 'ok'),
+      statCard('Reporti', stats.reports, 'warn'),
+      statCard('Anamneza', stats.anamneza, 'info')
+    ].join('');
+  }
+  async function renderStorageStatus(){
+    const status = await store.getStorageStatus();
+    const box = document.getElementById('storage-status');
+    if (status && status.available) {
+      box.className = '';
+      box.innerHTML = `<div class="sinet-kv"><div>Aktivan sloj</div><div><strong>bridge_disk</strong></div><div>Runtime root</div><div>${esc(status.runtime_root || '')}</div><div>Writable</div><div>${status.writable ? 'da' : 'ne'}</div></div>`;
+    } else {
+      box.className = 'sinet-empty';
+      box.textContent = 'Bridge nije dostupan — radi IndexedDB blob fallback.';
+    }
+  }
+  function renderFilterControls(docs){
+    const typeEl = document.getElementById('filter-type');
+    const current = typeEl.value;
+    const types = Array.from(new Set(docs.map(doc => doc.document_type).filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b), 'sr'));
+    typeEl.innerHTML = `<option value="">Svi tipovi</option>` + types.map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join('');
+    typeEl.value = current && types.includes(current) ? current : '';
+  }
+  function renderFilterSummary(filtered){
+    const search = (document.getElementById('filter-search').value || '').trim();
+    const type = document.getElementById('filter-type').value || 'svi';
+    const sort = document.getElementById('filter-sort').value || 'newest';
+    const box = document.getElementById('karton-filter-summary');
+    const dateSet = filtered.map(getDocDate).filter(Boolean).sort();
+    box.className = '';
+    box.innerHTML = `
+      <div class="sinet-kv">
+        <div>Prikazano</div><div><strong>${filtered.length}</strong> dokument(a)</div>
+        <div>Pretraga</div><div>${search ? esc(search) : '—'}</div>
+        <div>Tip</div><div>${esc(type)}</div>
+        <div>Sort</div><div>${esc(sort)}</div>
+        <div>Raspon</div><div>${dateSet.length ? `${esc(dateSet[0])} → ${esc(dateSet[dateSet.length-1])}` : '—'}</div>
+      </div>`;
+  }
+  function renderTimeline(filtered){
+    const box = document.getElementById('karton-timeline');
+    if (!filtered.length) {
+      box.className = 'sinet-empty';
+      box.textContent = 'Nema dokumenata za aktivni filter.';
+      return;
+    }
+    box.className = 'sinet-timeline';
+    const groups = {};
+    for (const doc of filtered) {
+      const key = getDocDate(doc) || 'bez_datuma';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(doc);
+    }
+    const keys = Object.keys(groups).sort((a,b)=> new Date(b === 'bez_datuma' ? 0 : b).getTime() - new Date(a === 'bez_datuma' ? 0 : a).getTime());
+    box.innerHTML = keys.map(key => {
+      const docs = groups[key];
+      return `
+        <div class="sinet-timeline-item">
+          <div class="sinet-timeline-date">${key === 'bez_datuma' ? 'Bez datuma' : esc(key)}</div>
+          <div class="sinet-mini-list">
+            ${docs.map(doc => `
+              <div class="sinet-mini-row">
+                <div>
+                  <strong>${esc(doc.title)}</strong><br>
+                  <span class="sinet-muted">${esc(doc.document_type || '—')} · ${esc(doc.document_id || '')}</span>
+                </div>
+                <div class="sinet-actions compact">
+                  <button class="sinet-btn secondary" onclick="openDocumentAction('${esc(doc.document_id)}')">📄</button>
+                  <button class="sinet-btn secondary" onclick="openLatestReportAction('${esc(doc.document_id)}')">📘</button>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  async function renderTable(){
+    const tbody = document.getElementById('karton-body');
+    const docs = getFilteredDocs();
+    renderFilterSummary(docs);
+    renderTimeline(docs);
+    if (!docs.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="sinet-empty">Nema dokumenata za aktivni filter.</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = docs.map(doc => {
+      const reportsCount = Array.isArray(doc.linked_report_ids) ? doc.linked_report_ids.length : 0;
+      const anamCount = Array.isArray(doc.linked_anamneza_ids) ? doc.linked_anamneza_ids.length : 0;
+      const storageTone = doc.storage_mode === 'bridge_disk' ? 'ok' : 'warn';
+      const ocrTone = String(doc.ocr_status || '').includes('ready') || String(doc.ocr_status || '').includes('done') ? 'ok' : 'warn';
+      return `
+      <tr>
+        <td><strong>${esc(doc.title)}</strong><br><span class="sinet-muted">${esc(doc.document_id)}</span></td>
+        <td>${esc(doc.document_type || '')}<br><span class="sinet-muted">${esc(doc.mime_type || '')}</span></td>
+        <td><span class="sinet-pill ${storageTone}">${esc(doc.storage_mode || 'n/a')}</span><br><span class="sinet-muted">${esc(getDocDate(doc) || '')}</span></td>
+        <td><span class="sinet-pill ${ocrTone}">${esc(doc.ocr_status || 'n/a')}</span></td>
+        <td>
+          <strong>${reportsCount}</strong> report(a)<br>
+          <span class="sinet-muted">Anamneza: ${anamCount}</span>
+        </td>
+        <td><span class="sinet-pill info">${esc(doc.status || 'active')}</span></td>
+        <td>
+          <div class="sinet-actions">
+            <button class="sinet-btn secondary" onclick="openDocumentAction('${esc(doc.document_id)}')">📄 Prilog</button>
+            <button class="sinet-btn secondary" onclick="openLabAction('${esc(doc.document_id)}')">⚙️ Smart OCR</button>
+            <button class="sinet-btn secondary" onclick="generateReportAction('${esc(doc.document_id)}', false)">🧪 LAB/BookPro</button>
+            <button class="sinet-btn secondary" onclick="generateReportAction('${esc(doc.document_id)}', true)">🆕 Nova verzija</button>
+            <button class="sinet-btn secondary" onclick="openLatestReportAction('${esc(doc.document_id)}')">📘 Poslednji report</button>
+            <button class="sinet-btn secondary" onclick="openAnamnezaAction('${esc(doc.document_id)}')">🩺 Anamneza</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  async function refreshDocs(){
+    allDocsCache = await store.getCollection('source_documents') || [];
+    renderFilterControls(allDocsCache);
+    await renderTable();
+  }
+  async function openDocumentAction(documentId){
+    try { await store.openDocument(documentId); } catch (err) { alert(err.message || 'Prilog nije dostupan.'); }
+  }
+  function openLabAction(documentId){ location.href = `lab_bookpro.html?document_id=${encodeURIComponent(documentId)}`; }
+  function openAnamnezaAction(documentId){ location.href = `anamneza_runtime.html?document_id=${encodeURIComponent(documentId)}`; }
+  window.openDocumentAction = openDocumentAction;
+  window.openLabAction = openLabAction;
+  window.openAnamnezaAction = openAnamnezaAction;
+  async function generateReportAction(documentId, forceNewVersion){
+    try {
+      const result = await store.generateBookProFromDocument(documentId, { forceNewVersion: !!forceNewVersion });
+      await renderStats();
+      await refreshDocs();
+      if (result && result.report && result.report.viewer_url) {
+        if (confirm(forceNewVersion ? 'Nova verzija reporta je pripremljena. Otvori odmah?' : (result.reused ? 'Postojeći report već postoji. Otvori ga?' : 'Report je generisan. Otvori ga?'))) {
+          location.href = result.report.viewer_url;
+        }
+      }
+    } catch (err) {
+      alert(err.message || 'Greška pri generisanju reporta.');
+    }
+  }
+  window.generateReportAction = generateReportAction;
+  async function openLatestReportAction(documentId){
+    const report = await store.getLatestReportForDocument(documentId);
+    if (!report) { alert('Još nema reporta za ovaj dokument.'); return; }
+    location.href = report.viewer_url || `lab_bookpro_report.html?report_id=${encodeURIComponent(report.report_id)}`;
+  }
+  window.openLatestReportAction = openLatestReportAction;
+  document.getElementById('btn-add-demo').addEventListener('click', async () => {
+    await store.addDemoDocument();
+    await renderStats();
+    await refreshDocs();
+  });
+  document.getElementById('btn-import-files').addEventListener('click', async () => {
+    const input = document.getElementById('karton-file');
+    const files = Array.from(input.files || []);
+    if (!files.length) { alert('Prvo izaberi bar jedan fajl.'); return; }
+    const results = [];
+    for (const file of files) results.push(await store.addDocumentFromFile(file));
+    input.value = '';
+    await renderStats();
+    await refreshDocs();
+    const duplicates = results.filter(r => r && r.duplicate).length;
+    const inserted = results.length - duplicates;
+    alert(`Uvezeno: ${inserted}. Duplikati prepoznati: ${duplicates}.`);
+  });
+  ['filter-search','filter-type','filter-sort'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => renderTable());
+    document.getElementById(id).addEventListener('change', () => renderTable());
+  });
+  (async function init(){
+    await store.ensureBootstrap();
+    await audit.log('zdravstveni_karton','page_opened','page','zdravstveni_karton',{path:'zdravstveni_karton.html'});
+    await renderStats();
+    await renderStorageStatus();
+    await refreshDocs();
+  })();
+</script>
+</body>
+</html>

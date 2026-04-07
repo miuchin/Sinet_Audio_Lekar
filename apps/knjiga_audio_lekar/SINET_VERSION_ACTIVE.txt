@@ -1,0 +1,3 @@
+SINET_KNJIGA_AUDIO_LEKAR v0.3.5
+FULL ROOT SYNC
+Stabilan JOB print renderer + export/print fingerprint standard

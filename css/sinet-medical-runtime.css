@@ -1,0 +1,79 @@
+
+/* SINET Medical Runtime UI — v16.0.0.118.40.23 */
+:root {
+  --sinet-blue:#4A90E2;
+  --sinet-blue-soft:#eef6ff;
+  --sinet-green:#2ecc71;
+  --sinet-purple:#7c3aed;
+  --sinet-orange:#e67e22;
+  --sinet-red:#c0392b;
+  --sinet-text:#1f2937;
+  --sinet-muted:#64748b;
+  --sinet-border:#dbe5f0;
+  --sinet-bg:#f5f8fc;
+}
+body.sinet-medical-page { background:var(--sinet-bg); color:var(--sinet-text); }
+.sinet-shell { max-width:1180px; margin:0 auto; padding:14px; }
+.sinet-page-hero { background:linear-gradient(135deg,#ffffff 0%, #f5f9ff 100%); border:1px solid var(--sinet-border); border-radius:18px; padding:18px; box-shadow:0 6px 18px rgba(45,88,132,0.08); margin-bottom:16px; }
+.sinet-page-hero h1 { font-size:1.45rem; font-weight:900; color:#0f3d66; margin:0 0 6px 0; }
+.sinet-page-hero p { color:var(--sinet-muted); margin:0; }
+.sinet-version-badge { display:inline-block; margin-top:10px; background:#edf6ff; border:1px solid #cfe2ff; color:#0f3d66; padding:6px 10px; border-radius:999px; font-size:.85rem; font-weight:800; }
+.sinet-grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.sinet-grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.sinet-grid-4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+.sinet-card { background:#fff; border:1px solid var(--sinet-border); border-radius:16px; padding:16px; box-shadow:0 4px 16px rgba(15,61,102,0.06); }
+.sinet-card h2,.sinet-card h3 { margin:0 0 10px 0; font-size:1.05rem; font-weight:900; color:#123d64; }
+.sinet-card .muted,.sinet-muted { color:var(--sinet-muted); }
+.sinet-card strong { color:#123d64; }
+.sinet-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+.sinet-btn { appearance:none; border:none; border-radius:12px; padding:11px 14px; font-weight:800; cursor:pointer; background:var(--sinet-blue); color:#fff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; }
+.sinet-btn.secondary { background:#fff; color:#123d64; border:1px solid var(--sinet-border); }
+.sinet-btn.green { background:var(--sinet-green); }
+.sinet-btn.purple { background:var(--sinet-purple); }
+.sinet-btn.orange { background:var(--sinet-orange); }
+.sinet-btn.red { background:var(--sinet-red); }
+.sinet-btn:active { transform:translateY(1px); }
+.sinet-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+.sinet-input,.sinet-select,.sinet-file { width:100%; min-height:44px; border:1px solid var(--sinet-border); border-radius:12px; padding:10px 12px; background:#fff; }
+.sinet-table-wrap { overflow:auto; background:#fff; border:1px solid var(--sinet-border); border-radius:16px; box-shadow:0 4px 16px rgba(15,61,102,0.05); }
+.sinet-table { width:100%; border-collapse:collapse; min-width:780px; }
+.sinet-table th,.sinet-table td { padding:12px 10px; border-bottom:1px solid #ecf1f7; text-align:left; vertical-align:top; }
+.sinet-table th { position:sticky; top:0; background:#f8fbff; color:#123d64; z-index:1; font-size:.92rem; }
+.sinet-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; font-size:.8rem; font-weight:800; border:1px solid transparent; }
+.sinet-pill.ok { background:#ecfdf3; color:#166534; border-color:#b7efca; }
+.sinet-pill.warn { background:#fff7ed; color:#9a3412; border-color:#fdba74; }
+.sinet-pill.info { background:#eef6ff; color:#0f3d66; border-color:#cfe2ff; }
+.sinet-home-module-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.sinet-home-module-card { background:linear-gradient(135deg,#ffffff 0%,#f7fbff 100%); border:1px solid var(--sinet-border); border-radius:16px; padding:16px; box-shadow:0 4px 14px rgba(15,61,102,0.05); }
+.sinet-home-module-card h4 { margin:0 0 8px 0; font-size:1.02rem; font-weight:900; color:#123d64; }
+.sinet-home-module-card p { margin:0 0 10px 0; color:var(--sinet-muted); font-size:.95rem; }
+.sinet-kv { display:grid; grid-template-columns:170px 1fr; gap:8px 12px; font-size:.95rem; }
+.sinet-kv div:nth-child(odd) { color:#475569; font-weight:800; }
+.sinet-notice { background:#fffbeb; border:1px solid #fde68a; color:#854d0e; border-radius:14px; padding:14px; }
+.sinet-empty { padding:18px; text-align:center; color:var(--sinet-muted); }
+@media (max-width: 900px) { .sinet-grid-4,.sinet-grid-3,.sinet-grid-2,.sinet-home-module-grid { grid-template-columns:1fr; } .sinet-kv{grid-template-columns:1fr;} }
+
+textarea.sinet-input{resize:vertical;}
+.mt-2{margin-top:.5rem!important;}
+.mt-3{margin-top:1rem!important;}
+.mb-2{margin-bottom:.5rem!important;}
+.mb-3{margin-bottom:1rem!important;}
+
+.sinet-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;}
+.sinet-timeline{display:grid;gap:12px;}
+.sinet-timeline-item{border:1px solid var(--sinet-border);border-radius:14px;padding:12px;background:#fbfdff;}
+.sinet-timeline-date{font-weight:900;color:#123d64;margin-bottom:8px;}
+.sinet-mini-list{display:grid;gap:8px;}
+.sinet-mini-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border:1px solid #edf2f7;border-radius:12px;padding:10px;background:#fff;}
+.sinet-actions.compact{margin-top:0;gap:8px;}
+.sinet-actions.compact .sinet-btn{min-height:38px;padding:8px 11px;}
+.sinet-pre{white-space:pre-wrap;margin:0;font-size:.85rem;max-width:460px;}
+@media (max-width: 900px) { .sinet-filter-grid{grid-template-columns:1fr;} .sinet-mini-row{flex-direction:column;} .sinet-pre{max-width:none;} }
+
+.sinet-checkbox-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.sinet-check-card{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--sinet-border);border-radius:14px;padding:10px;background:#fff;cursor:pointer;}
+.sinet-check-card input{margin-top:4px;}
+.sinet-radio-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.sinet-radio-grid label{display:flex;gap:8px;align-items:center;border:1px solid var(--sinet-border);border-radius:12px;padding:10px;background:#fff;cursor:pointer;}
+.sinet-selectable-row{border:none;display:flex;}
+@media (max-width: 900px){.sinet-checkbox-grid,.sinet-radio-grid{grid-template-columns:1fr;}}

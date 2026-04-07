@@ -9,7 +9,7 @@
 
 const DB_CONFIG = {
   name: "SINET_Audio_DB",
-  version: 6,
+  version: 7,
 };
 
 class SinetDB {
@@ -191,6 +191,12 @@ class SinetDB {
           try { b.createIndex('created_at', 'created_at', { unique:false }); } catch(_) {}
         }
 
+        if (!db.objectStoreNames.contains("attachments")) {
+          const at = db.createObjectStore("attachments", { keyPath: "id" });
+          try { at.createIndex('document_id', 'document_id', { unique:false }); } catch(_) {}
+          try { at.createIndex('created_at', 'created_at', { unique:false }); } catch(_) {}
+        }
+
       };
 
       request.onsuccess = (event) => {
@@ -289,6 +295,22 @@ class SinetDB {
       req.onsuccess = () => resolve(true);
       req.onerror = () => reject(req.error);
     });
+  }
+
+
+  async putAttachment(id, payload) {
+    await this._ensure();
+    return this._put('attachments', Object.assign({ id }, payload || {}));
+  }
+
+  async getAttachment(id) {
+    await this._ensure();
+    return this._getRaw('attachments', id);
+  }
+
+  async deleteAttachment(id) {
+    await this._ensure();
+    return this._delete('attachments', id);
   }
 
   /* ---------- Audit (system append-only) ---------- */

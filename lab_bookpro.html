@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>LAB / BookPro · v16.0.0.118.40.23</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sinet-quickbar.css?v=v16.0.0.118.40.23">
+  <link rel="stylesheet" href="css/sinet-medical-runtime.css?v=v16.0.0.118.40.23">
+  <script defer src="js/sinet-page-nav.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/db/indexed-db.js"></script>
+  <script defer src="js/core/bridge-runtime.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/id-service.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/renderers/lab-bookpro-renderer.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-store.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/audit-service.js?v=v16.0.0.118.40.23"></script>
+</head>
+<body class="sinet-medical-page">
+<div class="sinet-shell">
+  <div class="sinet-page-hero">
+    <h1>🧪 LAB / BookPro</h1>
+    <p>Book/Pro pipeline sada ima smart extract za PDF/tekstualne dokumente, image OCR preko bridge sloja, Full + Doctor view report i verzionisanje bez duplog unosa.</p>
+    <span class="sinet-version-badge">v16.0.0.118.40.23</span>
+  </div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>1. Učitaj novi dokument</h2>
+      <input id="lab-file" class="sinet-file" type="file" accept=".pdf,.txt,.md,.json,.csv,image/*">
+      <div class="sinet-actions mt-2">
+        <button class="sinet-btn green" id="lab-add-file">📥 Sačuvaj u Karton</button>
+        <button class="sinet-btn secondary" onclick="location.href='zdravstveni_karton.html'">🗂 Otvori Karton</button>
+      </div>
+    </div>
+    <div class="sinet-card">
+      <h2>2. Izaberi iz Kartona</h2>
+      <select id="lab-doc-select" class="sinet-select"></select>
+      <div class="sinet-actions mt-2">
+        <button class="sinet-btn orange" id="lab-smart-extract">⚙️ Smart OCR / Extract</button>
+        <button class="sinet-btn purple" id="lab-generate">📘 Build Book/Pro</button>
+        <button class="sinet-btn secondary" id="lab-generate-new">🆕 Nova verzija</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sinet-grid-4 mb-3" id="lab-stats"></div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>3. OCR / extract radna zona</h2>
+      <label class="sinet-muted" for="lab-ocr-text">OCR tekst ili ručno unete laboratorijske vrednosti</label>
+      <textarea id="lab-ocr-text" class="sinet-input" style="min-height:260px;"></textarea>
+      <div class="sinet-actions">
+        <button class="sinet-btn secondary" id="lab-load-ocr">🔄 Učitaj OCR</button>
+        <button class="sinet-btn green" id="lab-save-ocr">💾 Sačuvaj OCR</button>
+        <button class="sinet-btn secondary" id="lab-build-extract">🧩 Analiziraj extract</button>
+        <button class="sinet-btn secondary" id="lab-open-existing">📘 Otvori poslednji report</button>
+      </div>
+      <div id="lab-extract-result" class="sinet-empty mt-2">Još nema extract pregleda.</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Storage + report tok</h2>
+      <div id="lab-storage-status" class="sinet-empty">Provera…</div>
+      <div class="sinet-notice mt-3">
+        <strong>Kanonski 4-korak tok</strong>
+        <ol style="margin:8px 0 0 18px;">
+          <li>Učitaj / izaberi dokument</li>
+          <li>Pokreni Smart OCR / Extract ili ručno dopuni tekst</li>
+          <li>Generiši Book/Pro report (Full + Doctor)</li>
+          <li>Print / export / poveži sa Anamnezom</li>
+        </ol>
+      </div>
+      <div class="sinet-actions mt-3">
+        <button class="sinet-btn secondary" id="btn-open-anam">🩺 Anamneza</button>
+        <button class="sinet-btn secondary" onclick="location.href='audit_center.html'">📜 Audit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Poslednji rezultat</h2>
+      <div id="lab-last-result" class="sinet-empty">Još nema generisanog rezultata u ovoj sesiji.</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Verzije reporta za izabrani dokument</h2>
+      <div id="report-versions" class="sinet-empty">Još nema verzija.</div>
+    </div>
+  </div>
+</div>
+<script>
+  const store = new window.SinetMedicalRuntimeStore();
+  const audit = new window.SinetAuditService(store);
+  let lastResult = null;
+  let lastExtract = null;
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+  function statCard(label, value, tone='info'){
+    return `<div class="sinet-card"><div class="sinet-pill ${tone}">${label}</div><div style="font-size:1.5rem;font-weight:900;margin-top:8px;color:#123d64;">${value}</div></div>`;
+  }
+  function currentDocId(){ return document.getElementById('lab-doc-select').value; }
+  async function renderStats(){
+    const stats = await store.getStats();
+    document.getElementById('lab-stats').innerHTML = [
+      statCard('Dokumenti', stats.documents, 'info'),
+      statCard('Extract', stats.extracts, 'ok'),
+      statCard('Reporti', stats.reports, 'warn'),
+      statCard('Anamneza', stats.anamneza, 'info')
+    ].join('');
+  }
+  async function renderStorageStatus(){
+    const status = await store.getStorageStatus();
+    const box = document.getElementById('lab-storage-status');
+    if (status && status.available) {
+      box.className = '';
+      box.innerHTML = `<div class="sinet-kv"><div>Aktivan sloj</div><div><strong>bridge_disk</strong></div><div>Runtime root</div><div>${esc(status.runtime_root || '')}</div><div>Writable</div><div>${status.writable ? 'da' : 'ne'}</div></div>`;
+    } else {
+      box.className = 'sinet-empty';
+      box.textContent = 'Bridge nije dostupan — radi IndexedDB blob fallback.';
+    }
+  }
+  async function renderSelect(){
+    const docs = await store.getCollection('source_documents') || [];
+    const sel = document.getElementById('lab-doc-select');
+    sel.innerHTML = docs.map(doc => `<option value="${esc(doc.document_id)}">${esc(doc.title)} · ${esc(doc.document_type || '')} · ${esc(doc.storage_mode || '')}</option>`).join('');
+    if (!docs.length) sel.innerHTML = '<option value="">Nema dokumenata u Kartonu</option>';
+    const qDoc = new URLSearchParams(location.search).get('document_id');
+    if (qDoc && docs.some(d => String(d.document_id) === String(qDoc))) sel.value = qDoc;
+  }
+  function renderExtract(extract){
+    const box = document.getElementById('lab-extract-result');
+    if (!extract) {
+      box.className = 'sinet-empty';
+      box.textContent = 'Još nema extract pregleda.';
+      return;
+    }
+    const params = Array.isArray(extract.parameters) ? extract.parameters : [];
+    const abnormal = params.filter(p => p.flag === 'high' || p.flag === 'low');
+    box.className = '';
+    box.innerHTML = `
+      <div class="sinet-kv">
+        <div>Extract ID</div><div><strong>${esc(extract.extract_id)}</strong></div>
+        <div>Parser status</div><div>${esc(extract.parser_status || '')}</div>
+        <div>OCR mode</div><div>${esc(extract.entities?.ocr_mode || '')}</div>
+        <div>OCR confidence</div><div>${esc(String(extract.entities?.ocr_confidence ?? 'n/a'))}</div>
+        <div>Parametri</div><div>${params.length}</div>
+        <div>Odstupanja</div><div>${abnormal.length}</div>
+      </div>
+      <div class="sinet-table-wrap mt-2">
+        <table class="sinet-table">
+          <thead><tr><th>Parametar</th><th>Vrednost</th><th>Ref.</th><th>Status</th></tr></thead>
+          <tbody>${params.length ? params.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.value)} ${esc(p.unit||'')}</td><td>${esc(p.reference_range||'')}</td><td>${esc(p.flag||'')}</td></tr>`).join('') : '<tr><td colspan="4">Nema prepoznatih parametara.</td></tr>'}</tbody>
+        </table>
+      </div>`;
+  }
+  function renderLast(result){
+    const box = document.getElementById('lab-last-result');
+    if (!result || !result.report) {
+      box.className = 'sinet-empty';
+      box.textContent = 'Još nema generisanog rezultata u ovoj sesiji.';
+      return;
+    }
+    const reused = !!result.reused;
+    box.className = '';
+    box.innerHTML = `
+      <div class="sinet-kv">
+        <div>Dokument</div><div><strong>${esc(result.document.title)}</strong></div>
+        <div>Report ID</div><div>${esc(result.report.report_id)}</div>
+        <div>Režim</div><div><span class="sinet-pill ${reused ? 'warn' : 'ok'}">${reused ? 'reuse postojeći' : 'nova generacija'}</span></div>
+        <div>Sažetak</div><div>${esc(result.report.summary_clinical || '')}</div>
+      </div>
+      <div class="sinet-actions">
+        <button class="sinet-btn green" onclick="openResultViewer('full')">📘 Full view</button>
+        <button class="sinet-btn secondary" onclick="openResultViewer('doctor')">🩺 Doctor view</button>
+        <button class="sinet-btn secondary" onclick="openAnamnezaCenter()">🔗 Anamneza</button>
+      </div>`;
+  }
+  async function renderVersions(){
+    const box = document.getElementById('report-versions');
+    const docId = currentDocId();
+    if (!docId) { box.className = 'sinet-empty'; box.textContent = 'Nema izabranog dokumenta.'; return; }
+    const reports = await store.getReportsForDocument(docId);
+    if (!reports.length) { box.className = 'sinet-empty'; box.textContent = 'Još nema verzija.'; return; }
+    box.className = '';
+    box.innerHTML = reports.map(r => `
+      <div class="sinet-card mb-2">
+        <div class="sinet-kv">
+          <div>Report ID</div><div><strong>${esc(r.report_id)}</strong></div>
+          <div>Datum</div><div>${esc(r.created_at || '')}</div>
+          <div>Status</div><div><span class="sinet-pill ${r.is_latest ? 'ok' : 'info'}">${r.is_latest ? 'latest' : 'older'}</span></div>
+        </div>
+        <div class="sinet-actions mt-2">
+          <button class="sinet-btn secondary" onclick="openSpecificReport('${esc(r.report_id)}','full')">Full</button>
+          <button class="sinet-btn secondary" onclick="openSpecificReport('${esc(r.report_id)}','doctor')">Doctor</button>
+        </div>
+      </div>`).join('');
+  }
+  async function loadOcrForSelection(){
+    const docId = currentDocId();
+    if (!docId) return;
+    const text = await store.getOcrText(docId);
+    document.getElementById('lab-ocr-text').value = text || '';
+    lastExtract = await store.getLatestExtractForDocument(docId);
+    renderExtract(lastExtract);
+    await renderVersions();
+  }
+  async function runGenerate(forceNewVersion){
+    const docId = currentDocId();
+    if (!docId) { alert('Nema dokumenta za obradu.'); return; }
+    lastResult = await store.generateBookProFromDocument(docId, { forceNewVersion: !!forceNewVersion });
+    renderLast(lastResult);
+    lastExtract = lastResult.extract || null;
+    renderExtract(lastExtract);
+    await renderStats();
+    await renderVersions();
+  }
+  function openSpecificReport(reportId, mode){
+    location.href = `lab_bookpro_report.html?report_id=${encodeURIComponent(reportId)}&view=${encodeURIComponent(mode || 'full')}`;
+  }
+  function openResultViewer(mode){
+    if (!lastResult || !lastResult.report) return;
+    openSpecificReport(lastResult.report.report_id, mode || 'full');
+  }
+  function openAnamnezaCenter(){
+    const docId = currentDocId();
+    const reportId = lastResult && lastResult.report ? lastResult.report.report_id : '';
+    let url = `anamneza_runtime.html?document_id=${encodeURIComponent(docId || '')}`;
+    if (reportId) url += `&report_id=${encodeURIComponent(reportId)}`;
+    location.href = url;
+  }
+  window.openSpecificReport = openSpecificReport;
+  window.openResultViewer = openResultViewer;
+  window.openAnamnezaCenter = openAnamnezaCenter;
+  document.getElementById('btn-open-anam').addEventListener('click', openAnamnezaCenter);
+  document.getElementById('lab-add-file').addEventListener('click', async () => {
+    const input = document.getElementById('lab-file');
+    const file = input.files && input.files[0];
+    if (!file) { alert('Izaberi dokument za unos.'); return; }
+    const result = await store.addDocumentFromFile(file);
+    input.value = '';
+    await renderStats();
+    await renderSelect();
+    if (result && result.duplicate) {
+      alert('Dokument već postoji u Kartonu — prepoznat je duplikat po hash-u.');
+      document.getElementById('lab-doc-select').value = result.document.document_id;
+    } else {
+      document.getElementById('lab-doc-select').value = result.document.document_id;
+      await loadOcrForSelection();
+      alert('Dokument je sačuvan i spreman za OCR/extract rad.');
+    }
+  });
+  document.getElementById('lab-load-ocr').addEventListener('click', async () => { await loadOcrForSelection(); });
+  document.getElementById('lab-save-ocr').addEventListener('click', async () => {
+    const docId = currentDocId();
+    if (!docId) return alert('Izaberi dokument.');
+    await store.saveOcrText(docId, document.getElementById('lab-ocr-text').value || '');
+    await loadOcrForSelection();
+    alert('OCR tekst je sačuvan.');
+  });
+  document.getElementById('lab-smart-extract').addEventListener('click', async () => {
+    const docId = currentDocId();
+    if (!docId) return alert('Izaberi dokument.');
+    const result = await store.runSmartOcrExtract(docId);
+    document.getElementById('lab-ocr-text').value = result.text || '';
+    lastExtract = result.extract;
+    renderExtract(lastExtract);
+    await renderStats();
+    alert(`Smart extract završen (${result.mode}${result.confidence != null ? ', conf ' + result.confidence : ''}).`);
+  });
+  document.getElementById('lab-build-extract').addEventListener('click', async () => {
+    const docId = currentDocId();
+    if (!docId) return alert('Izaberi dokument.');
+    await store.saveOcrText(docId, document.getElementById('lab-ocr-text').value || '');
+    const result = await store.createExtractFromDocument(docId, { forceNewVersion: true });
+    lastExtract = result.extract;
+    renderExtract(lastExtract);
+    await renderStats();
+  });
+  document.getElementById('lab-generate').addEventListener('click', async () => { await runGenerate(false); });
+  document.getElementById('lab-generate-new').addEventListener('click', async () => { await runGenerate(true); });
+  document.getElementById('lab-open-existing').addEventListener('click', async () => {
+    const docId = currentDocId();
+    if (!docId) { alert('Nema dokumenta.'); return; }
+    const report = await store.getLatestReportForDocument(docId);
+    if (!report) { alert('Još nema postojećeg reporta.'); return; }
+    openSpecificReport(report.report_id, 'full');
+  });
+  document.getElementById('lab-doc-select').addEventListener('change', async () => {
+    lastResult = null;
+    renderLast(null);
+    await loadOcrForSelection();
+  });
+  (async function init(){
+    await store.ensureBootstrap();
+    await audit.log('lab_bookpro','page_opened','page','lab_bookpro',{path:'lab_bookpro.html'});
+    await renderStats();
+    await renderStorageStatus();
+    await renderSelect();
+    await loadOcrForSelection();
+    renderLast(null);
+  })();
+</script>
+</body>
+</html>

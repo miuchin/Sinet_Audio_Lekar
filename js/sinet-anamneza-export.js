@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "16.0.0.118.40";
+  const VERSION = "16.0.0.118.40.7";
   const STORAGE_KEY = 'SINET_ANAMNEZA_EXPORT_PAYLOAD_V1';
   const esc = (v='') => String(v ?? '').replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
   const arr = (v) => Array.isArray(v) ? v : [];

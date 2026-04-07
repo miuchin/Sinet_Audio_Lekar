@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINET Knjiga Audio Lekar v0.3.8</title>
+  <link rel="stylesheet" href="../css/book-print.css?v=0.3.8" />
+</head>
+<body id="top">
+  <header class="topbar">
+    <div>
+      <strong id="pageTitle">SINET Knjiga Audio Lekar</strong>
+      <div class="muted" id="pageSubTitle">v0.3.8 • HTML knjiga / print / export</div>
+    </div>
+    <div class="actions">
+      <button class="btn" type="button" onclick="history.back()">⬅️ Nazad</button>
+      <a class="btn" href="../index.html">🏠 Početak</a>
+      <button class="btn" id="downloadHtml">⬇ HTML</button>
+      <button class="btn" id="downloadTxt">⬇ TXT</button>
+      <button class="btn" id="downloadMd">⬇ MD</button>
+      <button class="btn primary" onclick="window.print()">🖨️ Štampaj</button>
+    </div>
+  </header>
+
+  <main class="viewport">
+    <div id="sheet" class="sheet"></div>
+    <div id="measureStage" class="hidden-measure"></div>
+  </main>
+
+  <script type="module" src="../js/book-print.js?v=0.3.8"></script>
+</body>
+</html>

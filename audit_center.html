@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Audit Center · v16.0.0.118.40.23</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sinet-quickbar.css?v=v16.0.0.118.40.23">
+  <link rel="stylesheet" href="css/sinet-medical-runtime.css?v=v16.0.0.118.40.23">
+  <script defer src="js/sinet-page-nav.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/db/indexed-db.js"></script>
+  <script defer src="js/core/id-service.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-store.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-archive-backup.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/audit-service.js?v=v16.0.0.118.40.23"></script>
+</head>
+<body class="sinet-medical-page">
+<div class="sinet-shell">
+  <div class="sinet-page-hero">
+    <h1>📜 Audit Center</h1>
+    <p>Globalni append-only sloj. Sada ima praktične filtere, pregled aktivnog retention pravila i export trenutnog prikaza u JSON / TXT / MD.</p>
+    <span class="sinet-version-badge">v16.0.0.118.40.23</span>
+  </div>
+  <div class="sinet-grid-3 mb-3" id="audit-stats"></div>
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Retention pravila</h2>
+      <div id="audit-retention" class="sinet-empty">Učitavanje…</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Brze veze</h2>
+      <div class="sinet-actions">
+        <button class="sinet-btn secondary" onclick="location.href='backup_restore.html'">💾 Backup / Restore</button>
+        <button class="sinet-btn secondary" onclick="location.href='archive.html'">🗄 Archive</button>
+        <button class="sinet-btn secondary" onclick="location.href='zdravstveni_karton.html'">🗂 Karton</button>
+        <button class="sinet-btn secondary" onclick="location.href='lab_bookpro.html'">🧪 LAB / BookPro</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sinet-card mb-3">
+    <h2>Filteri i export</h2>
+    <div class="sinet-filter-grid">
+      <input id="audit-search" class="sinet-input" placeholder="Pretraga po akciji, modulu, entitetu, detaljima…">
+      <select id="audit-module" class="sinet-select"><option value="">Svi moduli</option></select>
+      <select id="audit-status" class="sinet-select">
+        <option value="">Svi statusi</option>
+        <option value="success">success</option>
+        <option value="warning">warning</option>
+        <option value="error">error</option>
+      </select>
+      <input id="audit-date-from" class="sinet-input" type="date">
+      <input id="audit-date-to" class="sinet-input" type="date">
+      <button class="sinet-btn secondary" id="btn-audit-reset">♻️ Reset filtera</button>
+    </div>
+    <div class="sinet-actions mt-3">
+      <button class="sinet-btn secondary" id="btn-export-json">⬇️ Export JSON</button>
+      <button class="sinet-btn secondary" id="btn-export-txt">⬇️ Export TXT</button>
+      <button class="sinet-btn secondary" id="btn-export-md">⬇️ Export MD</button>
+    </div>
+    <div id="audit-filter-summary" class="sinet-notice mt-3">Učitavanje…</div>
+  </div>
+
+  <div class="sinet-table-wrap">
+    <table class="sinet-table">
+      <thead>
+        <tr>
+          <th>Vreme</th>
+          <th>Modul</th>
+          <th>Akcija</th>
+          <th>Entitet</th>
+          <th>Status</th>
+          <th>Detalji</th>
+        </tr>
+      </thead>
+      <tbody id="audit-body"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  const store = new window.SinetMedicalRuntimeStore();
+  const audit = new window.SinetAuditService(store);
+  let allEventsCache = [];
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+  function statCard(label, value, tone='info'){ return `<div class="sinet-card"><div class="sinet-pill ${tone}">${label}</div><div style="font-size:1.5rem;font-weight:900;margin-top:8px;color:#123d64;">${value}</div></div>`; }
+  function downloadText(filename, text, type='text/plain;charset=utf-8'){
+    const blob = new Blob([text], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+  function populateModules(events){
+    const select = document.getElementById('audit-module');
+    const current = select.value;
+    const modules = Array.from(new Set(events.map(ev => ev.module).filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b),'sr'));
+    select.innerHTML = '<option value="">Svi moduli</option>' + modules.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+    select.value = current && modules.includes(current) ? current : '';
+  }
+  function eventSearchText(ev){
+    return [ev.timestamp, ev.module, ev.action, ev.entity_type, ev.entity_id, ev.status, JSON.stringify(ev.details || {})].filter(Boolean).join(' ').toLowerCase();
+  }
+  function getFilteredEvents(){
+    const search = (document.getElementById('audit-search').value || '').trim().toLowerCase();
+    const module = document.getElementById('audit-module').value || '';
+    const status = document.getElementById('audit-status').value || '';
+    const dateFrom = document.getElementById('audit-date-from').value || '';
+    const dateTo = document.getElementById('audit-date-to').value || '';
+    return allEventsCache.filter(ev => {
+      if (search && !eventSearchText(ev).includes(search)) return false;
+      if (module && String(ev.module || '') !== module) return false;
+      if (status && String(ev.status || '') !== status) return false;
+      const stamp = String(ev.timestamp || '').slice(0,10);
+      if (dateFrom && stamp && stamp < dateFrom) return false;
+      if (dateTo && stamp && stamp > dateTo) return false;
+      return true;
+    }).slice().sort((a,b)=> new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+  }
+  function renderFilterSummary(filtered){
+    const box = document.getElementById('audit-filter-summary');
+    const search = (document.getElementById('audit-search').value || '').trim();
+    const module = document.getElementById('audit-module').value || 'svi';
+    const status = document.getElementById('audit-status').value || 'svi';
+    const from = document.getElementById('audit-date-from').value || '—';
+    const to = document.getElementById('audit-date-to').value || '—';
+    box.innerHTML = `<strong>Aktivni prikaz:</strong> ${filtered.length} događaj(a) · modul: <strong>${esc(module)}</strong> · status: <strong>${esc(status)}</strong> · period: <strong>${esc(from)}</strong> → <strong>${esc(to)}</strong> · pretraga: <strong>${search ? esc(search) : '—'}</strong>`;
+  }
+  function buildTxt(events){
+    return events.map(ev => [
+      `Vreme: ${ev.timestamp || ''}`,
+      `Modul: ${ev.module || ''}`,
+      `Akcija: ${ev.action || ''}`,
+      `Entitet: ${ev.entity_type || ''} / ${ev.entity_id || ''}`,
+      `Status: ${ev.status || ''}`,
+      `Detalji: ${JSON.stringify(ev.details || {})}`,
+      ''.padEnd(40,'-')
+    ].join('\n')).join('\n');
+  }
+  function buildMd(events){
+    const rows = events.map(ev => `| ${String(ev.timestamp||'').replace(/\|/g,'/')} | ${String(ev.module||'').replace(/\|/g,'/')} | ${String(ev.action||'').replace(/\|/g,'/')} | ${String(ev.entity_type||'').replace(/\|/g,'/')} / ${String(ev.entity_id||'').replace(/\|/g,'/')} | ${String(ev.status||'').replace(/\|/g,'/')} |`).join('\n');
+    return `# Audit export\n\n| Vreme | Modul | Akcija | Entitet | Status |\n|---|---|---|---|---|\n${rows || '| — | — | — | — | — |'}`;
+  }
+  async function render(){
+    const stats = await store.getStats();
+    document.getElementById('audit-stats').innerHTML = [
+      statCard('Audit događaji', stats.audit, 'info'),
+      statCard('Backup zapisi', stats.backups, 'ok'),
+      statCard('Restore preview', stats.restores, 'warn')
+    ].join('');
+    const rules = await audit.getRetentionRules();
+    const active = rules && rules.rules ? (rules.rules.find(r => r.rule_id === rules.active_rule_id) || rules.rules[0]) : null;
+    document.getElementById('audit-retention').innerHTML = active ? `<div class="sinet-kv"><div>Aktivno pravilo</div><div><strong>${esc(active.name)}</strong></div><div>Zadržavanje</div><div>${esc(active.retention_days)} dana</div><div>Arhiva</div><div>${esc(active.archive_destination)}</div></div>` : 'Nema retention pravila.';
+    allEventsCache = await audit.list() || [];
+    populateModules(allEventsCache);
+    const events = getFilteredEvents();
+    renderFilterSummary(events);
+    const body = document.getElementById('audit-body');
+    if (!events.length) { body.innerHTML = '<tr><td colspan="6"><div class="sinet-empty">Nema audit događaja za aktivni filter.</div></td></tr>'; return; }
+    body.innerHTML = events.map(ev => `
+      <tr>
+        <td>${esc(ev.timestamp || '')}</td>
+        <td>${esc(ev.module || '')}</td>
+        <td><strong>${esc(ev.action || '')}</strong></td>
+        <td>${esc(ev.entity_type || '')}<br><span class="sinet-muted">${esc(ev.entity_id || '')}</span></td>
+        <td><span class="sinet-pill ${ev.status === 'success' ? 'ok' : 'warn'}">${esc(ev.status || '')}</span></td>
+        <td><pre class="sinet-pre">${esc(JSON.stringify(ev.details || {}, null, 2))}</pre></td>
+      </tr>
+    `).join('');
+  }
+  function exportCurrent(mode){
+    const events = getFilteredEvents();
+    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+    if (mode === 'json') return downloadText(`sinet_audit_export_${stamp}.json`, JSON.stringify(events, null, 2), 'application/json;charset=utf-8');
+    if (mode === 'md') return downloadText(`sinet_audit_export_${stamp}.md`, buildMd(events), 'text/markdown;charset=utf-8');
+    return downloadText(`sinet_audit_export_${stamp}.txt`, buildTxt(events));
+  }
+  ['audit-search','audit-module','audit-status','audit-date-from','audit-date-to'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => render());
+    document.getElementById(id).addEventListener('change', () => render());
+  });
+  document.getElementById('btn-audit-reset').addEventListener('click', () => {
+    ['audit-search','audit-module','audit-status','audit-date-from','audit-date-to'].forEach(id => document.getElementById(id).value = '');
+    render();
+  });
+  document.getElementById('btn-export-json').addEventListener('click', () => exportCurrent('json'));
+  document.getElementById('btn-export-txt').addEventListener('click', () => exportCurrent('txt'));
+  document.getElementById('btn-export-md').addEventListener('click', () => exportCurrent('md'));
+  (async function init(){
+    await store.ensureBootstrap();
+    await audit.log('audit','page_opened','page','audit_center',{path:'audit_center.html'});
+    await render();
+  })();
+</script>
+</body>
+</html>

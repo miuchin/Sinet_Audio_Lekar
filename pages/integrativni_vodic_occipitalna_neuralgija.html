@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Occipitalna neuralgija — SINET MAXI vodič</title>
+  <style>
+    :root{
+      --bg:#f7f5f2; --panel:#ffffff; --text:#22313f; --muted:#607080;
+      --line:#e4d8c8; --accent:#6f4e37; --accent2:#20435c; --soft:#f7efe6;
+      --green:#eef7ef; --blue:#eef5ff; --warn:#fff7e6; --danger:#fff1f2;
+      --shadow:0 4px 16px rgba(0,0,0,.05); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text);line-height:1.75}
+    .app{max-width:1200px;margin:0 auto;padding:16px}
+    .shell{background:var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+    .app-header{position:sticky;top:0;z-index:60;background:rgba(247,245,242,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .left,.right{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{border:none;border-radius:999px;padding:11px 16px;cursor:pointer;font-weight:700;background:var(--accent);color:#fff;font-size:.96rem}
+    .btn:hover{background:#5d402d}
+    .btn.alt{background:var(--accent2)}
+    .btn.soft{background:#e8dbc9;color:#3b2c20}
+    .badge{background:#efe1cf;color:#3b2c20;padding:7px 12px;border-radius:999px;font-weight:700;font-size:.9rem}
+    .title-box{padding:18px 18px 8px}
+    .title-box h1{margin:0 0 10px;font-size:2rem;color:var(--accent2)}
+    .title-box p{margin:0 0 12px}
+    .quick-nav{display:flex;gap:10px;flex-wrap:wrap;padding:0 18px 16px}
+    .chip{text-decoration:none;padding:8px 12px;border-radius:999px;background:#eef2ff;color:#18364b;font-weight:700;border:1px solid #d7ddfa}
+    .content{padding:0 18px 22px}
+    h2{margin-top:28px;color:var(--accent2);border-bottom:2px solid var(--line);padding-bottom:8px}
+    h3{color:var(--accent2);margin-top:10px}
+    .box{background:#fff;border:1px solid #eadfce;border-radius:var(--radius);padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+    .warn{background:var(--warn);border-left:6px solid #f59e0b}
+    .danger{background:var(--danger);border-left:6px solid #dc2626}
+    .soft{background:var(--soft);border-left:6px solid #8b6a4e}
+    .green{background:var(--green);border-left:6px solid #2f855a}
+    .blue{background:var(--blue);border-left:6px solid #2563eb}
+    ul{padding-left:20px}
+    li{margin-bottom:8px}
+    .prayer{background:#fff6e8;border:1px solid #ecd2ad;border-radius:22px;padding:20px;text-align:center;font-style:italic}
+    table{width:100%;border-collapse:collapse;background:#fff;margin-top:10px}
+    th,td{padding:10px;border-bottom:1px solid #e7e7e7;vertical-align:top}
+    th{background:#efe1cf;text-align:left}
+    .drawer{position:fixed;left:0;top:0;width:320px;max-width:88vw;height:100vh;background:#fff;z-index:200;transform:translateX(-102%);transition:transform .22s ease;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:14px;overflow:auto;border-right:1px solid #e8ddd0}
+    .drawer.open{transform:translateX(0)}
+    .drawer a{display:block;text-decoration:none;color:#1f3550;padding:10px 12px;border-radius:12px;margin-bottom:6px;background:#f8fafc;border:1px solid #edf2f7;font-weight:700}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:150;display:none}
+    .overlay.show{display:block}
+    .footer{padding:16px 18px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+    .fab-wrap{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:80}
+    .fab{border:none;border-radius:999px;padding:12px 16px;font-weight:700;cursor:pointer;background:var(--accent2);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.15)}
+    .fab.alt{background:var(--accent)}
+    @media print{
+      .no-print,.app-header,.drawer,.overlay,.fab-wrap{display:none!important}
+      .shell{border:none;box-shadow:none}
+      body{background:#fff}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay no-print" id="overlay" onclick="closeMenu()"></div>
+  <aside class="drawer no-print" id="drawer">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h3 style="margin:0">☰ HAMBURGER MENI</h3>
+      <button class="btn soft" onclick="closeMenu()">✕</button>
+    </div>
+    <a href="#pocetak" onclick="closeMenu()">🏠 POČETAK</a>
+    <a href="#sta-je" onclick="closeMenu()">1. Šta je</a>
+    <a href="#simptomi" onclick="closeMenu()">2. Simptomi</a>
+    <a href="#uzroci" onclick="closeMenu()">3. Uzroci</a>
+    <a href="#medicina" onclick="closeMenu()">4. Standardna medicina</a>
+    <a href="#fizikalna" onclick="closeMenu()">5. Fizikalna terapija</a>
+    <a href="#narodni" onclick="closeMenu()">6. Narodni lekovi</a>
+    <a href="#cajevi" onclick="closeMenu()">7. Trave, čajevi i suplementi</a>
+    <a href="#alternativne" onclick="closeMenu()">8. Alternativne metode</a>
+    <a href="#trigger" onclick="closeMenu()">9. Trigger points</a>
+    <a href="#psiho" onclick="closeMenu()">10. Psihosomatika</a>
+    <a href="#duhovni" onclick="closeMenu()">11. Duhovni sloj</a>
+    <a href="#plan" onclick="closeMenu()">12. Plan po danima</a>
+    <a href="#pitanja" onclick="closeMenu()">13. Pitanja za lekara</a>
+    <a href="#redflag" onclick="closeMenu()">14. Red flag</a>
+  </aside>
+
+  <div class="app" id="pocetak">
+    <div class="shell">
+      <div class="app-header no-print">
+        <div class="row">
+          <div class="left">
+            <button class="btn soft" onclick="openMenu()">☰</button>
+            <button class="btn" onclick="window.history.back()">← NAZAD</button>
+            <button class="btn alt" onclick="scrollToTopSmooth()">🏠 POČETAK</button>
+          </div>
+          <div class="right">
+            <button class="btn" onclick="copyText()">TXT</button>
+            <button class="btn" onclick="copyMarkdown()">MD</button>
+            <button class="btn" onclick="copyHTML()">HTML</button>
+            <button class="btn alt" onclick="downloadHTML()">⬇️ EKSPORT</button>
+            <button class="btn alt" onclick="window.print()">🖨️ PRINT</button>
+            <span class="badge">SINET MAXI VODIČ</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="title-box">
+        <h1>🧠 Occipitalna neuralgija — MAXI vodič</h1>
+        <p><strong>Jednostavno objašnjenje:</strong> zamisli da su nervi iza glave kao tanke osetljive žice. Ako ih nešto iritira ili pritisne, može da se javi jak bol u <strong>potiljku i vratu</strong> koji ide prema temenu, iza uha ili iza oka.</p>
+      </div>
+
+      <div class="quick-nav no-print">
+        <a class="chip" href="#sta-je">Šta je</a>
+        <a class="chip" href="#medicina">Medicina</a>
+        <a class="chip" href="#narodni">Narodni lekovi</a>
+        <a class="chip" href="#cajevi">Čajevi i trave</a>
+        <a class="chip" href="#alternativne">Alternativne</a>
+        <a class="chip" href="#plan">Plan</a>
+        <a class="chip" href="#redflag">Red flag</a>
+      </div>
+
+      <div class="content" id="contentToCopy">
+        <div class="box warn">
+          <strong>Važno:</strong> Ovaj vodič je informativan i podržavajući. Ako se javi nagla i veoma jaka glavobolja, slabost, problem sa govorom, vidom, konfuzija, visoka temperatura, ukočen vrat ili povreda, to je znak za hitnu procenu.
+        </div>
+
+        <h2 id="sta-je">1. Šta je occipitalna neuralgija</h2>
+        <div class="box">
+          <p>To je bol koji najčešće dolazi iz <strong>zadnjeg dela glave i gornjeg vrata</strong>. Kada se occipitalni nerv iziritira, možeš osećati oštar, peckajući, električni ili sevnuti bol koji ide prema temenu, iza uha ili iza oka.</p>
+          <ul>
+            <li>bol u potiljku</li>
+            <li>bol koji kreće iz vrata</li>
+            <li>osećaj „struje” ili „uboda”</li>
+            <li>osetljivost skalpa</li>
+          </ul>
+        </div>
+
+        <h2 id="simptomi">2. Simptomi</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Kako bol izgleda</h3>
+            <ul>
+              <li>probadajući</li>
+              <li>peckajući</li>
+              <li>električni</li>
+              <li>sevnuti</li>
+              <li>jak pritisak u potiljku</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Gde se javlja</h3>
+            <ul>
+              <li>potiljak</li>
+              <li>gornji vrat</li>
+              <li>iza uha</li>
+              <li>iza oka</li>
+              <li>teme glave</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Šta još može ići uz to</h3>
+            <ul>
+              <li>osetljiv skalp</li>
+              <li>bol pri češljanju</li>
+              <li>bol na jastuku</li>
+              <li>zategnut trapezijus</li>
+              <li>ukočen vrat</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2 id="uzroci">3. Uzroci i okidači</h2>
+        <div class="box">
+          <ul>
+            <li>dugo sedenje i ekran sa glavom napred</li>
+            <li>zategnuti mišići vrata i gornjeg trapezijusa</li>
+            <li>iritacija ili pritisak na nerv</li>
+            <li>povreda vrata ili glave</li>
+            <li>problemi vratne kičme</li>
+          </ul>
+        </div>
+
+        <h2 id="medicina">4. Standardna medicina</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Lekovi</h3>
+            <ul>
+              <li>NSAID protiv bola i upale</li>
+              <li>mišićni relaksansi</li>
+              <li>lekovi za neuropatski bol</li>
+              <li>nekad botulinum toxin</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Procedure</h3>
+            <ul>
+              <li>occipital nerve block</li>
+              <li>fizikalna terapija</li>
+              <li>dodatna dijagnostika kada treba</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Napomena za ketoprofen</h3>
+            <p>Ako si već uzeo ketoprofen, ne dodavati samoinicijativno drugi NSAID istog dana bez saveta lekara.</p>
+          </div>
+        </div>
+
+        <h2 id="fizikalna">5. Fizikalna terapija</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Šta terapeut može raditi</h3>
+            <ul>
+              <li>rad na gornjem trapezijusu</li>
+              <li>rad na subokcipitalnim mišićima</li>
+              <li>nežnu mobilizaciju vrata</li>
+              <li>posturalnu korekciju</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Šta ti možeš kod kuće</h3>
+            <ul>
+              <li>pauze od ekrana</li>
+              <li>glavu manje gurati napred</li>
+              <li>spustiti ramena</li>
+              <li>proveriti jastuk i položaj spavanja</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Šta ne forsirati</h3>
+            <ul>
+              <li>nagla istezanja ako provociraju sevanje</li>
+              <li>jak pritisak na bolnu tačku</li>
+              <li>dugo sedenje bez pauze</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2 id="narodni">6. Narodni lekovi i kućni koraci</h2>
+        <div class="grid">
+          <div class="box green">
+            <h3>Topli oblog</h3>
+            <p>Dobar kada je glavni problem zategnut vrat i mišićna ukočenost.</p>
+          </div>
+          <div class="box green">
+            <h3>Mir i tišina</h3>
+            <p>Kratka pauza od ekrana, buke i svetla može pomoći kada je telo preopterećeno.</p>
+          </div>
+          <div class="box green">
+            <h3>Položaj glave</h3>
+            <p>Glava manje napred, ramena opuštena, ekran bliže visini očiju.</p>
+          </div>
+          <div class="box green">
+            <h3>Jastuk</h3>
+            <p>Ako jutro pojačava bol, proveri da li je jastuk previsok ili prenizak.</p>
+          </div>
+        </div>
+
+        <h2 id="cajevi">7. Trave, čajevi i suplementi</h2>
+        <div class="box blue">
+          <p>Pošteno objašnjenje: nisam našao dobar dokaz da neki čaj ili trava leče occipitalnu neuralgiju. Ali neke stvari mogu pomoći indirektno, tako što smanjuju napetost i pomažu odmoru.</p>
+        </div>
+
+        <div class="grid">
+          <div class="box">
+            <h3>Kamilica</h3>
+            <p>Može prijati za smirenje i opuštanje.</p>
+          </div>
+          <div class="box">
+            <h3>Matičnjak</h3>
+            <p>Nekim ljudima prija kada su telo i nervni sistem „u gardu”.</p>
+          </div>
+          <div class="box">
+            <h3>Nana</h3>
+            <p>Može prijati kao blag čaj, ali nije specifičan lek za nerv.</p>
+          </div>
+          <div class="box">
+            <h3>Lavanda</h3>
+            <p>Više za opuštanje prostora i osećaja napetosti nego kao pravi tretman.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="box">
+            <h3>Magnezijum</h3>
+            <p>Više se pominje kod nekih drugih glavobolja nego kao dokazano rešenje baš za occipitalnu neuralgiju.</p>
+          </div>
+          <div class="box">
+            <h3>Vitamin B2</h3>
+            <p>Takođe se češće vezuje za druge tipove glavobolja.</p>
+          </div>
+          <div class="box">
+            <h3>Butterbur / feverfew</h3>
+            <p>Ne preporučujem za samostalno isprobavanje bez stručnog saveta.</p>
+          </div>
+        </div>
+
+        <h2 id="alternativne">8. Alternativne metode</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Masaža</h3>
+            <p>Korisna kada veliki deo bola dolazi iz napetih mišića vrata i trapezijusa.</p>
+          </div>
+          <div class="box">
+            <h3>Akupunktura</h3>
+            <p>Nekim ljudima može biti dopunska opcija.</p>
+          </div>
+          <div class="box">
+            <h3>Relaksacija i disanje</h3>
+            <p>Pomažu da telo manje drži vrat u zaštitnom grču.</p>
+          </div>
+          <div class="box">
+            <h3>Ergonomija</h3>
+            <p>Jedna od najpraktičnijih metoda: ekran u visini očiju, glava manje napred, redovne pauze.</p>
+          </div>
+        </div>
+
+        <h2 id="trigger">9. Trigger points i referred pain</h2>
+        <div class="box">
+          <p>Bol ne mora dolaziti samo od nerva. Nekad je mešavina:</p>
+          <ul>
+            <li>occipitalni nerv</li>
+            <li>gornji trapezijus</li>
+            <li>subokcipitalni mišići</li>
+            <li>vratna kičma</li>
+            <li>loša postura</li>
+          </ul>
+        </div>
+
+        <h2 id="psiho">10. Psihosomatika</h2>
+        <div class="box soft">
+          <p>Kada si dugo napet, telo kao da stalno drži vrat spreman za opasnost. Tada se nerv lakše iziritira i bol postaje jači.</p>
+        </div>
+
+        <h2 id="duhovni">11. Duhovni sloj</h2>
+        <div class="prayer">
+          „Bože, donesi mir mom vratu, ramenima i potiljku. Smiri napetost, olakšaj bol i vrati mi lakoću, tišinu i spokoj.“
+        </div>
+
+        <h2 id="plan">12. Plan po danima</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Kada je bol jači</h3>
+            <ul>
+              <li>ne forsirati vrat</li>
+              <li>ne dodavati drugi NSAID ako je već uzet ketoprofen</li>
+              <li>topao oblog ako prija</li>
+              <li>manje ekrana</li>
+              <li>pratiti kuda se bol širi</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Kada je mirnije</h3>
+            <ul>
+              <li>lagano srediti posturu</li>
+              <li>praviti pauze</li>
+              <li>proveriti jastuk</li>
+              <li>raditi na ramenima i lopaticama</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Kada tražiti pregled</h3>
+            <ul>
+              <li>ako traje</li>
+              <li>ako se pojačava</li>
+              <li>ako se javlja sve češće</li>
+              <li>ako liči na nešto novo i čudno</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2 id="pitanja">13. Pitanja za lekara</h2>
+        <div class="box">
+          <ul>
+            <li>Da li ovo više liči na occipitalnu neuralgiju, cervikogenu glavobolju ili migrenu?</li>
+            <li>Da li je bol više nervni, mišićni ili mešoviti?</li>
+            <li>Da li je potreban pregled vrata ili dodatna dijagnostika?</li>
+            <li>Da li bi meni pomogao nerve block?</li>
+            <li>Koje pokrete da radim, a koje da ne radim?</li>
+          </ul>
+        </div>
+
+        <h2 id="redflag">14. Red flag</h2>
+        <div class="box danger">
+          <ul>
+            <li>najgora glavobolja u životu koja nastane naglo</li>
+            <li>slabost jedne strane tela</li>
+            <li>poremećaj govora</li>
+            <li>duple slike ili gubitak vida</li>
+            <li>konfuzija</li>
+            <li>visoka temperatura i ukočen vrat</li>
+            <li>bol posle povrede glave ili vrata</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer">
+        SINET katalog-ready HTML — Occipitalna neuralgija.
+      </div>
+    </div>
+  </div>
+
+  <div class="fab-wrap no-print">
+    <button class="fab" onclick="scrollToTopSmooth()">⬆ POČETAK</button>
+    <button class="fab alt" onclick="window.print()">🖨 PRINT</button>
+  </div>
+
+  <script>
+    function openMenu(){
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('overlay').classList.add('show');
+    }
+    function closeMenu(){
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('overlay').classList.remove('show');
+    }
+    function scrollToTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
+    function contentText(){ return document.getElementById('contentToCopy').innerText; }
+    function copyText(){ navigator.clipboard.writeText(contentText()).then(()=>alert('TXT kopiran.')); }
+    function copyMarkdown(){ navigator.clipboard.writeText(contentText()).then(()=>alert('MD sadržaj kopiran kao čitljiv tekst.')); }
+    function copyHTML(){ navigator.clipboard.writeText(document.documentElement.outerHTML).then(()=>alert('HTML kopiran.')); }
+    function downloadHTML(){
+      const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'occipitalna_neuralgija_SINET_katalog_ready.html';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    }
+  </script>
+</body>
+</html>

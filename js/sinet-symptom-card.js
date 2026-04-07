@@ -1,7 +1,7 @@
 (function(){
-  const VERSION = "16.0.0.118.40";
+  const VERSION = "16.0.0.118.40.10";
   const STORAGE_KEY = 'SINET_SYMPTOM_CARD_PAYLOAD_V1';
-  const esc = (v='') => String(v ?? '').replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+  const esc = (v='') => String(v ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
   const arr = (v) => Array.isArray(v) ? v : [];
   const textOf = (...vals) => vals.find(v => String(v ?? '').trim()) || '';
 
@@ -115,41 +115,111 @@
     const shortlist = arr(item.mkb10_shortlist_text);
     const title = `${item.simptom} — SINET kartica simptoma`;
     return `<!doctype html><html lang="sr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title><style>
-      :root{--bg:#f7fbff;--card:#ffffff;--line:#d9e7f5;--ink:#14324a;--muted:#5f7288;--soft:#eef6ff;--ok:#edf8f0;--warn:#fff7e8}
+      :root{--bg:#f7fbff;--card:#ffffff;--line:#d9e7f5;--ink:#14324a;--muted:#5f7288;--soft:#eef6ff;--soft2:#f8fbff;--ok:#edf8f0;--warn:#fff7e8}
       *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
       .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
-      .brand{font-weight:800}.muted{color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}
+      .brand{font-weight:800} .muted{color:var(--muted)} .actions{display:flex;gap:8px;flex-wrap:wrap}
       button,a.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;text-decoration:none;color:var(--ink);font-weight:700}
-      .page{padding:14px;max-width:1500px;margin:0 auto}.sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 24px rgba(20,50,74,.08)}
-      .header{display:grid;grid-template-columns:1.55fr 1fr;gap:12px;margin-bottom:12px}.title{font-size:30px;line-height:1.12;font-weight:800;margin:0 0 8px 0}
-      .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.meta-chip{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-      .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;font-weight:700}.value{font-size:14px;font-weight:700}
-      .screen-cols{display:grid;grid-template-columns:1.02fr 1.15fr 1.15fr;gap:12px;align-items:start}.block{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid}.block h3{margin:0 0 8px 0;font-size:16px}
-      .list{display:grid;gap:8px}.item{padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fcfeff;break-inside:avoid;page-break-inside:avoid}.hz{font-weight:800}.small{font-size:12px;color:var(--muted)}
-      .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:12px;font-weight:700;margin:0 6px 6px 0}.empty{color:var(--muted);font-style:italic}.footer{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-      .ok{background:var(--ok)}.warn{background:var(--warn)} .compact-text{line-height:1.45}.print-flow{display:contents}
-      @media (max-width:1080px){.header,.screen-cols,.footer{grid-template-columns:1fr}.title{font-size:24px}.meta-grid{grid-template-columns:1fr}}
+      .page{padding:14px;max-width:1560px;margin:0 auto} .sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 24px rgba(20,50,74,.08)}
+      .header{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin-bottom:12px} .title{font-size:29px;line-height:1.08;font-weight:800;margin:0 0 6px 0}
+      .header-note{font-size:13px;line-height:1.35;color:var(--muted)}
+      .meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px} .meta-chip{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+      .label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;font-weight:700} .value{font-size:13px;font-weight:700;line-height:1.25}
+      .print-flow{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:12px;align-items:start}
+      .stack{display:grid;gap:12px;align-content:start}
+      .stack.compact-stack{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+      .stack.compact-stack .block.full{grid-column:1 / -1}
+      .block{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px;margin:0;break-inside:avoid;page-break-inside:avoid}
+      .block h3{margin:0 0 7px 0;font-size:15px}
+      .list{display:grid;gap:7px}
+      .item{padding:7px 9px;border:1px solid var(--line);border-radius:12px;background:var(--soft2);break-inside:avoid;page-break-inside:avoid}
+      .mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+      .hz{font-weight:800} .small{font-size:11px;color:var(--muted);line-height:1.24} .compact-text{line-height:1.34;font-size:13px}
+      .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:11px;font-weight:700;margin:0 6px 6px 0}
+      .empty{color:var(--muted);font-style:italic} .highlight{background:var(--soft)} .ok{background:var(--ok)} .warn{background:var(--warn)}
+      @media (max-width:1120px){.header,.print-flow,.stack.compact-stack,.meta-grid,.mini-grid{grid-template-columns:1fr}.title{font-size:24px}}
       @page{size:A4 landscape;margin:7mm}
       @media print{
-        body{background:#fff;font-size:10pt;color:#1d2d3a}.topbar{display:none}.page{padding:0;max-width:none}.sheet{border:none;box-shadow:none;border-radius:0;padding:0}
-        .header{grid-template-columns:1.45fr 1fr;gap:4mm;margin-bottom:4mm}.title{font-size:18pt;margin-bottom:2mm}.muted{font-size:9pt}
-        .meta-grid{gap:1.8mm}.meta-chip{padding:2.2mm 2.6mm;border-radius:8px}.label{font-size:8pt;margin-bottom:1mm}.value{font-size:9.4pt}
-        .screen-cols{display:block}.print-flow{display:block;column-count:2;column-gap:5mm;column-fill:auto}
-        .block{display:inline-block;width:100%;padding:2.3mm 2.6mm;margin:0 0 3mm;border-radius:8px;border:1px solid #bcd1e4}
-        .block h3{font-size:10pt;margin:0 0 1.6mm}.list{display:block}.item{padding:1.9mm 2mm;border-radius:7px;margin:0 0 1.8mm}.small{font-size:8pt}.badge{font-size:8pt;padding:1mm 1.8mm;margin:0 .9mm .9mm 0}
-        .compact-text{line-height:1.22}.footer{display:block}.footer .block{display:inline-block;width:100%}
+        body{background:#fff;font-size:8.4pt;color:#1d2d3a} .topbar{display:none} .page{padding:0;max-width:none} .sheet{border:none;box-shadow:none;border-radius:0;padding:0}
+        .header{grid-template-columns:1.18fr 1fr;gap:3.6mm;margin-bottom:3.6mm} .title{font-size:15.5pt;margin-bottom:1.2mm} .header-note{font-size:7.4pt;line-height:1.14}
+        .meta-grid{gap:1.3mm} .meta-chip{padding:1.7mm 2mm;border-radius:7px} .label{font-size:6.7pt;margin-bottom:.6mm} .value{font-size:7.5pt;line-height:1.12}
+        .print-flow{display:block;column-count:2;column-gap:4.7mm;column-fill:auto} .stack{display:contents} .stack.compact-stack{display:contents}
+        .block{display:inline-block;width:100%;padding:1.8mm 2.1mm;margin:0 0 2mm;border-radius:7px;border:1px solid #bcd1e4} .block h3{font-size:8.3pt;margin:0 0 1mm}
+        .list{display:block} .item{padding:1.4mm 1.6mm;border-radius:6px;margin:0 0 1.2mm} .mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2mm}
+        .small{font-size:6.6pt;line-height:1.12} .compact-text{font-size:7pt;line-height:1.14} .badge{font-size:6.8pt;padding:.8mm 1.4mm;margin:0 .7mm .7mm 0}
+        a{color:inherit;text-decoration:none}
       }
     </style></head><body>
-    <div class="topbar"><div><div class="brand">SINET Print kartica simptoma</div><div class="muted">v${VERSION} • A4 landscape • optimizovano za 2 kolone</div></div><div class="actions"><button onclick="window.print()">🖨️ Štampaj</button></div></div>
+    <div class="topbar"><div><div class="brand">SINET Print kartica simptoma</div><div class="muted">v${VERSION} • A4 landscape • gusti raspored • 2 kolone</div></div><div class="actions"><button onclick="window.print()">🖨️ Štampaj</button></div></div>
     <div class="page"><div class="sheet">
-      <div class="header"><section class="block"><div class="title">${esc(item.simptom)}</div><div class="muted" style="margin-bottom:10px;">Print/export kartica simptoma • SINET Audio Lekar v${VERSION}</div><div class="meta-grid"><div class="meta-chip"><div class="label">ID</div><div class="value">${esc(item.id || '—')}</div></div><div class="meta-chip"><div class="label">Primarna oblast</div><div class="value">${esc(item.oblast)}</div></div><div class="meta-chip"><div class="label">Podoblast</div><div class="value">${esc(item.podOblast)}</div></div><div class="meta-chip"><div class="label">MKB-10</div><div class="value">${esc(mkb.sifra || item.mkb10 || 'NONE')} ${mkb.naziv ? '— ' + esc(mkb.naziv) : ''}</div></div></div>${sec.length ? `<div style="margin-top:10px;"><div class="label">Sekundarne oblasti</div>${badges(sec)}</div>` : ''}</section><section class="block"><h3>Brzi pregled</h3><div class="list compact-text"><div class="item"><div class="label">Opis simptoma</div><div>${esc(item.opis)}</div></div><div class="item"><div class="label">Preporuka</div><div>${esc(item.preporuka)}</div></div><div class="item"><div class="label">Trajanje po frekvenciji</div><div>${esc(item.trajanjePoFrekvencijiMin || '—')} min</div></div><div class="item"><div class="label">Broj frekvencija</div><div>${freqs.length}</div></div><div class="item"><div class="label">Alternativne metode</div><div>${alts.length}</div></div></div></section></div>
-      <div class="screen-cols print-flow"><div>
-        <section class="block"><h3>MKB-10 i klasifikacija</h3><div class="item"><div class="label">Primarni kod</div><div>${esc(mkb.sifra || item.mkb10 || 'NONE')}</div></div><div class="item" style="margin-top:8px;"><div class="label">Naziv</div><div>${esc(mkb.naziv || 'Nema formalnog ICD naziva / podrška')}</div></div><div class="item" style="margin-top:8px;"><div class="label">Poglavlje</div><div>${esc(mkbChapterLabel(item, mkb))}</div></div><div class="item" style="margin-top:8px;"><div class="label">Shortlist</div><div class="compact-text">${shortlist.length ? shortlist.map(x => esc(x)).join('<br>') : '—'}</div></div></section>
-        <section class="block"><h3>Holistički pristup</h3><div class="compact-text">${esc(hol.opis || '—')}</div><div class="small" style="margin-top:8px;">Afirmacija: ${esc(hol.afirmacija?.tekst || '—')}</div><div class="small" style="margin-top:6px;">Duhovnost: ${esc(hol.duhovnost?.tekst || hol.duhovnost?.opis || '—')}</div></section></div>
-        <div><section class="block"><h3>Detaljni opis</h3><div class="compact-text">${esc(item.opis)}</div></section><section class="block"><h3>Alternative i pomoćne metode</h3>${alts.length ? `<div class="list">${alts.map(a => `<div class="item"><div style="font-weight:800;">${esc(a.naziv || a.id || 'Metoda')}</div><div class="small">${esc(a.kategorija || '')}${a.evidenceTier ? ` • evidence ${esc(a.evidenceTier)}` : ''}</div><div class="compact-text" style="margin-top:6px;">${esc(a.opis || '')}</div></div>`).join('')}</div>` : `<div class="empty">Nema popunjenih alternativnih metoda.</div>`}</section></div>
-        <div><section class="block"><h3>Frekvencije sa opisima</h3>${freqs.length ? `<div class="list">${freqs.map(f => `<div class="item"><div class="hz">${esc(f.naziv || ((f.hz || f.value) ? `${f.hz || f.value} Hz` : 'Frekvencija'))}</div><div class="small">${esc(f.funkcija || 'Podrška / informativna frekvencija')} • ${esc(f.trajanje_min || item.trajanjePoFrekvencijiMin || '—')} min</div><div class="compact-text" style="margin-top:6px;">${esc(f.opis || '')}</div></div>`).join('')}</div>` : `<div class="empty">Nema frekvencija.</div>`}</section></div>
+      <div class="header">
+        <section class="block highlight">
+          <div class="title">${esc(item.simptom)}</div>
+          <div class="header-note">SINET Audio Lekar v${VERSION} • kompaktna kartica za štampu/export</div>
+        </section>
+        <section class="block">
+          <div class="meta-grid">
+            <div class="meta-chip"><div class="label">ID</div><div class="value">${esc(item.id || '—')}</div></div>
+            <div class="meta-chip"><div class="label">Trajanje</div><div class="value">${esc(item.trajanjePoFrekvencijiMin || '—')} min</div></div>
+            <div class="meta-chip"><div class="label">Oblast</div><div class="value">${esc(item.oblast)}</div></div>
+            <div class="meta-chip"><div class="label">Podoblast</div><div class="value">${esc(item.podOblast)}</div></div>
+            <div class="meta-chip"><div class="label">MKB-10</div><div class="value">${esc(mkb.sifra || item.mkb10 || 'NONE')}</div></div>
+            <div class="meta-chip"><div class="label">Frekvencije / alternative</div><div class="value">${freqs.length} / ${alts.length}</div></div>
+          </div>
+          ${sec.length ? `<div style="margin-top:8px;"><div class="label">Sekundarne oblasti</div>${badges(sec)}</div>` : ''}
+        </section>
       </div>
-      <div class="footer"><section class="block warn"><h3>Red flags</h3>${rf.length ? badges(rf) : '<div class="empty">Nema posebnih red flags unosa.</div>'}</section><section class="block ok"><h3>Warnings / napomene</h3>${warns.length ? badges(warns) : '<div class="empty">Nema dodatnih warnings unosa.</div>'}</section></div>
+
+      <div class="print-flow">
+        <div class="stack">
+          <section class="block">
+            <h3>Sažetak i preporuka</h3>
+            <div class="list compact-text">
+              <div class="item"><div class="label">Opis simptoma</div><div>${esc(item.opis)}</div></div>
+              <div class="item"><div class="label">Preporuka</div><div>${esc(item.preporuka)}</div></div>
+            </div>
+          </section>
+
+          <section class="block">
+            <h3>MKB-10 i klasifikacija</h3>
+            <div class="list compact-text">
+              <div class="item"><div class="label">Primarni kod</div><div>${esc(mkb.sifra || item.mkb10 || 'NONE')}</div></div>
+              <div class="item"><div class="label">Naziv</div><div>${esc(mkb.naziv || 'Nema formalnog ICD naziva / podrška')}</div></div>
+              <div class="item"><div class="label">Poglavlje</div><div>${esc(mkbChapterLabel(item, mkb))}</div></div>
+              <div class="item"><div class="label">Shortlist</div><div>${shortlist.length ? shortlist.map(x => esc(x)).join('<br>') : '—'}</div></div>
+            </div>
+          </section>
+
+          <section class="block">
+            <h3>Holistički pristup</h3>
+            <div class="compact-text">${esc(hol.opis || '—')}</div>
+            <div class="small" style="margin-top:7px;">Afirmacija: ${esc(hol.afirmacija?.tekst || '—')}</div>
+            <div class="small" style="margin-top:4px;">Duhovnost: ${esc(hol.duhovnost?.tekst || hol.duhovnost?.opis || '—')}</div>
+          </section>
+        </div>
+
+        <div class="stack compact-stack">
+          <section class="block full">
+            <h3>Frekvencije</h3>
+            ${freqs.length ? `<div class="mini-grid">${freqs.map(f => `<div class="item"><div class="hz">${esc(f.naziv || ((f.hz || f.value) ? `${f.hz || f.value} Hz` : 'Frekvencija'))}</div><div class="small">${esc(f.funkcija || 'Podrška / informativna frekvencija')} • ${esc(f.trajanje_min || item.trajanjePoFrekvencijiMin || '—')} min</div>${f.opis ? `<div class="compact-text" style="margin-top:5px;">${esc(f.opis)}</div>` : ''}</div>`).join('')}</div>` : `<div class="empty">Nema frekvencija.</div>`}
+          </section>
+
+          <section class="block full">
+            <h3>Alternative i pomoćne metode</h3>
+            ${alts.length ? `<div class="mini-grid">${alts.map(a => `<div class="item"><div style="font-weight:800;">${esc(a.naziv || a.id || 'Metoda')}</div><div class="small">${esc(a.kategorija || '')}${a.evidenceTier ? ` • evidence ${esc(a.evidenceTier)}` : ''}</div>${a.opis ? `<div class="compact-text" style="margin-top:5px;">${esc(a.opis)}</div>` : ''}</div>`).join('')}</div>` : `<div class="empty">Nema popunjenih alternativnih metoda.</div>`}
+          </section>
+
+          <section class="block warn">
+            <h3>Red flags</h3>
+            ${rf.length ? badges(rf) : '<div class="empty">Nema posebnih red flags unosa.</div>'}
+          </section>
+
+          <section class="block ok">
+            <h3>Warnings / napomene</h3>
+            ${warns.length ? badges(warns) : '<div class="empty">Nema dodatnih warnings unosa.</div>'}
+          </section>
+        </div>
+      </div>
     </div></div></body></html>`;
   }
 
@@ -191,7 +261,9 @@
       `- **MKB-10:** ${mkb.sifra || item.mkb10 || 'NONE'}${mkb.naziv ? ' — ' + mkb.naziv : ''}`,
       item.sekundarneOblasti?.length ? `- **Sekundarne oblasti:** ${item.sekundarneOblasti.join(', ')}` : '',
       '','## Opis', item.opis,'','## Preporuka', item.preporuka,'','## Holistički pristup', hol.opis || '—',
-      hol.afirmacija?.tekst ? `\n**Afirmacija:** ${hol.afirmacija.tekst}` : '', hol.duhovnost?.tekst ? `\n**Duhovnost:** ${hol.duhovnost.tekst}` : '',
+      hol.afirmacija?.tekst ? `
+**Afirmacija:** ${hol.afirmacija.tekst}` : '', hol.duhovnost?.tekst ? `
+**Duhovnost:** ${hol.duhovnost.tekst}` : '',
       '','## Frekvencije', ...(freqs.length ? freqs.map((f, idx) => `- **${idx+1}. ${f.naziv || ((f.hz || f.value) ? `${f.hz || f.value} Hz` : 'Frekvencija')}** — ${f.opis || f.funkcija || 'bez opisa'} _(${f.trajanje_min || item.trajanjePoFrekvencijiMin || '—'} min)_`) : ['- Nema frekvencija.']),
       '','## Alternative / pomoćne metode', ...(alts.length ? alts.map((a, idx) => `- **${idx+1}. ${a.naziv || a.id}** — ${a.opis || 'bez opisa'}`) : ['- Nema alternativnih metoda.']),
       '','## Red flags', ...(item.red_flags?.length ? item.red_flags.map(v => `- ${v}`) : ['- Nema posebnih red flags unosa.']),

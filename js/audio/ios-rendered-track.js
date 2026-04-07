@@ -1,7 +1,7 @@
 /* 
   🚩 START: iOS Rendered Track (WAV in RAM) — Web-only background workaround
   File: js/audio/ios-rendered-track.js
-  Version: 1.2 (SINET v15.6.5)
+  Version: 1.3 (SINET v16.0.0.118.40.10)
   Author: miuchins | Co-author: SINET AI
 
   Purpose:
@@ -28,8 +28,8 @@ export function estimateWavBytes(totalSeconds, sampleRate=22050, channels=1, bit
 }
 
 function _clamp(x, lo=-1, hi=1) { return Math.max(lo, Math.min(hi, x)); }
-function _carrierForSubHz(hz, fallback=210){ const x = Math.max(0, Number(hz)||0); if (x < 8) return 200; if (x < 12) return 205; if (x < 20) return 210; if (x < 32) return 215; if (x > 0) return 220; return fallback; }
-function _toneNormalizationGain(hz, threshold=50){ const f = (hz > 0 && hz < threshold) ? _carrierForSubHz(hz) : Math.max(1, Number(hz)||0); let g = 1; if (f < 90) g = 1.55; else if (f < 140) g = 1.38; else if (f < 200) g = 1.22; else if (f < 260) g = 1.10; else if (f < 700) g = 1.0; else if (f < 1600) g = 0.94; else if (f < 3200) g = 0.88; else g = 0.82; return Math.max(0.65, Math.min(1.65, g)); }
+function _carrierForSubHz(hz, fallback=200){ const x = Math.max(0, Number(hz)||0); if (x > 0 && x < 120) return 200; return fallback; }
+function _toneNormalizationGain(hz, threshold=120){ const f = (hz > 0 && hz < threshold) ? _carrierForSubHz(hz) : Math.max(1, Number(hz)||0); let g = 1; if (f < 90) g = 1.65; else if (f < 140) g = 1.52; else if (f < 200) g = 1.34; else if (f < 260) g = 1.18; else if (f < 700) g = 1.05; else if (f < 1600) g = 0.98; else if (f < 3200) g = 0.91; else g = 0.86; return Math.max(0.72, Math.min(1.75, g)); }
 
 function _writeString(view, offset, str) {
   for (let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i));
@@ -58,9 +58,9 @@ export async function renderProtocolToWavBlobURL(opts = {}) {
   const totalSec = Math.max(0, Number(opts.totalSec) || 0);
   const sr = Math.max(8000, Number(opts.sampleRate) || 22050);
   const ch = Math.max(1, Number(opts.channels) || 1);
-  const gain = _clamp(Number(opts.gain) || 0.45, 0, 1.2);
-  const subCarrierHz = Math.max(40, Number(opts.subCarrierHz) || 210);
-  const subThresholdHz = Math.max(1, Number(opts.subThresholdHz) || 50);
+  const gain = _clamp(Number(opts.gain) || 0.58, 0, 1.2);
+  const subCarrierHz = Math.max(40, Number(opts.subCarrierHz) || 200);
+  const subThresholdHz = Math.max(1, Number(opts.subThresholdHz) || 120);
   const normalizePerceivedLoudness = opts.normalizePerceivedLoudness !== false;
   const fadeMs = Math.max(0, Number(opts.fadeMs) || 12);
   const signal = opts.signal || null;

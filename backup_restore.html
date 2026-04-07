@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Backup / Restore · v16.0.0.118.40.23</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sinet-quickbar.css?v=v16.0.0.118.40.23">
+  <link rel="stylesheet" href="css/sinet-medical-runtime.css?v=v16.0.0.118.40.23">
+  <script defer src="js/sinet-page-nav.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/db/indexed-db.js"></script>
+  <script defer src="js/core/id-service.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-store.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/runtime-archive-backup.js?v=v16.0.0.118.40.23"></script>
+  <script defer src="js/core/audit-service.js?v=v16.0.0.118.40.23"></script>
+</head>
+<body class="sinet-medical-page">
+<div class="sinet-shell">
+  <div class="sinet-page-hero">
+    <h1>💾 Backup / Restore</h1>
+    <p>Full, module i selective backup + detaljniji preview restore sa mode izborom i konflikt pregledom.</p>
+    <span class="sinet-version-badge">v16.0.0.118.40.23</span>
+  </div>
+
+  <div class="sinet-grid-2 mb-3">
+    <div class="sinet-card">
+      <h2>Backup kreiranje</h2>
+      <div class="sinet-actions mb-2">
+        <button class="sinet-btn green" id="btn-backup-full">💾 Full runtime</button>
+        <button class="sinet-btn secondary" id="btn-backup-module">🧩 Medical modules</button>
+        <button class="sinet-btn secondary" id="btn-backup-selective">🎯 Selective backup</button>
+      </div>
+      <div class="sinet-checkbox-grid" id="backup-file-checkboxes"></div>
+    </div>
+    <div class="sinet-card">
+      <h2>Restore preview</h2>
+      <select id="restore-backup-select" class="sinet-select mb-2"></select>
+      <div class="sinet-radio-grid mb-2">
+        <label><input type="radio" name="restore-mode" value="full" checked> Full</label>
+        <label><input type="radio" name="restore-mode" value="selective"> Selective</label>
+        <label><input type="radio" name="restore-mode" value="merge"> Merge</label>
+        <label><input type="radio" name="restore-mode" value="overwrite"> Overwrite</label>
+        <label><input type="radio" name="restore-mode" value="sandbox"> Sandbox</label>
+      </div>
+      <div class="sinet-checkbox-grid" id="restore-file-checkboxes"></div>
+      <div class="sinet-actions mt-3">
+        <button class="sinet-btn orange" id="btn-restore-preview">♻ Preview restore</button>
+        <button class="sinet-btn secondary" onclick="location.href='archive.html'">🗄 Archive</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sinet-grid-2">
+    <div class="sinet-card">
+      <h2>Backup manifesti</h2>
+      <div id="backup-list" class="sinet-empty">Učitavanje…</div>
+    </div>
+    <div class="sinet-card">
+      <h2>Restore preview detalj</h2>
+      <div id="restore-preview-detail" class="sinet-empty">Pokreni preview da vidiš konflikt pregled i broj zapisa.</div>
+      <hr>
+      <h3>Restore poslovi</h3>
+      <div id="restore-list" class="sinet-empty">Učitavanje…</div>
+    </div>
+  </div>
+</div>
+<script>
+  const store = new window.SinetMedicalRuntimeStore();
+  const audit = new window.SinetAuditService(store);
+  let latestPreview = null;
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+  function checkedKeys(containerId){
+    return Array.from(document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)).map(el => el.value);
+  }
+  function selectedRestoreMode(){
+    const el = document.querySelector('input[name="restore-mode"]:checked');
+    return el ? el.value : 'full';
+  }
+  function fileCheckboxMarkup(prefix, selected){
+    const descriptors = store.getRuntimeFileDescriptors();
+    return descriptors.map(d => `
+      <label class="sinet-check-card"><input type="checkbox" value="${esc(d.key)}" ${selected.includes(d.key) ? 'checked' : ''}> <span><strong>${esc(d.label)}</strong><br><small>${esc(d.file)}</small></span></label>`).join('');
+  }
+  function renderRestorePreviewDetail(){
+    const box = document.getElementById('restore-preview-detail');
+    if (!latestPreview) { box.innerHTML = '<div class="sinet-empty">Pokreni preview da vidiš konflikt pregled i broj zapisa.</div>'; return; }
+    const conflicts = Array.isArray(latestPreview.conflicts_detected) ? latestPreview.conflicts_detected : [];
+    const summaries = Array.isArray(latestPreview.current_summary) ? latestPreview.current_summary : [];
+    box.innerHTML = `
+      <div class="sinet-kv mb-2">
+        <div>Restore job</div><div>${esc(latestPreview.restore_job_id)}</div>
+        <div>Mode</div><div>${esc(latestPreview.restore_mode)}</div>
+        <div>Backup</div><div>${esc(latestPreview.source_backup_id)}</div>
+        <div>Fajlovi</div><div>${esc(latestPreview.preview_summary?.files_to_restore || 0)}</div>
+        <div>Konflikti</div><div>${esc(latestPreview.preview_summary?.conflicts_count || 0)}</div>
+        <div>Zapisa</div><div>${esc(latestPreview.preview_summary?.estimated_records || 0)}</div>
+      </div>
+      <div class="sinet-mini-list mb-2">${summaries.map(row => `<div class="sinet-mini-row"><div><strong>${esc(row.key)}</strong></div><div>backup=${esc(row.backup?.count || 0)} / current=${esc(row.current?.count || 0)}</div></div>`).join('')}</div>
+      <div class="sinet-notice">${conflicts.length ? `Otkriveno konflikata: <strong>${conflicts.length}</strong>. Overwrite mod zahteva pažnju.` : 'Nema konflikata za trenutno izabrani preview.'}</div>`;
+  }
+  async function render(){
+    const descriptors = store.getRuntimeFileDescriptors();
+    document.getElementById('backup-file-checkboxes').innerHTML = fileCheckboxMarkup('backup', store._defaultSelectedKeys('medical_modules_only'));
+    document.getElementById('restore-file-checkboxes').innerHTML = fileCheckboxMarkup('restore', store._defaultSelectedKeys('full_runtime'));
+    const backups = await store.getCollection('backup_manifests') || [];
+    const restores = await store.getCollection('restore_jobs') || [];
+    const sel = document.getElementById('restore-backup-select');
+    sel.innerHTML = backups.map(b => `<option value="${esc(b.backup_id)}">${esc(b.backup_id)} · ${esc(b.scope)} · ${esc(b.created_at)}</option>`).join('');
+    if (!backups.length) sel.innerHTML = '<option value="">Nema backup-a</option>';
+    document.getElementById('backup-list').innerHTML = backups.length ? backups.map(b => `
+      <div class="sinet-card" style="margin-bottom:10px;padding:12px;">
+        <strong>${esc(b.backup_id)}</strong>
+        <div class="sinet-muted">${esc(b.created_at)} · ${esc(b.scope)}</div>
+        <div class="sinet-pill info" style="margin-top:8px;">${esc((b.included_files || []).length)} fajlova</div>
+        <div class="sinet-pre" style="margin-top:8px;">${esc((b.included_files || []).join('\n'))}</div>
+      </div>`).join('') : '<div class="sinet-empty">Još nema backup manifest-a.</div>';
+    document.getElementById('restore-list').innerHTML = restores.length ? restores.map(r => `
+      <div class="sinet-card" style="margin-bottom:10px;padding:12px;">
+        <strong>${esc(r.restore_job_id)}</strong>
+        <div class="sinet-muted">${esc(r.created_at)}</div>
+        <div class="sinet-pill warn" style="margin-top:8px;">${esc(r.restore_mode)}</div>
+        <div class="sinet-pre" style="margin-top:8px;">${esc((r.selected_files || []).join('\n'))}</div>
+      </div>`).join('') : '<div class="sinet-empty">Još nema restore preview poslova.</div>';
+    renderRestorePreviewDetail();
+  }
+  document.getElementById('btn-backup-full').addEventListener('click', async () => {
+    await store.createBackupSnapshot('full_runtime');
+    await render();
+  });
+  document.getElementById('btn-backup-module').addEventListener('click', async () => {
+    await store.createBackupSnapshot('medical_modules_only');
+    await render();
+  });
+  document.getElementById('btn-backup-selective').addEventListener('click', async () => {
+    const keys = checkedKeys('backup-file-checkboxes');
+    if (!keys.length) { alert('Izaberi bar jedan runtime fajl za selective backup.'); return; }
+    await store.createBackupSnapshot('selective_runtime', { selectedKeys: keys });
+    await render();
+  });
+  document.getElementById('btn-restore-preview').addEventListener('click', async () => {
+    const backupId = document.getElementById('restore-backup-select').value;
+    if (!backupId) { alert('Nema backup zapisa za preview.'); return; }
+    const keys = checkedKeys('restore-file-checkboxes');
+    if (!keys.length) { alert('Izaberi bar jedan runtime fajl za restore preview.'); return; }
+    latestPreview = await store.createRestorePreview(backupId, selectedRestoreMode(), { selectedKeys: keys });
+    await render();
+  });
+  (async function init(){
+    await store.ensureBootstrap();
+    await audit.log('backup_restore','page_opened','page','backup_restore',{path:'backup_restore.html'});
+    await render();
+  })();
+</script>
+</body>
+</html>

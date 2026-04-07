@@ -1,4 +1,4 @@
-const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.40';
+const CACHE_NAME = 'SINET_CACHE_v16.0.0.118.40.23';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const CORE_ASSETS = [
   './assets/icons/icon-512.png',
   './css/main.css',
   './css/sinet-quickbar.css',
+  './css/sinet-medical-runtime.css',
   './style.css',
   './js/app.js',
   './js/db/indexed-db.js',
@@ -25,6 +26,11 @@ const CORE_ASSETS = [
   './js/sinet-anamneza-export.js',
   './js/sinet-area-export.js',
   './js/sinet-symptom-card.js',
+  './js/core/bridge-runtime.js',
+  './js/core/id-service.js',
+  './js/core/runtime-store.js',
+  './js/core/audit-service.js',
+  './js/renderers/lab-bookpro-renderer.js',
   './data/SINET_CATALOG.json',
   './data/SINET_STL.json',
   './data/mkb10_sr.json',
@@ -32,6 +38,11 @@ const CORE_ASSETS = [
   './anamneza.html',
   './mobile-qa.html',
   './DS-Generator.html',
+  './zdravstveni_karton.html',
+  './lab_bookpro.html',
+  './lab_bookpro_report.html',
+  './audit_center.html',
+  './backup_restore.html',
   './pages/integrativna_biblioteka.html',
   './pages/integrativni_vodic.html',
   './pages/symptom-print-card.html',
